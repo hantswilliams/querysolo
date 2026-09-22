@@ -64,6 +64,7 @@ with open(os.path.join(lakelet_dir, "fake-args.txt"), "w", encoding="utf-8") as 
         f.write(f" env LAKELET_DEV_ORIGIN={os.environ['LAKELET_DEV_ORIGIN']}")
     if "AWS_PROFILE" in os.environ:
         f.write(f" env AWS_PROFILE={os.environ['AWS_PROFILE']}")
+    f.write(f" cwd={os.getcwd()}")
 
 if lifetime == 0:
     print("fake sidecar refusing to start", file=sys.stderr)

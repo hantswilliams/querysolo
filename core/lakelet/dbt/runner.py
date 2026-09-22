@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any
 import duckdb
 
 from lakelet import __version__
+from lakelet.engine import remove_stray_data_dir
 from lakelet.gauge import inputs
 from lakelet.history import Run
 from lakelet.query import sql_hash
@@ -243,6 +244,7 @@ def _invoke(project: Project, verb: str, args: list[str]) -> Any:
             *args,
         ]
     )
+    remove_stray_data_dir()  # F1: dbt's own DuckDB connection leaves the same empty folder
     if not result.success and result.exception is not None:
         raise DbtFailed(str(result.exception).splitlines()[0])
     return result

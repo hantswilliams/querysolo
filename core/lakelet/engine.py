@@ -54,6 +54,28 @@ def is_conflict(error: Exception) -> bool:
     return all(marker in str(error) for marker in CONFLICT_MARKERS)
 
 
+def remove_stray_data_dir(cwd: Path | None = None) -> bool:
+    """Decisions F1: DuckDB's Iceberg extension makes ``<location>/data/`` before the
+    catalog has told it the table's location, so on the first CREATE TABLE an empty
+    ``data/`` appears relative to the process's working directory — in the project folder
+    for the app and a `lakelet` run from it, in whatever folder a `lakelet -C` was run
+    from otherwise. The real files go where the catalog said. This removes that folder
+    when it is exactly that: a directory named ``data`` in the cwd, empty, and not part of
+    an Iceberg table's own layout (no ``metadata/`` beside it). Anything else is left
+    alone. True when something was removed."""
+    here = cwd or Path.cwd()
+    stray = here / "data"
+    try:
+        if not stray.is_dir() or stray.is_symlink() or (here / "metadata").exists():
+            return False
+        if any(stray.iterdir()):
+            return False
+        stray.rmdir()
+        return True
+    except OSError:
+        return False
+
+
 def run_with_retry(engine: Engine, sql: str, attempts: int = 3) -> None:
     """DuckDB does not retry a 409 (step 1); Lakelet re-runs the statement with jittered
     backoff, then raises CatalogConflict."""
@@ -183,7 +205,9 @@ class Engine:
         )
 
     def execute(self, sql: str, parameters: list | None = None) -> duckdb.DuckDBPyConnection:
-        return self.con.execute(sql, parameters) if parameters else self.con.execute(sql)
+        result = self.con.execute(sql, parameters) if parameters else self.con.execute(sql)
+        remove_stray_data_dir()
+        return result
 
     def last_profile(self) -> dict | None:
         """The profiler's JSON for the last statement that produced one."""

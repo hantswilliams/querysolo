@@ -86,4 +86,25 @@ The rule since the first brief (D36) is that Lakelet never holds a key: the core
 
 ---
 
+---
+
+# The `data/` folder in a project
+
+## What it is
+
+Hants, looking at a project folder: `data/` is empty and nothing uses it; drop it. It turns out Lakelet does not create it. `lakelet init` writes `lakelet.toml`, `AGENTS.md`, `dbt_project.yml`, `models/`, `macros/`, `warehouse/`, `.lakelet/`; the first saved question adds `tests/generic/returns_rows.sql`. The empty `data/` appears on the first `CREATE TABLE` through DuckDB's Iceberg extension — it makes `<location>/data/` before the catalog has told it the location, so the path is `data/` relative to the process's **current directory**, and the real files then go to `warehouse/main/<table>/data/` as they should (traced 2026-09-22 with an audit hook: no Python code makes it; a `lakelet -C project sql 'create table …'` run from another folder leaves the empty `data/` in *that* folder). On Hants' Mac there is one in `app/`, `app/src-tauri/` and `core/` — wherever a process was started from. The app's shell does not set the sidecar's working directory, so the sidecar inherits the app's: the project folder under `tauri dev` only by accident, and `/` for an app launched from the Dock, where the mkdir will fail and it is not yet known whether the CREATE fails with it.
+
+**F1. The shell starts the sidecar with the project folder as its working directory, and the core removes the empty `data/` the extension leaves there.**
+
+*Recommend:* two small things. The shell passes `current_dir(project)` to the sidecar (and `lakelet serve`, `run`, `sql` and the rest already run from the folder the user is in, or `-C`), so a Dock-launched app has a writable, sensible cwd — this is a fix whatever else is decided, since an installed app must not depend on `/` being writable. Then the engine, after any statement that writes, removes `<cwd>/data` when it exists, is empty, and is not the project's own `warehouse/…` path — an empty folder it did not create and nothing can be in. A pytest creates a table from a temp cwd and asserts no `data/` is left; the cargo two-windows test asserts the sidecar's cwd in `fake-args.txt`. An upstream issue on duckdb/duckdb-iceberg with the repro, linked from `TASKS.md`, so the workaround can go when the extension stops doing it.
+
+*Not chosen:* `chdir` inside the core to `.lakelet/` so the litter lands out of sight (relative paths in a user's SQL — `read_csv('orders.csv')` — would silently stop meaning the project folder); documenting it and leaving it (an empty folder with no explanation in every project, and in every folder a CLI was run from).
+
+*Gates:* pytest for the clean cwd; cargo for the sidecar's cwd; the installer smoke test in the ship brief (§6) creates a table from a Dock launch.
+
+- [x] Agree
+- [ ] Change:
+
+---
+
 *Order, if agreed: C1 and C2 together (a day: the shell's profile list and setting, the sidecar's environment, `describe()`, the picker, the sentences, the docs), before P2's brief and before ship, since the installers' first-run story depends on it.*

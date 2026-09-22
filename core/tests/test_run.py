@@ -158,6 +158,8 @@ def test_lakelet_run_builds_the_dag_and_records_views(project) -> None:
     assert report.views_recorded == ["stg_orders", "top"]
     assert p.tables.describe("by_c").rows == 3
     assert p.engine.execute("select * from top").fetchone() == ("c2",)
+    # F1: dbt's own connection leaves the extension's empty data/ in the cwd; the runner removes it
+    assert not (Path.cwd() / "data").exists() and not (p.root / "data").exists()
     top = p.views.get("top")
     assert top.sql == 'select c from "main"."by_c" order by total desc limit 1'
     assert top.properties == {"lakelet.dbt-model": "model.proj.top"}

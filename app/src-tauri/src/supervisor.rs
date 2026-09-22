@@ -187,6 +187,11 @@ fn spawn(config: &SidecarConfig) -> Result<(Child, Session, mpsc::Receiver<Strin
         .arg("serve")
         .arg("--port")
         .arg("0")
+        // The project is the sidecar's working directory (decisions F1): a Dock-launched
+        // app inherits `/`, and DuckDB's Iceberg extension makes a `data/` folder relative
+        // to the cwd on the first CREATE TABLE. The core tidies that folder; the cwd must
+        // at least be one it may write.
+        .current_dir(&config.project)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());

@@ -163,6 +163,37 @@ def test_reopen_sees_the_same_table(root) -> None:
         assert p.engine.execute("select * from t").fetchall() == [(7,)]
 
 
+def test_a_create_table_leaves_no_stray_data_folder_in_the_cwd(root, tmp_path, monkeypatch) -> None:
+    """Decisions F1: DuckDB's Iceberg extension makes an empty `data/` relative to the
+    process's cwd on the first CREATE TABLE (the real files go under the warehouse); the
+    engine removes it. A `data/` that holds something, or that is a table's own folder
+    beside `metadata/`, is not touched."""
+    from lakelet.engine import remove_stray_data_dir
+
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+    Project.init(root, probe_mb=0)
+    with Project.open(root) as p:
+        p.engine.execute("CREATE TABLE lakelet.main.t AS SELECT 1 AS id")
+        assert not (elsewhere / "data").exists(), "the extension's empty folder is gone"
+        assert not (root / "data").exists()
+        assert (root / "warehouse" / "main" / "t" / "data").is_dir(), "the table's own data/ stays"
+
+    keep = tmp_path / "keep"
+    (keep / "data").mkdir(parents=True)
+    (keep / "data" / "orders.csv").write_text("id\n1\n")
+    assert remove_stray_data_dir(keep) is False and (keep / "data" / "orders.csv").exists()
+    table = tmp_path / "table"
+    (table / "data").mkdir(parents=True)
+    (table / "metadata").mkdir()
+    assert remove_stray_data_dir(table) is False and (table / "data").is_dir()
+    empty = tmp_path / "empty"
+    (empty / "data").mkdir(parents=True)
+    assert remove_stray_data_dir(empty) is True and not (empty / "data").exists()
+    assert remove_stray_data_dir(empty) is False  # nothing there: nothing to say
+
+
 def test_open_works_with_no_aws_credentials_anywhere(root, monkeypatch, tmp_path) -> None:
     """A laptop with no AWS account is the normal case (brief D36): opening a project and
     local work must not depend on the default chain resolving, and the first s3://

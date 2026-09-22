@@ -612,6 +612,10 @@ mod tests {
         // C1: the project's profile reaches the sidecar as AWS_PROFILE; none means none
         assert!(args_b.contains("env AWS_PROFILE=acme-data"), "{args_b}");
         assert!(!args_a.contains("AWS_PROFILE"), "{args_a}");
+        // F1: each sidecar runs in its own project folder, whatever the shell's cwd is
+        let canon = |p: &std::path::Path| std::fs::canonicalize(p).unwrap().display().to_string();
+        assert!(args_a.contains(&format!("cwd={}", canon(&a.project))), "{args_a}");
+        assert!(args_b.contains(&format!("cwd={}", canon(&b.project))), "{args_b}");
 
         assert_eq!(open.window_for(&b.project), Some("project-2".to_string()));
         assert_eq!(open.project_of("project-1"), Some(a.project.clone()));

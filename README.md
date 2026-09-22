@@ -14,6 +14,10 @@ You point Lakelet at a folder. `lakelet init` makes it a lakehouse: an Iceberg c
 
 What it is not, yet: burst to your own cloud when the laptop is not enough, questions in English, and an MCP server for agents are designed and on the site as *planned*. The block below is the honest list, generated from the same file the site reads.
 
+## How it fits
+
+Lakelet is not an editor and not a cloud warehouse; it is the part in between, on your machine. A project is a folder of dbt models in a git repository, so your editor edits the SQL — VS Code, Cursor, vim — and Lakelet runs it, keeps the tables, and shows you what happened; every button in the app shows the `lakelet` line it is, so the terminal can do everything the window can. It is the warehouse for the size most teams actually have — the case where BigQuery or Redshift is mostly a bill and a permissions system — in the open format, so when a table outgrows the laptop nothing moves: BigQuery, Snowflake, Trino or Spark read the same Iceberg tables from your bucket. The gauge is what tells you, before a query runs, whether this machine can; when it cannot, you wait, point an engine you already pay for at the same tables, or (planned) burst one job to a worker in your own cloud account under a cost cap and get the answer back in the same catalog. What it does not replace is what those warehouses do beyond size: concurrency, sharing, permissions, always-on.
+
 ## What is built and what is planned
 
 <!-- status:start -->
