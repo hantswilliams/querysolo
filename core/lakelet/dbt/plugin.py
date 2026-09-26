@@ -9,6 +9,7 @@ to the session so a model can ``ref()`` a view that ``lakelet run`` recorded ear
 from __future__ import annotations
 
 import json
+import os
 import urllib.request
 from typing import Any
 
@@ -45,6 +46,11 @@ class Plugin(BasePlugin):
         self.catalog_url = config["catalog_url"]
 
     def configure_connection(self, conn: DuckDBPyConnection) -> None:
+        # dbt-duckdb opens this connection itself; the bundled extension folder (S2), when
+        # the installer set it, applies here too so a model build never fetches.
+        directory = os.environ.get("LAKELET_EXTENSION_DIR")
+        if directory:
+            conn.execute("SET extension_directory = ?", [directory])
         conn.execute("LOAD iceberg; LOAD httpfs")
         # as the engine (`engine.py`): a GeoParquet column stays the binary the catalog says
         conn.execute("SET enable_geoparquet_conversion = false")

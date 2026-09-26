@@ -85,7 +85,14 @@ export const BIG_ROWS = 20_000_000;
 
 /** The venv's python beside the sidecar, for generating fixtures with DuckDB. */
 export function venvPython(): string {
-  return join(dirname(sidecarExecutable()), 'python');
+  // beside the sidecar in a venv; a frozen sidecar (ship brief S1) has no python beside it,
+  // so the fixtures' DuckDB comes from the core's venv, or `LAKELET_PYTHON` names one
+  if (process.env.LAKELET_PYTHON) return process.env.LAKELET_PYTHON;
+  const beside = join(dirname(sidecarExecutable()), 'python');
+  if (existsSync(beside)) return beside;
+  const here = dirname(fileURLToPath(import.meta.url));
+  const venv = resolve(here, '..', '..', 'core', '.venv', 'bin', 'python');
+  return existsSync(venv) ? venv : 'python3';
 }
 
 export function sidecarExecutable(): string {

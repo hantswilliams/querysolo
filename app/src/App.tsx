@@ -10,8 +10,8 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { Api, type Health, type TableInfo } from './lib/api';
 import {
-  awsProfiles, checkBucket, defaultParent, getSession, inTauri, newProject, onSidecarEvent, openProject, pickFolder, projectProfile, recentProjects, restartSidecar,
-  setProjectProfile, windowProject, type RecentProject, type Session,
+  about, awsProfiles, checkBucket, defaultParent, getSession, inTauri, newProject, onSidecarEvent, openProject, pickFolder, projectProfile, recentProjects, restartSidecar,
+  setProjectProfile, windowProject, type About, type RecentProject, type Session,
 } from './lib/session';
 import { Explorer } from './components/Explorer';
 import { NewProject } from './components/NewProject';
@@ -67,9 +67,11 @@ export default function App() {
   // C1: the Bucket row in settings is the shell's — the profiles on this machine and the
   // project's choice — so it exists only inside the app.
   const [bucketSetting, setBucketSetting] = useState<{ profiles: string[]; profile: string | null }>();
+  const [aboutInfo, setAboutInfo] = useState<About | null>();
   useEffect(() => {
     if (!settingsOpen || !inTauri()) return;
     Promise.all([awsProfiles(), projectProfile()]).then(([profiles, profile]) => setBucketSetting({ profiles, profile })).catch(() => setBucketSetting(undefined));
+    about().then(setAboutInfo).catch(() => setAboutInfo(null));
   }, [settingsOpen]);
   const bucket = bucketSetting && {
     ...bucketSetting,
@@ -316,7 +318,7 @@ export default function App() {
         // panel in the column would be cut off at the bottom
         <div className="modal" onMouseDown={(e) => { if (e.target === e.currentTarget) setSettingsOpen(false); }}>
           {api && status !== 'down' ? (
-            <SettingsPanel api={api} bucket={bucket} onClose={() => setSettingsOpen(false)} />
+            <SettingsPanel api={api} bucket={bucket} about={aboutInfo} onClose={() => setSettingsOpen(false)} />
           ) : (
             <section className="settings" data-testid="settings"><header><h2>Settings</h2><button type="button" className="quiet" onClick={() => setSettingsOpen(false)}>Close (Esc)</button></header><p className="muted">The core is not running; settings are read and written through it. Restart it first.</p></section>
           )}

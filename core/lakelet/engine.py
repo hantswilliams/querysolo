@@ -15,6 +15,32 @@ from pathlib import Path
 import duckdb
 
 EXTENSIONS = ("iceberg", "httpfs", "excel", "aws")
+#: What an install must carry: the four the engine loads plus ``avro``, which ``iceberg``
+#: pulls in on first LOAD (manifests are Avro) and would otherwise fetch on its own — the
+#: one download D33 allows at ``init`` covers it, and the bundle (S2) ships it.
+INSTALLED_EXTENSIONS = EXTENSIONS + ("avro",)
+#: Ship brief S2: an installer bundles the four extensions beside the frozen core and names
+#: the folder here; every connection then reads them from there and nothing is fetched.
+#: Unset (the CLI from PyPI, development), DuckDB's own ``~/.duckdb/extensions`` applies.
+EXTENSION_DIR_ENV = "LAKELET_EXTENSION_DIR"
+
+
+def extension_directory() -> str | None:
+    """The bundled extension folder, when the installer set it (S2), else None."""
+    return os.environ.get(EXTENSION_DIR_ENV) or None
+
+
+def connect() -> duckdb.DuckDBPyConnection:
+    """A DuckDB connection that reads extensions from the bundled folder when there is one.
+    Every connection the core opens comes through here, so the frozen app never looks at
+    ``~/.duckdb`` and never downloads."""
+    con = duckdb.connect()
+    directory = extension_directory()
+    if directory:
+        con.execute("SET extension_directory = ?", [directory])
+    return con
+
+
 SEARCH_PATH = "lakelet.main,memory.main"
 
 
@@ -93,8 +119,9 @@ def run_with_retry(engine: Engine, sql: str, attempts: int = 3) -> None:
 
 def install_extensions() -> tuple[list[str], str]:
     """``lakelet init``'s one network fetch (brief D33). Returns the extensions that were
-    downloaded now and the directory they live in."""
-    con = duckdb.connect()
+    downloaded now and the directory they live in. With the bundled folder set (S2) the
+    four are already installed there, so nothing is fetched."""
+    con = connect()
 
     def installed() -> set[str]:
         rows = con.execute(
@@ -103,7 +130,7 @@ def install_extensions() -> tuple[list[str], str]:
         return {name for (name,) in rows}
 
     before = installed()
-    con.execute("; ".join(f"INSTALL {name}" for name in EXTENSIONS))
+    con.execute("; ".join(f"INSTALL {name}" for name in INSTALLED_EXTENSIONS))
     downloaded = sorted(installed() - before)
     directory = con.execute("select current_setting('extension_directory')").fetchone()[0]
     con.close()
@@ -119,7 +146,7 @@ class Engine:
         threads: int | str = "auto",
         s3_secret: str | None = None,
     ) -> None:
-        self.con = duckdb.connect()
+        self.con = connect()
         self.profile_path = profile_path
         try:
             self.con.execute("; ".join(f"LOAD {name}" for name in EXTENSIONS))

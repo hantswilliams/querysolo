@@ -185,6 +185,29 @@ async fn check_bucket(shell: State<'_, Arc<Shell>>, prefix: String, profile: Opt
         .map_err(|e| e.to_string())?
 }
 
+/// What the About row says (ship brief S8): the app's version and where its `lakelet`
+/// came from — the bundled one, `LAKELET_SIDECAR`, or `PATH` — so a bug report names both.
+#[derive(serde::Serialize)]
+struct About {
+    version: String,
+    sidecar: String,
+    /// "bundled", "environment" or "path"
+    sidecar_source: String,
+}
+
+#[tauri::command]
+fn about(app: AppHandle, shell: State<'_, Arc<Shell>>) -> About {
+    let sidecar = shell.open.executable.to_string_lossy().to_string();
+    let source = if std::env::var_os("LAKELET_SIDECAR").is_some() {
+        "environment"
+    } else if app.path().resource_dir().map(|d| Path::new(&sidecar).starts_with(d)).unwrap_or(false) {
+        "bundled"
+    } else {
+        "path"
+    };
+    About { version: app.package_info().version.to_string(), sidecar, sidecar_source: source.to_string() }
+}
+
 /// Decisions C1: the profile names in this machine's `~/.aws/config` and `~/.aws/credentials`.
 #[tauri::command]
 fn aws_profiles(app: AppHandle) -> Vec<String> {
@@ -272,7 +295,11 @@ pub fn run() {
             let settings = ProjectSettings::at(data_dir.join("projects.json"));
             let dev_origin = if cfg!(debug_assertions) { Some(DEV_ORIGIN.to_string()) } else { None };
             let shell = Arc::new(Shell {
-                open: OpenProjects::new(supervisor::sidecar_executable(), total_ram(), dev_origin),
+                open: OpenProjects::new(
+                    supervisor::sidecar_executable(app.path().resource_dir().ok().as_deref()),
+                    total_ram(),
+                    dev_origin,
+                ),
                 recent,
                 settings,
                 windows_made: AtomicUsize::new(0),
@@ -299,7 +326,7 @@ pub fn run() {
                 }
             }
         })
-        .invoke_handler(tauri::generate_handler![get_session, window_project, recent_projects, pick_folder, pick_files, open_project, restart_sidecar, check_bucket, default_parent, new_project, aws_profiles, project_profile, set_project_profile])
+        .invoke_handler(tauri::generate_handler![get_session, window_project, recent_projects, pick_folder, pick_files, open_project, restart_sidecar, check_bucket, default_parent, new_project, aws_profiles, project_profile, set_project_profile, about])
         .build(tauri::generate_context!())
         .expect("error while building the Lakelet shell")
         .run(|app, event| {

@@ -33,6 +33,17 @@ describe('SettingsPanel', () => {
     await waitFor(() => expect(onProfile).toHaveBeenCalledWith('personal'));
   });
 
+  it('the About row names the version and where the core came from, inside the app only', async () => {
+    const { unmount } = render(<SettingsPanel api={api} onClose={() => {}} />);
+    await waitFor(() => expect(screen.getByTestId('setting-engine.threads')).toBeTruthy());
+    expect(screen.queryByTestId('setting-about')).toBeNull();
+    unmount();
+    render(<SettingsPanel api={api} about={{ version: '0.1.0', sidecar: '/Applications/Lakelet.app/Contents/Resources/lakelet/lakelet', sidecar_source: 'bundled' }} onClose={() => {}} />);
+    expect(screen.getByTestId('setting-about').textContent).toContain('Lakelet 0.1.0');
+    expect(screen.getByTestId('setting-about').textContent).toContain('the core that came with the app');
+    expect(screen.getByTestId('about-sidecar').textContent).toContain('Resources/lakelet/lakelet');
+  });
+
   it('a change the shell refuses is a line in the panel', async () => {
     render(<SettingsPanel api={api} bucket={{ profiles: ['work'], profile: null, onProfile: async () => { throw new Error('could not save the profile: read-only'); } }} onClose={() => {}} />);
     fireEvent.change(screen.getByTestId('input-bucket-profile'), { target: { value: 'work' } });

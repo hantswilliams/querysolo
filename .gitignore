@@ -23,6 +23,10 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 dist/
+# the frozen core (ship brief S1): PyInstaller's scratch; dist/ above is its output
+core/build/
 
 ## env
 .env
+# The marketing guidebook deck is generated from marketing/guidebook.md by marketing/build_guidebook.py
+marketing/*.pptx

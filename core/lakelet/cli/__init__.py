@@ -180,6 +180,11 @@ def init(
             f"{report.extension_directory} (the one download; nothing else fetches at query time)",
             highlight=False,
         )
+    elif os.environ.get("LAKELET_EXTENSION_DIR"):
+        out.print(
+            f"  using the bundled DuckDB extensions in {report.extension_directory} (no download)",
+            highlight=False,
+        )
     else:
         out.print(f"  DuckDB extensions already in {report.extension_directory}", highlight=False)
     if report.throughput_local_mbps and report.throughput_probe == "cached":
@@ -1303,13 +1308,26 @@ def audit_network() -> None:
     """Run the quickstart with outbound connections blocked and report every attempt."""
     import subprocess
 
-    completed = subprocess.run(
-        [sys.executable, "-m", "lakelet.audit"], capture_output=True, text=True
-    )
+    # The audit runs in a child so its socket guards wrap a whole process. Frozen (ship
+    # brief S1), the executable is `lakelet` itself and has no `-m`: the hidden `audit
+    # _run` command below is the same entry point.
+    if getattr(sys, "frozen", False):
+        argv = [sys.executable, "audit", "_run"]
+    else:
+        argv = [sys.executable, "-m", "lakelet.audit"]
+    completed = subprocess.run(argv, capture_output=True, text=True)
     out.print(completed.stdout.rstrip(), highlight=False)
     if completed.returncode != 0:
         err.print(completed.stderr[-2000:], highlight=False)
         raise typer.Exit(1)
+
+
+@audit_app.command("_run", hidden=True)
+def audit_run_in_process() -> None:
+    """The audit itself, in this process (what `audit network` spawns when frozen)."""
+    from lakelet.audit import main as audit_main
+
+    raise typer.Exit(audit_main())
 
 
 # -- serve -----------------------------------------------------------------------------

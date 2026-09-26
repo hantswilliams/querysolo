@@ -43,6 +43,9 @@ dev = [
   "dbt-duckdb>=1.11.0",
 ]
 
+# The frozen core for the installers (ship brief S1): `uv run --group freeze python freeze/build.py`.
+freeze = ["pyinstaller>=6.11,<7", "pyinstaller-hooks-contrib>=2025.0"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

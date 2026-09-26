@@ -128,15 +128,16 @@ def _build_models(project) -> str:
 def main() -> int:
     import duckdb
 
+    from lakelet.engine import INSTALLED_EXTENSIONS, connect
+
     installed = {
         name
-        for (name,) in duckdb.connect()
+        for (name,) in connect()
         .execute("select extension_name from duckdb_extensions() where installed")
         .fetchall()
     }
-    from lakelet.engine import EXTENSIONS
 
-    missing = set(EXTENSIONS) - installed
+    missing = set(INSTALLED_EXTENSIONS) - installed
     if missing:
         names = ", ".join(sorted(missing))
         print(f"cannot audit: extensions not installed yet ({names}); run `lakelet init` once")

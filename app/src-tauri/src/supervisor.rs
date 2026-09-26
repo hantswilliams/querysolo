@@ -50,7 +50,7 @@ pub struct SidecarConfig {
 impl SidecarConfig {
     pub fn new(project: impl Into<PathBuf>) -> Self {
         Self {
-            executable: sidecar_executable(),
+            executable: sidecar_executable(None),
             project: project.into(),
             memory_limit: None,
             dev_origin: if cfg!(debug_assertions) { Some(DEV_ORIGIN.to_string()) } else { None },
@@ -63,8 +63,22 @@ impl SidecarConfig {
 /// The Vite dev server, as `tauri.conf.json`'s `devUrl` and `vite.config.ts` agree.
 pub const DEV_ORIGIN: &str = "http://localhost:5173";
 
-pub fn sidecar_executable() -> OsString {
-    std::env::var_os("LAKELET_SIDECAR").unwrap_or_else(|| OsString::from("lakelet"))
+/// Where the `lakelet` executable is, in the order the ship brief fixes (S1):
+/// `LAKELET_SIDECAR` when set (development, the tests, a build pointed elsewhere), else the
+/// frozen core the bundle carries as a resource (`<resources>/lakelet/lakelet`, from
+/// `core/dist/lakelet/`), else `lakelet` on `PATH`.
+pub fn sidecar_executable(resource_dir: Option<&Path>) -> OsString {
+    if let Some(set) = std::env::var_os("LAKELET_SIDECAR") {
+        return set;
+    }
+    if let Some(dir) = resource_dir {
+        let name = if cfg!(windows) { "lakelet.exe" } else { "lakelet" };
+        let bundled = dir.join("lakelet").join(name);
+        if bundled.is_file() {
+            return bundled.into_os_string();
+        }
+    }
+    OsString::from("lakelet")
 }
 
 #[derive(Debug)]
@@ -282,6 +296,22 @@ fn read_serve_json(project: &Path, pid: u32) -> Result<Session, SidecarError> {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
+
+    #[test]
+    fn the_sidecar_is_the_variable_then_the_bundled_one_then_path() {
+        // the environment is process-wide; the test that sets it must also clear it
+        std::env::remove_var("LAKELET_SIDECAR");
+        let dir = temp_dir("sidecar-order");
+        assert_eq!(sidecar_executable(None), OsString::from("lakelet"), "nothing set, nothing bundled: PATH");
+        assert_eq!(sidecar_executable(Some(&dir)), OsString::from("lakelet"), "a resource dir with no core in it: PATH");
+        let name = if cfg!(windows) { "lakelet.exe" } else { "lakelet" };
+        std::fs::create_dir_all(dir.join("lakelet")).unwrap();
+        std::fs::write(dir.join("lakelet").join(name), b"").unwrap();
+        assert_eq!(sidecar_executable(Some(&dir)), dir.join("lakelet").join(name).into_os_string(), "the bundled core");
+        std::env::set_var("LAKELET_SIDECAR", "/elsewhere/lakelet");
+        assert_eq!(sidecar_executable(Some(&dir)), OsString::from("/elsewhere/lakelet"), "the variable wins");
+        std::env::remove_var("LAKELET_SIDECAR");
+    }
 
     /// A stand-in for the `lakelet` executable (`tests/fake_sidecar.py`): `init` writes a
     /// `lakelet.toml`; `serve` writes serve.json, prints the `serving` line, then lives for

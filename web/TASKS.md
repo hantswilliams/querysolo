@@ -13,6 +13,13 @@ wins and the marketing page is the bug.
 
 ---
 
+## Website v2: a warehouse for one — planned 2026-09-26
+
+Scope: `build-sessions/website-story-v2-plan.md` (W1–W13), from `marketing/landing-page.md` after a review of `marketing/`, `personas/` and `research/`. PR #1 was merged 2026-09-18, so this builds on `main`.
+
+- [ ] Hants reviews W1–W13 in the plan.
+- [ ] Build steps 0–6 once agreed; the gate is in the plan.
+
 ## Complete data-story website — 2026-09-16, this branch only
 
 Scope: `build-sessions/website-story-v1-plan.md` (repository root).

@@ -198,7 +198,7 @@ button.link.mono{font-family:var(--mono)}
 .settings .setting{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px;align-items:start;padding-top:12px;border-top:1px solid var(--line)}
 .settings label{display:grid;gap:4px;font-size:14px}
 .settings label span{font-size:12.5px}
-.settings .control{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.settings .control{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.settings .control.about code{font-size:12px;max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl}
 .settings .control input[type=text]{width:120px;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
 .settings .control input[type=checkbox]{width:18px;height:18px}
 .settings .keys h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:8px 0 6px}

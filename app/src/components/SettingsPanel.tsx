@@ -30,7 +30,20 @@ export interface BucketSetting {
   onProfile: (profile: string | null) => Promise<void>;
 }
 
-export function SettingsPanel({ api, bucket, onClose }: { api: Api; bucket?: BucketSetting; onClose: () => void }) {
+/** The About row (ship brief S8), inside the app only: the version and the sidecar's origin. */
+export interface AboutInfo {
+  version: string;
+  sidecar: string;
+  sidecar_source: 'bundled' | 'environment' | 'path';
+}
+
+const SOURCE_WORDS: Record<AboutInfo['sidecar_source'], string> = {
+  bundled: 'the core that came with the app',
+  environment: 'the core named by LAKELET_SIDECAR (development)',
+  path: 'the lakelet on your PATH',
+};
+
+export function SettingsPanel({ api, bucket, about, onClose }: { api: Api; bucket?: BucketSetting; about?: AboutInfo | null; onClose: () => void }) {
   const [settings, setSettings] = useState<Settings>();
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [error, setError] = useState<string>();
@@ -128,6 +141,18 @@ export function SettingsPanel({ api, bucket, onClose }: { api: Api; bucket?: Buc
               {bucket.profiles.filter((p) => p !== 'default').map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
             {changing && <span className="muted">starting the core again…</span>}
+          </div>
+        </div>
+      )}
+      {about && (
+        <div className="setting" data-testid="setting-about">
+          <label>
+            <b>About</b>
+            <span className="muted">Lakelet {about.version}. Every button here is a <code>lakelet</code> line; the app runs {SOURCE_WORDS[about.sidecar_source]}.</span>
+          </label>
+          <div className="control about">
+            <code className="mono" data-testid="about-sidecar" title={about.sidecar}>{about.sidecar}</code>
+            <a href="https://github.com/hantswilliams/lakelet/releases" target="_blank" rel="noreferrer">Releases ↗</a>
           </div>
         </div>
       )}

@@ -96,6 +96,16 @@ export async function awsProfiles(): Promise<string[]> {
   return inTauri() ? invoke<string[]>('aws_profiles') : [];
 }
 
+/** The About row (ship brief S8): the app's version and where its `lakelet` came from. */
+export interface About {
+  version: string;
+  sidecar: string;
+  sidecar_source: 'bundled' | 'environment' | 'path';
+}
+export async function about(): Promise<About | null> {
+  return inTauri() ? invoke<About>('about') : null;
+}
+
 /** Decisions C1: the profile this window's project uses; null means the AWS default. */
 export async function projectProfile(): Promise<string | null> {
   return inTauri() ? invoke<string | null>('project_profile') : null;
