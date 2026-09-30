@@ -34,7 +34,7 @@ export const surfaces: Surface[] = [
   { id: 'cli', label: 'The CLI', state: 'built',
     detail: 'init, import, sql, estimate, tables, config — from a clone, with uv',
     href: '/docs/cli' },
-  { id: 'gauge', label: 'Lakelet Lookahead (the gauge)', state: 'built',
+  { id: 'gauge', label: 'Lookahead (the gauge)', state: 'built',
     detail: 'the verdict and its sentence before anything runs; Red refuses, and every run is recorded',
     href: '/docs/gauge' },
   { id: 'tables', label: 'Files into Iceberg tables', state: 'built',
@@ -78,6 +78,9 @@ export const surfaces: Surface[] = [
     href: '/docs/recovery' },
 
   // ---- planned -----------------------------------------------------------
+  { id: 'slice', label: 'A slice of a warehouse you do not own', state: 'planned',
+    detail: 'the third door: pull a read-only, refreshable slice onto the laptop and let the verdict say what fits here',
+    session: 'N2, after the outsider sessions' },
   { id: 'ask', label: 'The ask box (English → SQL)', state: 'planned',
     detail: 'model providers, streaming SQL, one repair pass',
     session: 'session 7 — deprioritised 2026-09-11' },

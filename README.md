@@ -1,6 +1,6 @@
 # Lakelet
 
-An open-source, local-first lakehouse in one binary: Iceberg tables on your laptop, DuckDB as the engine, dbt built in, and a gauge that says whether a query fits on this machine before it runs. Everything stays in one folder you can copy, and every table is plain Parquet and Iceberg metadata that Spark, Trino and pyiceberg read too.
+A warehouse for one. Lakelet is an open-source warehouse for one machine, for SQL and dbt: it says whether a query fits before it runs, records what every run actually did, and keeps every table in Iceberg so any engine can read it. Everything stays in one folder you can copy, and every table is plain Parquet and Iceberg metadata that Spark, Trino and pyiceberg read too.
 
 Developer preview, macOS and Linux, from source. Apache 2.0. Site and docs: **https://hantswilliams.github.io/lakelet/**
 
@@ -10,13 +10,13 @@ Developer preview, macOS and Linux, from source. Apache 2.0. Site and docs: **ht
 
 ## What it is
 
-You point Lakelet at a folder. `lakelet init` makes it a lakehouse: an Iceberg catalog in SQLite, a `warehouse/` for the tables, a dbt project for the questions you save, and a git repository so every save is a version. You import CSV, Parquet, JSON or Excel and get Iceberg tables; you attach Parquet already in a bucket without copying it; you write SQL and, before a row comes back, the gauge tells you **Runs here**, **Runs here, slowly**, or **Needs more machine** — with the bytes it will scan and the seconds it expects, from the table statistics, not from running it. Red refuses until you say run anyway. A query you want to keep becomes a dbt model with two checks and a version, in one command or one click. The desktop app is the same core with screens; the CLI can do everything the app can.
+You point Lakelet at a folder. `lakelet init` makes it a warehouse: an Iceberg catalog in SQLite, a `warehouse/` for the tables, a dbt project for the questions you save, and a git repository so every save is a version. You import CSV, Parquet, JSON or Excel and get Iceberg tables; you attach Parquet already in a bucket without copying it; you write SQL and, before a row comes back, the gauge tells you **Runs here**, **Runs here, slowly**, or **Needs more machine** — with the bytes it will scan and the seconds it expects, from the table statistics, not from running it. Red refuses until you say run anyway. A query you want to keep becomes a dbt model with two checks and a version, in one command or one click. The desktop app is the same core with screens; the CLI can do everything the app can.
 
 What it is not, yet: burst to your own cloud when the laptop is not enough, questions in English, and an MCP server for agents are designed and on the site as *planned*. The block below is the honest list, generated from the same file the site reads.
 
 ## How it fits
 
-Lakelet is not an editor and not a cloud warehouse; it is the part in between, on your machine. A project is a folder of dbt models in a git repository, so your editor edits the SQL — VS Code, Cursor, vim — and Lakelet runs it, keeps the tables, and shows you what happened; every button in the app shows the `lakelet` line it is, so the terminal can do everything the window can. It is the warehouse for the size most teams actually have — the case where BigQuery or Redshift is mostly a bill and a permissions system — in the open format, so when a table outgrows the laptop nothing moves: BigQuery, Snowflake, Trino or Spark read the same Iceberg tables from your bucket. The gauge is what tells you, before a query runs, whether this machine can; when it cannot, you wait, point an engine you already pay for at the same tables, or (planned) burst one job to a worker in your own cloud account under a cost cap and get the answer back in the same catalog. What it does not replace is what those warehouses do beyond size: concurrency, sharing, permissions, always-on.
+Lakelet is not an editor and not a cloud warehouse; it is the part in between, on your machine. A project is a folder of dbt models in a git repository, so your editor edits the SQL — VS Code, Cursor, vim — and Lakelet runs it, keeps the tables, and shows you what happened; every button in the app shows the `lakelet` line it is, so the terminal can do everything the window can. It is a warehouse for one — the case where BigQuery or Redshift would be mostly a bill and a permissions system — in the open format, so when a table outgrows the laptop nothing moves: BigQuery, Snowflake, Trino or Spark read the same Iceberg tables from your bucket. The gauge is what tells you, before a query runs, whether this machine can; when it cannot, you wait, point an engine you already pay for at the same tables, or (planned) burst one job to a worker in your own cloud account under a cost cap and get the answer back in the same catalog. What it does not replace is what those warehouses do beyond size: concurrency, sharing, permissions, always-on.
 
 ## What is built and what is planned
 
@@ -26,7 +26,7 @@ Lakelet is not an editor and not a cloud warehouse; it is the part in between, o
 **Built, from source, today**
 
 - **The CLI**: init, import, sql, estimate, tables, config — from a clone, with uv — [docs](https://hantswilliams.github.io/lakelet/docs/cli)
-- **Lakelet Lookahead (the gauge)**: the verdict and its sentence before anything runs; Red refuses, and every run is recorded — [docs](https://hantswilliams.github.io/lakelet/docs/gauge)
+- **Lookahead (the gauge)**: the verdict and its sentence before anything runs; Red refuses, and every run is recorded — [docs](https://hantswilliams.github.io/lakelet/docs/gauge)
 - **Files into Iceberg tables**: CSV, TSV, Parquet, JSON, JSONL and Excel, with the type coercions written down — [docs](https://hantswilliams.github.io/lakelet/docs/tables)
 - **Parquet already in S3**: attach, refresh and discover a prefix in place — nothing copied, and public buckets need no credentials — [docs](https://hantswilliams.github.io/lakelet/docs/remote)
 - **The Iceberg REST catalog**: SQLite locally, served over HTTP; DuckDB, pyiceberg, Spark and Trino all read it — [docs](https://hantswilliams.github.io/lakelet/docs/catalog)
@@ -43,6 +43,7 @@ Lakelet is not an editor and not a cloud warehouse; it is the part in between, o
 
 **Planned, not built** (the site marks these the same way)
 
+- **A slice of a warehouse you do not own**: the third door: pull a read-only, refreshable slice onto the laptop and let the verdict say what fits here *(N2, after the outsider sessions)*
 - **The ask box (English → SQL)**: model providers, streaming SQL, one repair pass *(session 7 — deprioritised 2026-09-11)*
 - **Burst to a worker**: the control plane, the job token, the cap, results back. Every burst number on this site is arithmetic from the plan, not a measurement *(session 8)*
 - **lakelet mcp (the agent tools)**: the MCP server, per-tool permissions, the per-agent daily cap and the audit log *(session 5, after session 8)*

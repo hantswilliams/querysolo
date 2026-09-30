@@ -1,11 +1,11 @@
 ---
-title: Lakelet Lookahead
+title: Lookahead
 description: Lakelet’s query gauge. The verdict before a query runs; what the line says, how it is decided, and what is recorded afterwards.
 section: Guide
 order: 1
 ---
 
-**Lakelet Lookahead** is the query gauge: an estimate of the work before you run it.
+**Lookahead** is the query gauge: an estimate of the work before you run it.
 
 Every `sql`, `estimate` and question run starts with an estimate of three numbers, bytes scanned, peak memory and wall time, and a verdict in one line. `sql` prints the line to stderr and then runs; `estimate` prints it and stops. Nothing in the estimate executes the query.
 

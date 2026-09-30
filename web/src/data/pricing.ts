@@ -12,8 +12,7 @@ export const plans = [
       ['', 'Publish to your own S3 bucket; GCS and R2 later'],
       ['', 'MCP server for agents, with a per-agent daily cap'],
       ['', 'Unlimited data, unlimited queries, on your machine'],
-    ],
-    foot: 'No account needed. <code>brew install lakelet</code> and you have a lakehouse.' },
+    ] },
   { id: 'team', name: 'Team', price: '$24', unit: '/ person / month', tag: 'early pricing · private beta',
     blurb: 'Shared catalog, scheduled runs, compaction, freshness and test alerts.',
     features: [
@@ -23,8 +22,7 @@ export const plans = [
       ['', 'Compaction, snapshot expiry, orphan-file cleanup'],
       ['', 'Freshness and test alerts'],
       ['', 'Warm worker pool for sub-5-second burst starts'],
-    ],
-    foot: 'Metadata only. Your data files never leave your bucket.' },
+    ] },
   { id: 'burst', name: 'Burst', price: 'cost + 15%', unit: '', tag: 'per run · no minimum · no idle',
     blurb: "Workers in your bucket's region, sized to the run, capped before it starts.",
     features: [
@@ -34,8 +32,7 @@ export const plans = [
       ['', 'On-demand in the beta; spot follows'],
       ['', "Runs on Lakelet's account in the beta; bring your own account later"],
       ['', 'Every run reports estimate vs. actual, which makes the next estimate better'],
-    ],
-    foot: 'Typical run: minutes on a worker, cents to a few dollars.' },
+    ] },
 ] as const;
 
 export const seatPrice = 24;

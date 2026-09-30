@@ -194,11 +194,13 @@ Supporting files change too: the data files (`nav.ts`, `status.ts`, `pricing.ts`
 
 ## Gate results
 
-- [ ] Baseline recorded
-- [ ] Gate tests written, failing
-- [ ] Vocabulary pass; README check green
-- [ ] Home page rebuilt
-- [ ] Pricing, doors, sub-pages
-- [ ] Research rows; landing-page.md status line
-- [ ] Build, all checks at both bases, browser review, session log
-- [ ] Your review before merging or deploying
+*2026-09-26, on branch `web/warehouse-for-one` in `../lakelet-warehouse-for-one`, off local `main` at `eaca640` (not `origin/main`: local `main` was two commits ahead and held this plan). Detail in `lakelet-build-sessions_092626.md`.*
+
+- [x] Baseline recorded: 25 pages, 66 checks, README check current.
+- [x] Gate tests written, failing: 26 new checks failed on the baseline, for the reasons expected.
+- [x] Vocabulary pass; README check green.
+- [x] Home page rebuilt.
+- [x] Pricing, doors, sub-pages.
+- [x] Research rows; landing-page.md status line.
+- [x] Build 25 pages; 92 checks pass at `/lakelet/` and at `/`; browser review at 1440, 390 and 360 px; session log.
+- [ ] Your review before merging or deploying.

@@ -5,7 +5,7 @@ section: Start
 order: 0
 ---
 
-Lakelet is a local-first lakehouse: Apache Iceberg tables on Parquet in a folder you own, a catalog that speaks the Iceberg REST spec, DuckDB as the engine, and a pre-flight gauge that says whether this machine can run a query before it runs. The Python package `lakelet` in `core/` is the core, driven by a CLI; the desktop app in `app/` is a window over it, running from source. Bursting to a cloud worker, the ask box and the MCP server are on the [marketing pages](/) as plans; they are not built yet.
+Lakelet is an open-source warehouse for one machine: Apache Iceberg tables on Parquet in a folder you own, a catalog that speaks the Iceberg REST spec, DuckDB as the engine, and a pre-flight gauge that says whether this machine can run a query before it runs. The Python package `lakelet` in `core/` is the core, driven by a CLI; the desktop app in `app/` is a window over it, running from source. Bursting to a cloud worker, the ask box and the MCP server are on the [marketing pages](/) as plans; they are not built yet.
 
 ## What exists
 
@@ -30,6 +30,7 @@ Lakelet is a local-first lakehouse: Apache Iceberg tables on Parquet in a folder
 | `lakelet audit network` | Built; measures zero outbound attempts on the quickstart, which builds a dbt model so `lakelet run` is covered too | [Quickstart](/docs/install) |
 | Installers, brew tap, a PyPI release | Not yet | |
 | Burst, `ask`, `mcp`, correction factors, `catalog attach` | Not yet | |
+| A slice of a warehouse you do not own | Not yet; the third door, after the outsider sessions | |
 
 ## Versions
 

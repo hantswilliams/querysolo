@@ -7,6 +7,7 @@ const directions = [
   { id: 'product', n: '01', name: 'A tool you can picture.', tag: 'Product first', detail: 'Warm paper, deep teal, and the real app. A clear path from a file to an answer.', focus: 'Best for: making the first visit feel approachable.', title: 'Your next answer.\nCloser than you think.' },
   { id: 'story', n: '02', name: 'A story you can change.', tag: 'Interactive data story', detail: 'Midnight blue, electric lime, and a live experiment. Let the value of the gauge reveal itself.', focus: 'Best for: explaining what makes Lakelet different.', title: 'A big table.\nA small question.' },
   { id: 'editorial', n: '03', name: 'An idea you can inspect.', tag: 'Technical editorial', detail: 'Ink, paper, and precise diagrams. Explain the architecture and give every claim a place to go.', focus: 'Best for: earning a technical reader’s trust.', title: 'Less infrastructure.\nMore understanding.' },
+  { id: 'querysolo', n: '04', name: 'A warehouse for one.', tag: 'QuerySolo, the new name', detail: 'The prompt mark, a brick wordmark and a brick portrait, on the v2 messaging. A working name, pending a trademark search.', focus: 'Best for: seeing the rename before it happens.', title: 'A warehouse\nfor one.' },
 ];
 ---
 <Exploration title="Three directions">
@@ -15,7 +16,7 @@ const directions = [
     <div class="direction-grid">
       {directions.map(d => <a class={`direction-card ${d.id}-card`} href={url(`/explore/${d.id}`)}>
         <div class="direction-preview"><span class="mini-brand">≈ lakelet <small>{d.n}</small></span><strong>{d.title}</strong>
-          {d.id === 'product' ? <div class="mini-window"><div>orders.csv <span>● Runs here</span></div><i></i><i></i><i></i><i></i></div> : d.id === 'story' ? <div class="mini-scan"><b>21.9 <small>GB</small></b><div>{Array.from({ length: 36 }, (_, i) => <i class={i < 2 ? 'lit' : ''}></i>)}</div><span>Same table. A different amount to read.</span></div> : <div class="mini-diagram"><span>YOUR FILES</span><b>↓</b><span>ICEBERG + DUCKDB</span><b>↓</b><span>YOUR ANSWER</span></div>}
+          {d.id === 'product' ? <div class="mini-window"><div>orders.csv <span>● Runs here</span></div><i></i><i></i><i></i><i></i></div> : d.id === 'story' ? <div class="mini-scan"><b>21.9 <small>GB</small></b><div>{Array.from({ length: 36 }, (_, i) => <i class={i < 2 ? 'lit' : ''}></i>)}</div><span>Same table. A different amount to read.</span></div> : d.id === 'editorial' ? <div class="mini-diagram"><span>YOUR FILES</span><b>↓</b><span>ICEBERG + DUCKDB</span><b>↓</b><span>YOUR ANSWER</span></div> : <div class="mini-diagram"><span>&gt;_ querysolo</span><b>↓</b><span>● RUNS HERE</span></div>}
         </div>
         <div class="direction-copy"><p class="eyebrow">{d.n} / {d.tag}</p><h2>{d.name}</h2><p>{d.detail}</p><span class="direction-focus">{d.focus}</span><strong class="open-concept">Explore this direction <span>↗</span></strong></div>
       </a>)}

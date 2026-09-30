@@ -9,7 +9,7 @@ export const nav = [
 
 export const site = {
   name: 'Lakelet',
-  tagline: 'Open-source local-first lakehouse',
+  tagline: 'A warehouse for one',
   github: 'https://github.com/hantswilliams/lakelet',
   cta: { label: 'Try Lakelet', href: '/docs/install' },
   footer: {

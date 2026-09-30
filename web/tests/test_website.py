@@ -147,3 +147,96 @@ def test_merged_features_are_available_and_documented():
         assert endpoint in text("docs/api")
     assert any(a.get("href") == f"{BASE}/docs/tables#publishing-a-table-into-a-bucket"
                for a in Page(DIST / "index.html").elements("a"))
+
+
+# ---- website v2: a warehouse for one (build-sessions/website-story-v2-plan.md) ----
+
+def flat(route):
+    return " ".join(text(route).split())
+
+
+def headings(route, tag):
+    """The text of each <tag> in order, whitespace collapsed."""
+    from html.parser import HTMLParser
+
+    class Collect(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.found, self.depth = [], 0
+
+        def handle_starttag(self, name, attrs):
+            if name == tag:
+                self.depth += 1
+                self.found.append("")
+
+        def handle_endtag(self, name):
+            if name == tag:
+                self.depth -= 1
+
+        def handle_data(self, data):
+            if self.depth:
+                self.found[-1] += " " + data
+
+    c = Collect()
+    c.feed((DIST / f"{route}.html").read_text())
+    return [" ".join(h.split()) for h in c.found]
+
+
+def test_home_leads_with_a_warehouse_for_one():
+    assert headings("index", "h1") == ["A warehouse for one."]
+    page = Page(DIST / "index.html")
+    assert "A warehouse for one / Open source / Developer preview" in flat("index")
+    for phrase in ["an open-source warehouse for one machine, for SQL and dbt",
+                   "Know what fits. Know what changed.", "Planned next:"]:
+        assert phrase in flat("index")
+    assert headings("index", "title") == ["Lakelet — A warehouse for one"]
+
+
+def test_home_sections_follow_the_three_beats():
+    expected = ["Before you run it, know.", "After it runs, know what changed.",
+                "Your machine. Your bucket. Your tables.", "A warehouse. In a folder.",
+                "Beside your editor. Under your SQL.", "Start with what you have.",
+                "For one, today.", "Know what’s here.", "Your data. Your next question."]
+    found = headings("index", "h2")
+    positions = [next(i for i, h in enumerate(found) if h.startswith(e)) for e in expected]
+    assert positions == sorted(positions), found
+    for sentence in ["BigQuery shows the bytes. This shows the minutes, and refuses.",
+                     "No silent fallback", "This also sees changed data.",
+                     "If you have never used dbt, you just did.",
+                     "Iceberg, so the tables outlive the tool.",
+                     "zero outbound attempts", "one writer"]:
+        assert sentence in flat("index"), sentence
+
+
+def test_the_third_door_is_marked_planned_from_status():
+    page = Page(DIST / "index.html")
+    doors = [a for a in page.elements("article") if "door" in a.get("class", "").split()]
+    assert [d.get("data-state") for d in doors] == ["built", "built", "planned"]
+    assert "A warehouse you do not own." in flat("index")
+    status = (DIST.parent / "src/data/status.ts").read_text()
+    assert "id: 'slice'" in status
+
+
+@pytest.mark.parametrize("route", ROUTES)
+def test_the_gauge_is_lookahead_and_the_category_is_not_lakehouse(route):
+    content = flat(route)
+    assert "Lakelet Lookahead" not in content
+    if route in MARKETING:
+        assert "lakehouse" not in content.lower()
+
+
+def test_words_the_page_does_not_use():
+    for route in ["index", "app", "pricing"]:
+        content = flat(route)
+        for word in ["local-first", "production-ready", "seamless", "blazing",
+                     "AI-powered", "collaborate", "Most teams"]:
+            assert word.lower() not in content.lower(), (route, word)
+        assert "Windows" not in content, route  # the platform; "project windows" is fine
+    assert "lakehouse" not in (DIST / "llms.txt").read_text().lower()
+
+
+def test_pricing_is_for_one_then_a_team():
+    assert headings("pricing", "h2")[:3] == ["For one", "For a team", "Burst"]
+    assert "Compaction" not in flat("pricing")
+    source = (DIST.parent / "src/data/pricing.ts").read_text()
+    assert "brew install" not in source and "foot:" not in source

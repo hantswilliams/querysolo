@@ -2,12 +2,13 @@
 
 *The one file to open to know where the build is. Updated every session; dates are when a status changed. "Now" names the brief the build is on. The briefs say what each step is and what its gate is (`ship-v0-plan.md` next, the versions round having closed 2026-09-17; `core-v0.5-plan.md` for the core, `app-v0-plan.md` for the desktop shell, both still authoritative for what they cover; a decision belonging to no brief is a dated `decisions-for-review_<MMDDYY>.md`); `lakelet-build-sessions.md` is the map of the sessions; the dated logs (`lakelet-build-sessions_<MMDDYY>.md`) say what happened. This file only says where we are and what comes next.*
 
-## Website v2: a warehouse for one — planned 2026-09-26
+## Website v2: a warehouse for one — built 2026-09-26, awaiting review
 
 Scope: `build-sessions/website-story-v2-plan.md` (W1–W13), from `marketing/landing-page.md` after a review of `marketing/`, `personas/` and `research/`. PR #1 was merged 2026-09-18, so this builds on `main`.
 
-- [ ] Hants reviews W1–W13 in the plan.
-- [ ] Build steps 0–6 once agreed; the gate is in the plan.
+- [x] Hants agreed W1–W13 (2026-09-26).
+- [x] Steps 0–6 built 2026-09-26 on branch `web/warehouse-for-one` (worktree `../lakelet-warehouse-for-one`): 25 pages, 92 checks at both bases (66 before), README check current, browser review at 1440/390/360 px. Log: `lakelet-build-sessions_092626.md`.
+- [ ] Hants reviews the branch before commit, merge or deploy.
 
 ## Complete data-story website — 2026-09-16, this branch only
 
