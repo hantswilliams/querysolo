@@ -1,5 +1,7 @@
 # The landing page, rebuilt around "a warehouse for one"
 
+*Status, 2026-09-26: built by `build-sessions/website-story-v2-plan.md` (W1–W13) on branch `web/warehouse-for-one`. PR #1 was merged on 2026-09-18, so the precondition below and in "Checks before it ships" is resolved. Where the build differs from this file, the plan is the record: the storage diagram sits in §4 beside the folder tree, and the section numbers start at the demo.*
+
 *A plan, not a build · 2026-09-24 · The site is `web/`, Astro, in the dark/lime direction chosen 2026-09-16 and redesigned around Lookahead in PR #1, which is open for Hants' review. This plan builds on that page: it changes the headline, the category word and the order of sections, and keeps the interactive demo, the diagram, the folder section and the generated status block. Nothing here is applied until the plan is agreed.*
 
 ## The page in one breath

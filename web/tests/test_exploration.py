@@ -15,7 +15,7 @@ import pytest
 
 DIST = Path(__file__).resolve().parents[1] / "dist"
 BASE = os.environ.get("SITE_BASE", "/lakelet").rstrip("/")
-ROUTES = ["explore", "explore/product", "explore/story", "explore/editorial"]
+ROUTES = ["explore", "explore/product", "explore/story", "explore/editorial", "explore/querysolo"]
 
 
 class Page(HTMLParser):

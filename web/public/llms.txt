@@ -1,6 +1,6 @@
 # Lakelet
 
-> Open-source, local-first lakehouse, available from source on macOS and Linux. DuckDB executes SQL, Apache Iceberg describes Parquet tables, and the gauge estimates supported catalog queries before execution. Scans without statistics are labeled Not estimated. CLI, desktop app, dbt runner, versions, S3 warehouse writes and table publishing, Lineage, Changes, and recovery guidance are available. Installers, cloud bursts, Team services, the ask box, and MCP are planned, not available.
+> An open-source warehouse for one machine, for SQL and dbt, available from source on macOS and Linux. DuckDB executes SQL, Apache Iceberg describes Parquet tables, and the gauge estimates supported catalog queries before execution. Scans without statistics are labeled Not estimated. CLI, desktop app, dbt runner, versions, S3 warehouse writes and table publishing, Lineage, Changes, and recovery guidance are available. Installers, cloud bursts, Team services, the ask box, and MCP are planned, not available.
 
 ## Pages
 - [Home](/): interactive scan illustration, local workflow, actual app image, current feature status

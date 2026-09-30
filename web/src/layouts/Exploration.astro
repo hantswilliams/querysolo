@@ -11,15 +11,16 @@ const concepts = [
   ['product', '01 / Product', '/explore/product'],
   ['story', '02 / Data story', '/explore/story'],
   ['editorial', '03 / Editorial', '/explore/editorial'],
+  ['querysolo', '04 / QuerySolo', '/explore/querysolo'],
 ];
 ---
 <!doctype html>
-<html lang="en" data-theme={theme === 'story' ? 'dark' : undefined}>
+<html lang="en" data-theme={theme === 'story' || theme === 'querysolo' ? 'dark' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="description" content="Three website directions for Lakelet. Local design exploration." />
+    <meta name="description" content="Website directions for Lakelet. Local design exploration." />
     <title>{title} · Lakelet exploration</title>
     <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
   </head>
@@ -33,7 +34,7 @@ const concepts = [
     </nav>
     <slot />
     <footer class="explore-footer">
-      <a href={url('/explore')}>← Compare the three directions</a>
+      <a href={url('/explore')}>← Compare the directions</a>
       <span>Website exploration · September 2026</span>
       <a href={url('/')}>Current website ↗</a>
     </footer>

@@ -13,12 +13,19 @@ wins and the marketing page is the bug.
 
 ---
 
-## Website v2: a warehouse for one — planned 2026-09-26
+## Website v2: a warehouse for one — built 2026-09-26, awaiting review
 
 Scope: `build-sessions/website-story-v2-plan.md` (W1–W13), from `marketing/landing-page.md` after a review of `marketing/`, `personas/` and `research/`. PR #1 was merged 2026-09-18, so this builds on `main`.
 
-- [ ] Hants reviews W1–W13 in the plan.
-- [ ] Build steps 0–6 once agreed; the gate is in the plan.
+- [x] Hants agreed W1–W13 (2026-09-26).
+- [x] Steps 0–6 built 2026-09-26 on branch `web/warehouse-for-one` (worktree `../lakelet-warehouse-for-one`): 25 pages, 92 checks at both bases (66 before), README check current, browser review at 1440/390/360 px. Log: `lakelet-build-sessions_092626.md`.
+- [ ] Hants reviews the branch before commit, merge or deploy.
+
+## QuerySolo design study — 2026-09-30
+
+`/explore/querysolo`, a fourth noindex concept on top of website v2: the new working name with the prompt mark (from `brand/querysolo-logos.html`, direction C), a brick wordmark and an original brick portrait drawn in canvas, over the v2 messaging. The live pages still say Lakelet; the rename waits on the trademark search. Build 26 pages, 95 checks; desktop and 390 px reviewed, no overflow, no console errors.
+
+- [ ] Hants reviews `/explore/querysolo`.
 
 ## Complete data-story website — 2026-09-16, this branch only
 
