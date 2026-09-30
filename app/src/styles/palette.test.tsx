@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decisions U3: one palette for the site and the app. `web/src/styles/palette.css` is the
 // only place a colour is defined; the app and the site's live layouts and stylesheets read

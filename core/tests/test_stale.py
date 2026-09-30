@@ -1,8 +1,8 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Decisions-for-review V3 (2026-09-16), built in versions step 4: every planned model
 carries a state — `never`, `fresh`, `edited`, `upstream` — computed from lineage's graph
-and history at plan time, each provoked here; `lakelet run --stale` builds only the models
+and history at plan time, each provoked here; `querysolo run --stale` builds only the models
 that are not fresh, in dependency order, and nothing when every model is fresh; the CLI's
 DAG and the routes carry it. Decisions L3 (2026-09-17): a table's snapshots say which
 models each one made out of date."""
@@ -17,9 +17,9 @@ import httpx
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project
-from lakelet.cli import app
-from lakelet.dbt import runner
+from querysolo import Project
+from querysolo.cli import app
+from querysolo.dbt import runner
 
 pytest.importorskip("dbt.cli.main")
 
@@ -34,7 +34,7 @@ def _models(root: Path) -> None:
         "select c from {{ ref('by_c') }} order by total desc limit 1\n"
     )
     (root / "models" / "sources.yml").write_text(
-        "version: 2\nsources:\n  - name: raw\n    database: lakelet\n    schema: main\n"
+        "version: 2\nsources:\n  - name: raw\n    database: querysolo\n    schema: main\n"
         "    tables:\n      - name: src\n      - name: other\n"
     )
     (root / "models" / "from_other.sql").write_text(
@@ -49,10 +49,10 @@ def project(tmp_path):
     _models(root)
     p = Project.open(root, serve=True)
     p.engine.execute(
-        "create table lakelet.main.src as "
+        "create table querysolo.main.src as "
         "select range as id, 'c' || (range % 3) as c, range * 1.5 as amt from range(300)"
     )
-    p.engine.execute("create table lakelet.main.other as select range as id from range(10)")
+    p.engine.execute("create table querysolo.main.other as select range as id from range(10)")
     p.questions.save("Total", "select sum(amt) as total from src")
     yield p
     p.close()
@@ -111,7 +111,7 @@ def test_edited_and_upstream_each_provoked_and_repaired(project) -> None:
     # a table an input reads gets a new snapshot: everything downstream of it is upstream,
     # each naming the thing nearest to it that changed; the rest stays fresh
     time.sleep(0.01)
-    p.engine.execute("insert into lakelet.main.src select 1000, 'c9', 9.0")
+    p.engine.execute("insert into querysolo.main.src select 1000, 'c9', 9.0")
     planned = runner.plan(p)
     states = _states(planned)
     src_when = p.tables.describe("src").freshness.isoformat()
@@ -143,7 +143,7 @@ def test_edited_and_upstream_each_provoked_and_repaired(project) -> None:
 
     # a source table the model reads through source(): the same
     time.sleep(0.01)
-    p.engine.execute("insert into lakelet.main.other select 99")
+    p.engine.execute("insert into querysolo.main.other select 99")
     states = _states(runner.plan(p))
     assert states["from_other"] == ("upstream", "other changed")
     assert sum(1 for s in states.values() if s[0] != "fresh") == 1
@@ -189,14 +189,14 @@ def test_a_snapshot_names_the_models_it_made_out_of_date(project) -> None:
     assert p.tables.describe("src").snapshot_list[0]["affects"] == []
     runner.run(p)
     time.sleep(0.01)
-    p.engine.execute("insert into lakelet.main.src select 1000, 'c9', 9.0")
+    p.engine.execute("insert into querysolo.main.src select 1000, 'c9', 9.0")
     snapshots = p.tables.describe("src").snapshot_list
     # the new snapshot made every model downstream out of date, in dependency order; the
     # one before it (the create) predates every run and affects nothing
     assert snapshots[0]["affects"] == ["stg_orders", "total", "by_c", "top"]
     assert snapshots[1]["affects"] == []
     # a table nothing reads: its snapshot affects nothing
-    p.engine.execute("insert into lakelet.main.other select 99")
+    p.engine.execute("insert into querysolo.main.other select 99")
     assert p.tables.describe("other").snapshot_list[0]["affects"] == ["from_other"]
     # after a stale run every snapshot's list is empty again
     runner.run(p, stale=True)
@@ -209,7 +209,7 @@ def test_a_snapshot_names_the_models_it_made_out_of_date(project) -> None:
         base_url=p.catalog_url, headers={"Authorization": f"Bearer {p.token}"}, timeout=60
     )
     time.sleep(0.01)
-    p.engine.execute("delete from lakelet.main.src where id = 1000")
+    p.engine.execute("delete from querysolo.main.src where id = 1000")
     body = client.get("/api/tables/src").json()
     assert body["snapshot_list"][0]["affects"] == ["stg_orders", "total", "by_c", "top"]
     client.close()

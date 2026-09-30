@@ -1,6 +1,6 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
-// The lineage lines (versions brief G8, step 4): `lakelet lineage <name>` as two rows of
+// The lineage lines (versions brief G8, step 4): `querysolo lineage <name>` as two rows of
 // a detail's facts — what it reads from and what it feeds, one level, each name a link
 // that opens that detail (a table or view on the Tables screen, a model on the Models
 // screen). Technical mode says how each edge is known: a dbt ref() or source(), a table

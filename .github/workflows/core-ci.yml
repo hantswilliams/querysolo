@@ -56,12 +56,12 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: lakelet
-          POSTGRES_PASSWORD: lakelet
-          POSTGRES_DB: lakelet
+          POSTGRES_USER: querysolo
+          POSTGRES_PASSWORD: querysolo
+          POSTGRES_DB: querysolo
         ports: ['5432:5432']
         options: >-
-          --health-cmd "pg_isready -U lakelet -d lakelet"
+          --health-cmd "pg_isready -U querysolo -d querysolo"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -77,4 +77,4 @@ jobs:
       - run: uv sync --locked
       - run: uv run pytest tests/test_step1_postgres.py
         env:
-          LAKELET_TEST_PG_URL: postgresql+psycopg://lakelet:lakelet@localhost:5432/lakelet
+          QUERYSOLO_TEST_PG_URL: postgresql+psycopg://querysolo:querysolo@localhost:5432/querysolo

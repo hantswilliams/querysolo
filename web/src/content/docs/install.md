@@ -10,13 +10,13 @@ There are no installers yet. The package runs from a clone with [uv](https://doc
 ## Install
 
 ```bash
-git clone https://github.com/hantswilliams/lakelet.git
-cd lakelet/core
+git clone https://github.com/hantswilliams/querysolo.git
+cd querysolo/core
 uv sync
-uv run lakelet --version        # lakelet 0.1.0.dev0
+uv run querysolo --version        # querysolo 0.1.0.dev0
 ```
 
-`uv sync` creates `core/.venv` with the runtime and the development dependencies (pytest, dbt, the S3 mock); an install from the package needs the `dbt` extra (`lakelet[dbt]`) for `lakelet run`. To use `lakelet` from any folder, `uv tool install --editable .` in `core/` puts it on your path; the examples below use `uv run` from `core/` and point at a project folder with `-C`.
+`uv sync` creates `core/.venv` with the runtime and the development dependencies (pytest, dbt, the S3 mock); an install from the package needs the `dbt` extra (`querysolo[dbt]`) for `querysolo run`. To use `querysolo` from any folder, `uv tool install --editable .` in `core/` puts it on your path; the examples below use `uv run` from `core/` and point at a project folder with `-C`.
 
 ## The quickstart
 
@@ -26,32 +26,32 @@ The same eight commands the test suite runs end to end. Nothing here leaves the 
 
 ```bash
 mkdir ~/acme && cd ~/acme
-uv run --project ~/lakelet/core lakelet init
+uv run --project ~/querysolo/core querysolo init
 ```
 
 ```text
-  lakelet.toml
+  querysolo.toml
   AGENTS.md
   dbt_project.yml
   models/.gitkeep
-  macros/lakelet.sql
+  macros/querysolo.sql
   .gitignore
-  .lakelet/catalog.db
-  a git repository on branch main, first version e0ee70f "lakelet init"; every save is a version from here
+  .querysolo/catalog.db
+  a git repository on branch main, first version e0ee70f "querysolo init"; every save is a version from here
   installed DuckDB extensions iceberg, httpfs, excel, aws into ~/.duckdb/extensions/… (the one download; nothing else fetches at query time)
   local disk reads at 2,140 MB/s
 lakehouse ready in /Users/you/acme
 ```
 
-`init` writes the [project layout](/docs/config), creates the `main` namespace in a SQLite catalog, downloads the four DuckDB extensions if they are not already in `~/.duckdb`, and times a 512 MB read of local disk for the gauge (`--probe-mb 0` skips it). It refuses to run twice in the same folder and never overwrites a `dbt_project.yml`, `macros/lakelet.sql`, `.gitignore` or `AGENTS.md` that is already there.
+`init` writes the [project layout](/docs/config), creates the `main` namespace in a SQLite catalog, downloads the four DuckDB extensions if they are not already in `~/.duckdb`, and times a 512 MB read of local disk for the gauge (`--probe-mb 0` skips it). It refuses to run twice in the same folder and never overwrites a `dbt_project.yml`, `macros/querysolo.sql`, `.gitignore` or `AGENTS.md` that is already there.
 
 ### 2. Import a file
 
-The repository ships a script that writes a small made-up dataset, so there is a file to import without bringing your own (`examples/sample-data/`): `python3 ~/lakelet/examples/sample-data/make_sample.py ~/acme/sample` writes `orders.csv` and three more. The output below is from a larger `orders.csv`; yours will say 5,000 rows.
+The repository ships a script that writes a small made-up dataset, so there is a file to import without bringing your own (`examples/sample-data/`): `python3 ~/querysolo/examples/sample-data/make_sample.py ~/acme/sample` writes `orders.csv` and three more. The output below is from a larger `orders.csv`; yours will say 5,000 rows.
 
 ```bash
-uv run --project ~/lakelet/core lakelet import sample/orders.csv --preview   # the schema it would create, and stop
-uv run --project ~/lakelet/core lakelet import sample/orders.csv
+uv run --project ~/querysolo/core querysolo import sample/orders.csv --preview   # the schema it would create, and stop
+uv run --project ~/querysolo/core querysolo import sample/orders.csv
 ```
 
 ```text
@@ -63,7 +63,7 @@ CSV, TSV, Parquet, JSON, JSON Lines and Excel, or a folder of them (one table pe
 ### 3. Run SQL and get a verdict first
 
 ```bash
-uv run --project ~/lakelet/core lakelet sql "select country, count(*) from orders group by 1 order by 2 desc"
+uv run --project ~/querysolo/core querysolo sql "select country, count(*) from orders group by 1 order by 2 desc"
 ```
 
 ```text
@@ -76,12 +76,12 @@ uv run --project ~/lakelet/core lakelet sql "select country, count(*) from order
 …
 ```
 
-The gauge line goes to stderr and the rows to stdout, so `lakelet sql "…" > out.csv` writes CSV with the verdict still on your terminal. `--format json` streams one object per line; `--format parquet --output out.parquet` writes a file. Bare table names work; `orders` is `lakelet.main.orders`.
+The gauge line goes to stderr and the rows to stdout, so `querysolo sql "…" > out.csv` writes CSV with the verdict still on your terminal. `--format json` streams one object per line; `--format parquet --output out.parquet` writes a file. Bare table names work; `orders` is `querysolo.main.orders`.
 
 ### 4. Ask without running
 
 ```bash
-uv run --project ~/lakelet/core lakelet estimate "select * from orders o join orders p on o.id = p.id"
+uv run --project ~/querysolo/core querysolo estimate "select * from orders o join orders p on o.id = p.id"
 ```
 
 ```text
@@ -93,7 +93,7 @@ uv run --project ~/lakelet/core lakelet estimate "select * from orders o join or
 ### 5. Let another engine read the table
 
 ```bash
-uv run --project ~/lakelet/core lakelet catalog serve --port 8181
+uv run --project ~/querysolo/core querysolo catalog serve --port 8181
 ```
 
 ```text
@@ -104,15 +104,15 @@ In another terminal, pyiceberg, DuckDB, Spark or Trino read and write the same t
 
 ```python
 from pyiceberg.catalog.rest import RestCatalog
-table = RestCatalog("lakelet", uri="http://127.0.0.1:8181").load_table("main.orders")
+table = RestCatalog("querysolo", uri="http://127.0.0.1:8181").load_table("main.orders")
 print(table.scan(limit=5).to_arrow())
 ```
 
 ### 6. Save the question
 
 ```bash
-uv run --project ~/lakelet/core lakelet question save "Orders by country" --sql "select country, count(*) as n from orders group by 1"
-uv run --project ~/lakelet/core lakelet question run orders_by_country
+uv run --project ~/querysolo/core querysolo question save "Orders by country" --sql "select country, count(*) as n from orders group by 1"
+uv run --project ~/querysolo/core querysolo question run orders_by_country
 ```
 
 A saved question is a dbt model under `models/questions/` with two checks, and the save is a commit in the project's repository; see [Questions](/docs/questions).
@@ -120,35 +120,35 @@ A saved question is a dbt model under `models/questions/` with two checks, and t
 ### 7. Look at the record
 
 ```bash
-uv run --project ~/lakelet/core lakelet gauge history
+uv run --project ~/querysolo/core querysolo gauge history
 ```
 
-Every `sql`, `estimate` and question run is a row in `.lakelet/history.db`: verdict, the estimate, the actuals from DuckDB's profiler.
+Every `sql`, `estimate` and question run is a row in `.querysolo/history.db`: verdict, the estimate, the actuals from DuckDB's profiler.
 
 ### 8. Prove nothing left the machine
 
 ```bash
-uv run --project ~/lakelet/core lakelet audit network
+uv run --project ~/querysolo/core querysolo audit network
 ```
 
 Runs the quickstart in a subprocess with a socket guard in Python and a recording proxy in front of DuckDB, and reports every outbound attempt at either layer. On a project whose extensions are installed the number is zero, and the command refuses to run before they are, since the download would be the one attempt.
 
-The quickstart it runs builds a model as well, because `lakelet run` hands the work to dbt, and dbt-core sends anonymous usage statistics to its own collector unless it is told not to. Lakelet tells it not to on both paths it controls — the invocation `lakelet run` makes, and the profile it writes for a `dbt` you run by hand — and the audit covers the first so the zero is measured rather than assumed. [dbt and views](/docs/dbt) has the detail.
+The quickstart it runs builds a model as well, because `querysolo run` hands the work to dbt, and dbt-core sends anonymous usage statistics to its own collector unless it is told not to. QuerySolo tells it not to on both paths it controls — the invocation `querysolo run` makes, and the profile it writes for a `dbt` you run by hand — and the audit covers the first so the zero is measured rather than assumed. [dbt and views](/docs/dbt) has the detail.
 
 ## What is in the folder afterwards
 
 ```text
 acme/
-  lakelet.toml            project, catalog, engine and gauge settings
+  querysolo.toml            project, catalog, engine and gauge settings
   AGENTS.md               a block per table, refreshed on import, for coding agents
   dbt_project.yml         a dbt project pointed at the catalog
   models/questions/       saved questions as dbt models, with schema.yml
-  macros/lakelet.sql      the table materialisation dbt uses against the catalog
+  macros/querysolo.sql      the table materialisation dbt uses against the catalog
   warehouse/main/<table>/ the Iceberg tables: data/ and metadata/
-  .lakelet/catalog.db     the catalog, SQLite
-  .lakelet/history.db     every run
-  .lakelet/cache/         manifest and machine caches; safe to delete
+  .querysolo/catalog.db     the catalog, SQLite
+  .querysolo/history.db     every run
+  .querysolo/cache/         manifest and machine caches; safe to delete
   .git/                   a git repository; init's files are its first commit, every save a version
 ```
 
-Delete the folder and Lakelet is gone. Copy `warehouse/` anywhere and any Iceberg reader can open the tables by their `metadata.json`.
+Delete the folder and QuerySolo is gone. Copy `warehouse/` anywhere and any Iceberg reader can open the tables by their `metadata.json`.

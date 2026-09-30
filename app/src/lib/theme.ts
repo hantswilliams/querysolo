@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Light and dark (decision D1, September 12). Three choices: System follows the machine,
 // Light and Dark override it. The palette itself is CSS (`web/src/styles/palette.css`, shared
@@ -13,7 +13,7 @@ export const THEMES: Theme[] = ['system', 'light', 'dark'];
  *  opens the way the machine is set. */
 export function loadTheme(): Theme {
   try {
-    const stored = localStorage.getItem('lakelet.theme');
+    const stored = localStorage.getItem('querysolo.theme');
     return stored === 'light' || stored === 'dark' ? stored : 'system';
   } catch {
     return 'system';
@@ -22,7 +22,7 @@ export function loadTheme(): Theme {
 
 export function saveTheme(theme: Theme): void {
   try {
-    localStorage.setItem('lakelet.theme', theme);
+    localStorage.setItem('querysolo.theme', theme);
   } catch {
     // a webview without storage: the choice lives for the window
   }

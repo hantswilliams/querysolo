@@ -1,9 +1,9 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Decisions W1 (2026-09-17): an `s3://` warehouse is a first-class way to run a project.
 `init --warehouse s3://bucket/prefix` puts every table's data and metadata in the bucket;
-the catalog stays in `.lakelet/`; and the whole product path — import, sql writes,
-`lakelet run` with a table and a view model, describe, expire, versions, relocate — is run
+the catalog stays in `.querysolo/`; and the whole product path — import, sql writes,
+`querysolo run` with a table and a view model, describe, expire, versions, relocate — is run
 here against the same store the S3 suite uses (Moto by default; a real bucket or RustFS
 with the `tests/s3_helpers.py` variables)."""
 
@@ -12,8 +12,8 @@ from __future__ import annotations
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project, relocate
-from lakelet.cli import app
+from querysolo import Project, relocate
+from querysolo.cli import app
 from tests.s3_helpers import open_store
 
 pytest.importorskip("dbt.cli.main")
@@ -64,7 +64,7 @@ def test_init_writes_the_warehouse_and_makes_no_local_folder(env, tmp_path) -> N
     assert r.exit_code == 0, r.output
     # rich wraps at the terminal width, so compare with all whitespace removed
     assert f"everytable'sfilesgoto{prefix}" in "".join(r.output.split())
-    assert f'warehouse = "{prefix}"' in (root / "lakelet.toml").read_text()
+    assert f'warehouse = "{prefix}"' in (root / "querysolo.toml").read_text()
     assert not (root / "warehouse").exists()
     p = Project.open(root)
     try:
@@ -76,7 +76,7 @@ def test_init_writes_the_warehouse_and_makes_no_local_folder(env, tmp_path) -> N
         app, ["init", str(tmp_path / "nope"), "--probe-mb", "0", "--warehouse", "gs://b/p"]
     )
     assert r.exit_code == 1 and "s3://bucket/prefix" in r.output
-    assert not (tmp_path / "nope" / "lakelet.toml").exists()
+    assert not (tmp_path / "nope" / "querysolo.toml").exists()
     # the warehouse is not a setting: it is fixed at init
     r = CliRunner().invoke(app, ["-C", str(root), "config", "set", "project.warehouse", "./w"])
     assert r.exit_code != 0 and "not a setting" in r.output
@@ -85,7 +85,7 @@ def test_init_writes_the_warehouse_and_makes_no_local_folder(env, tmp_path) -> N
 def test_the_product_path_on_a_bucket_warehouse(project, tmp_path) -> None:
     from pyiceberg.catalog.rest import RestCatalog
 
-    from lakelet.dbt import runner
+    from querysolo.dbt import runner
 
     p = project
     # import: the table's data and metadata are in the bucket, nothing under the project
@@ -98,24 +98,24 @@ def test_the_product_path_on_a_bucket_warehouse(project, tmp_path) -> None:
     est = p.estimate("select customer, sum(amt) from orders group by 1")
     assert est.tables[0]["locality"] == "remote"
     # a write through SQL is a second snapshot in the bucket
-    p.engine.execute("insert into lakelet.main.orders values (1000, 'c9', 9.0)")
+    p.engine.execute("insert into querysolo.main.orders values (1000, 'c9', 9.0)")
     assert p.tables.describe("orders").snapshots == 2
     assert p.engine.execute("select count(*) from orders").fetchone()[0] == 301
-    # lakelet run: a table model lands in the bucket, a view model in the catalog
+    # querysolo run: a table model lands in the bucket, a view model in the catalog
     report = runner.run(p)
     assert report.ok and report.views_recorded == ["top"]
     by_customer = p.tables.describe("by_customer")
     assert by_customer.location.startswith(p.prefix) and by_customer.rows == 4
     assert p.engine.execute("select customer from top").fetchone()[0] in {"c0", "c1", "c2"}
     # another process reads every table from the bucket through the catalog
-    catalog = RestCatalog("lakelet", uri=p.catalog_url, **p.io_properties)
+    catalog = RestCatalog("querysolo", uri=p.catalog_url, **p.io_properties)
     assert catalog.load_table("main.orders").scan().to_arrow().num_rows == 301
     assert catalog.load_table("main.by_customer").metadata_location.startswith("s3://")
     # every model is fresh after its run; the state rules do not care where the bytes are
     assert all(m.state == "fresh" for m in runner.plan(p))
     # a rebuild in place then expire: the old snapshot's files are deleted in the bucket
-    p.engine.execute("delete from lakelet.main.orders")
-    p.engine.execute("insert into lakelet.main.orders select range, 'c', 1.0 from range(10)")
+    p.engine.execute("delete from querysolo.main.orders")
+    p.engine.execute("insert into querysolo.main.orders select range, 'c', 1.0 from range(10)")
     before = p.tables.describe("orders")
     assert before.snapshots == 4
     swept = p.tables.expire("orders", keep_days=0)
@@ -140,13 +140,13 @@ def local_project(env, tmp_path):
     Project.init(root, probe_mb=0)
     p = Project.open(root, serve=True)
     p.engine.execute(
-        "create table lakelet.main.orders as select range as id, 'c' || (range % 5) as c, "
+        "create table querysolo.main.orders as select range as id, 'c' || (range % 5) as c, "
         "range * 1.5 as amt from range(1000)"
     )
     p.engine.execute(
-        "insert into lakelet.main.orders select range, 'x', 1.0 from range(1000, 1500)"
+        "insert into querysolo.main.orders select range, 'x', 1.0 from range(1000, 1500)"
     )
-    p.engine.execute("delete from lakelet.main.orders where id < 10")
+    p.engine.execute("delete from querysolo.main.orders where id < 10")
     p.questions.save("Total", "select sum(amt) as total from orders")
     yield p
     p.close()
@@ -155,7 +155,7 @@ def local_project(env, tmp_path):
 def test_publish_moves_a_table_into_a_bucket_with_every_snapshot(local_project, env) -> None:
     from pyiceberg.catalog.rest import RestCatalog
 
-    from lakelet.relocate import NotPublishable, publish
+    from querysolo.relocate import NotPublishable, publish
 
     p = local_project
     prefix = env.uri(env.key("published"))
@@ -180,7 +180,7 @@ def test_publish_moves_a_table_into_a_bucket_with_every_snapshot(local_project, 
         f"select count(*) from orders AT (VERSION => {first_snapshot})"
     ).fetchone()[0]
     assert old == 1000
-    table = RestCatalog("lakelet", uri=p.catalog_url, **p.io_properties).load_table("main.orders")
+    table = RestCatalog("querysolo", uri=p.catalog_url, **p.io_properties).load_table("main.orders")
     assert table.scan().to_arrow().num_rows == 1490
     assert all(t.file.file_path.startswith("s3://") for t in table.scan().plan_files())
     # the list says where it is
@@ -203,7 +203,7 @@ def test_publish_moves_a_table_into_a_bucket_with_every_snapshot(local_project, 
 def test_publish_resumes_refuses_and_the_verb_and_route(local_project, env, monkeypatch) -> None:
     import httpx
 
-    from lakelet.relocate import NotPublishable, publish
+    from querysolo.relocate import NotPublishable, publish
 
     p = local_project
     prefix = env.uri(env.key("resumed"))
@@ -227,12 +227,12 @@ def test_publish_resumes_refuses_and_the_verb_and_route(local_project, env, monk
         f"COPY (SELECT range AS id FROM range(5)) TO '{folder}/a.parquet' (FORMAT parquet)"
     )
     p.tables.attach("outside", f"file://{folder}/")
-    with pytest.raises(NotPublishable, match="not Lakelet's to move"):
+    with pytest.raises(NotPublishable, match="not QuerySolo's to move"):
         publish(p, "outside", prefix)
-    p.engine.execute("create table lakelet.main.small as select 1 as id")
+    p.engine.execute("create table querysolo.main.small as select 1 as id")
     with pytest.raises(NotPublishable, match="s3://bucket/prefix"):
         publish(p, "small", "gs://nope")
-    from lakelet.gauge import inputs
+    from querysolo.gauge import inputs
 
     cache = inputs.load_machine_cache(p.cache_dir)
     cache["bandwidth_mbps"] = 0.000001  # a link so slow the copy would take days
@@ -256,7 +256,7 @@ def test_publish_resumes_refuses_and_the_verb_and_route(local_project, env, monk
     assert r.exit_code == 1 and "no table named nowhere" in r.output
 
     # the route
-    p.engine.execute("create table lakelet.main.tiny as select 2 as id")
+    p.engine.execute("create table querysolo.main.tiny as select 2 as id")
     client = httpx.Client(
         base_url=p.catalog_url, headers={"Authorization": f"Bearer {p.token}"}, timeout=120
     )

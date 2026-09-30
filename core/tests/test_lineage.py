@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Versions brief G8, step 4: table-level lineage for a table, a view and a model, with
 how every edge is known (`ref`, `source`, a table named in the SQL, a catalog view's SQL),
@@ -16,10 +16,10 @@ import httpx
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project
-from lakelet.cli import app
-from lakelet.dbt import runner
-from lakelet.lineage import VIAS, NoSuchNode, lineage, whole
+from querysolo import Project
+from querysolo.cli import app
+from querysolo.dbt import runner
+from querysolo.lineage import VIAS, NoSuchNode, lineage, whole
 
 pytest.importorskip("dbt.cli.main")
 
@@ -34,7 +34,7 @@ def _models(root: Path) -> None:
         "select c from {{ ref('by_c') }} order by total desc limit 1\n"
     )
     (root / "models" / "sources.yml").write_text(
-        "version: 2\nsources:\n  - name: raw\n    database: lakelet\n    schema: main\n"
+        "version: 2\nsources:\n  - name: raw\n    database: querysolo\n    schema: main\n"
         "    tables:\n      - name: src\n"
     )
     (root / "models" / "from_source.sql").write_text(
@@ -49,7 +49,7 @@ def project(tmp_path):
     _models(root)
     p = Project.open(root, serve=True)
     p.engine.execute(
-        "create table lakelet.main.src as "
+        "create table querysolo.main.src as "
         "select range as id, 'c' || (range % 3) as c, range * 1.5 as amt from range(300)"
     )
     p.questions.save("Total", "select sum(amt) as total from src")

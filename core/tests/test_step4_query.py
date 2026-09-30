@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 4 gate (brief §4): Arrow streaming with the first batch before completion, every run
 recorded with the §3.4 schema including the profiler's actuals, derived bytes and the SQL
@@ -10,9 +10,9 @@ import duckdb
 import pyarrow as pa
 import pytest
 
-from lakelet import Project
-from lakelet.engine import CatalogConflict
-from lakelet.query import fingerprint, normalise, sql_hash
+from querysolo import Project
+from querysolo.engine import CatalogConflict
+from querysolo.query import fingerprint, normalise, sql_hash
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def project(tmp_path):
     Project.init(root)
     p = Project.open(root)
     p.engine.execute(
-        "CREATE TABLE lakelet.main.orders AS SELECT range AS id, 'c' || (range % 10) AS customer, "
+        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, 'c' || (range % 10) AS customer, "
         "(range * 1.5)::DOUBLE AS amt FROM range(10000)"
     )
     yield p
@@ -52,7 +52,7 @@ def test_query_streams_arrow_and_records_the_run(project) -> None:
     assert run.tables[0]["snapshot_id"] == project.tables.describe("orders").snapshot_id
     assert run.operator_counts.get("ICEBERG_SCAN") == 1
     assert {"ram", "cores", "memory_limit", "free_disk", "on_battery"} <= set(run.machine)
-    assert run.machine_hash and run.lakelet_version and run.duckdb_version == duckdb.__version__
+    assert run.machine_hash and run.querysolo_version and run.duckdb_version == duckdb.__version__
     assert run.ran and run.ran_where == "local" and run.retries == 0 and run.error is None
     assert run.actual_wall == actual.wall and run.actual_bytes == actual.bytes
     assert run.est_bytes and run.verdict == "green" and run.pruning == "full"  # step 5 fills these
@@ -114,7 +114,7 @@ def test_closing_early_still_records(project) -> None:
     assert run.ran and run.actual_wall is not None
 
 
-def _conflict(url: str = "http://127.0.0.1:1/v1/lakelet/transactions/commit") -> duckdb.Error:
+def _conflict(url: str = "http://127.0.0.1:1/v1/querysolo/transactions/commit") -> duckdb.Error:
     return duckdb.TransactionException(
         "TransactionContext Error: Failed to commit: Failed to commit Iceberg transaction: "
         f"Request to '{url}' returned a non-200 status code (409 Conflict)"

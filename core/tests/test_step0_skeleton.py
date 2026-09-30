@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 0 gate: the skeleton imports, the entry point answers, the engines are the ones
 the brief pins (D15), and the three DuckDB extensions load from the cache the CI warms."""
@@ -9,18 +9,18 @@ import duckdb
 import pyiceberg
 from typer.testing import CliRunner
 
-import lakelet
-from lakelet.cli import app
+import querysolo
+from querysolo.cli import app
 
 
 def test_package_has_a_version() -> None:
-    assert lakelet.__version__
+    assert querysolo.__version__
 
 
 def test_cli_prints_the_version() -> None:
     result = CliRunner().invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert result.output.strip() == f"lakelet {lakelet.__version__}"
+    assert result.output.strip() == f"querysolo {querysolo.__version__}"
 
 
 def test_engine_versions_match_the_brief() -> None:
@@ -43,15 +43,15 @@ def test_the_three_extensions_load() -> None:
 
 
 def test_the_bundled_extension_folder_is_used_and_nothing_is_fetched(tmp_path, monkeypatch) -> None:
-    """Ship brief S2: with LAKELET_EXTENSION_DIR set to a folder laid out as DuckDB expects
+    """Ship brief S2: with QUERYSOLO_EXTENSION_DIR set to a folder laid out as DuckDB expects
     (`v<version>/<platform>/<name>.duckdb_extension`; five files — `iceberg` pulls in
     `avro` on its first LOAD, which the bundle must carry), every connection loads from there,
     `init` reports "bundled" and installs nothing, and a project answers a query — with
     the machine's own ~/.duckdb hidden, so a fallback to it would show as a failure."""
     import shutil
 
-    from lakelet import Project
-    from lakelet.engine import INSTALLED_EXTENSIONS, connect
+    from querysolo import Project
+    from querysolo.engine import INSTALLED_EXTENSIONS, connect
 
     con = duckdb.connect()
     platform = con.execute("pragma platform").fetchone()[0]
@@ -65,7 +65,7 @@ def test_the_bundled_extension_folder_is_used_and_nothing_is_fetched(tmp_path, m
     for name in INSTALLED_EXTENSIONS:
         shutil.copy(f"{source}/{version}/{platform}/{name}.duckdb_extension", bundled)
 
-    monkeypatch.setenv("LAKELET_EXTENSION_DIR", str(tmp_path / "extensions"))
+    monkeypatch.setenv("QUERYSOLO_EXTENSION_DIR", str(tmp_path / "extensions"))
     monkeypatch.setenv("HOME", str(tmp_path / "home"))  # no ~/.duckdb to fall back to
     (tmp_path / "home").mkdir()
     loaded = {
@@ -86,7 +86,7 @@ def test_the_bundled_extension_folder_is_used_and_nothing_is_fetched(tmp_path, m
 
 
 def test_the_app_and_the_core_agree_on_the_version() -> None:
-    """Ship brief S7: one version, in `lakelet/__init__.py`; the app's `tauri.conf.json` and
+    """Ship brief S7: one version, in `querysolo/__init__.py`; the app's `tauri.conf.json` and
     `Cargo.toml` carry the same release (major.minor.patch). The pre-release tag is spelled
     per ecosystem — `0.1.0.dev0` / `0.1.0rc1` in PEP 440, `0.1.0-rc.1` in semver — so the
     triple is what must agree, and a core with no pre-release tag needs the app to have none."""
@@ -99,7 +99,7 @@ def test_the_app_and_the_core_agree_on_the_version() -> None:
     tauri = json.loads((app_dir / "tauri.conf.json").read_text(encoding="utf-8"))["version"]
     cargo_toml = tomllib.loads((app_dir / "Cargo.toml").read_text(encoding="utf-8"))
     cargo = cargo_toml["package"]["version"]
-    core = lakelet.__version__
+    core = querysolo.__version__
     triple = lambda v: re.match(r"(\d+\.\d+\.\d+)", v).group(1)  # noqa: E731
     assert triple(core) == triple(tauri) == triple(cargo), (core, tauri, cargo)
     core_is_release = re.fullmatch(r"\d+\.\d+\.\d+", core) is not None

@@ -1,31 +1,31 @@
 ---
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 import Base from '../layouts/Base.astro';
 import PageIntro from '../components/PageIntro.astro';
 import NextStep from '../components/NextStep.astro';
 import { url } from '../lib/url';
 ---
-<Base title="Workflows" description="Turn imported files into repeatable SQL models with Lakelet and dbt. Explore a bronze, silver, and gold workflow on your machine.">
+<Base title="Workflows" description="Turn imported files into repeatable SQL models with QuerySolo and dbt. Explore a bronze, silver, and gold workflow on your machine.">
   <PageIntro label="03 / Workflows" title="From a file." accent="To a habit." description="A warehouse for one: start with one question, keep the SQL that helps, and grow it into a dbt project with checks, versions, and an estimate before each model runs."><a class="button" href={url('/docs/dbt')}>Build your first workflow ↗</a><a class="text-link" href={url('/docs/questions')}>Start with a saved question ↗</a></PageIntro>
   <section class="section-frame"><div class="workflow-layers"><article><span class="eyebrow">01 / BRONZE</span><h2>Bring it in.</h2><p>Import the raw files or attach an existing Parquet prefix. Keep a starting point you can inspect.</p><code>orders</code></article><article><span class="eyebrow">02 / SILVER</span><h2>Make it useful.</h2><p>Write SQL models to clean names, cast types, and make the rules explicit.</p><code>stg_orders</code></article><article><span class="eyebrow">03 / GOLD</span><h2>Answer the question.</h2><p>Aggregate the result into a model you can reuse and check.</p><code>revenue_by_region</code></article></div><p class="caption">An example project structure. Bronze, silver, and gold are conventions you choose, not managed services.</p></section>
-  <section class="split-section section-frame"><div><p class="eyebrow">The familiar parts, together</p><h2>It’s SQL.<br />It’s your project.</h2><p>Saved questions are dbt models with two default checks. Run the project through Lakelet so each model gets a verdict and view models are recorded in the shared local catalog.</p><a class="text-link" href={url('/docs/dbt')}>Why use lakelet run? ↗</a></div><div class="code-window"><div>TERMINAL / INSPECT BEFORE EXECUTING</div><pre><code>{`# Inspect the model graph and its verdicts
-lakelet run --plan
+  <section class="split-section section-frame"><div><p class="eyebrow">The familiar parts, together</p><h2>It’s SQL.<br />It’s your project.</h2><p>Saved questions are dbt models with two default checks. Run the project through QuerySolo so each model gets a verdict and view models are recorded in the shared local catalog.</p><a class="text-link" href={url('/docs/dbt')}>Why use querysolo run? ↗</a></div><div class="code-window"><div>TERMINAL / INSPECT BEFORE EXECUTING</div><pre><code>{`# Inspect the model graph and its verdicts
+querysolo run --plan
 
 # Build one model and its descendants
-lakelet run stg_orders+
+querysolo run stg_orders+
 
 # Inspect saved versions
-lakelet versions`}</code></pre></div></section>
-  <section class="split-section section-frame"><div><p class="eyebrow">Where it lives in your day</p><h2>Your editor writes it.<br />Lakelet runs it.</h2><p>Lakelet is not an editor. The models are dbt models in your project folder, so you edit them where you edit everything else, and the app is where you look at the result: the rows, the verdict, the lineage, the history. The loop is edit, run, look, save the next question — and the question you save from the SQL box lands in <code>models/questions/</code> as a file your editor can refine.</p><p>When the gauge says a model needs more machine than this one, the tables are already Iceberg in your bucket: a warehouse you pay for can read them as they are, and a burst to your own cloud account is planned for the one job that needs it.</p><a class="text-link" href={url('/#how-it-fits')}>How Lakelet fits ↗</a></div><div class="code-window"><div>ONE LOOP / EDITOR, TERMINAL, APP</div><pre><code>{`# in your editor
+querysolo versions`}</code></pre></div></section>
+  <section class="split-section section-frame"><div><p class="eyebrow">Where it lives in your day</p><h2>Your editor writes it.<br />QuerySolo runs it.</h2><p>QuerySolo is not an editor. The models are dbt models in your project folder, so you edit them where you edit everything else, and the app is where you look at the result: the rows, the verdict, the lineage, the history. The loop is edit, run, look, save the next question — and the question you save from the SQL box lands in <code>models/questions/</code> as a file your editor can refine.</p><p>When the gauge says a model needs more machine than this one, the tables are already Iceberg in your bucket: a warehouse you pay for can read them as they are, and a burst to your own cloud account is planned for the one job that needs it.</p><a class="text-link" href={url('/#how-it-fits')}>How QuerySolo fits ↗</a></div><div class="code-window"><div>ONE LOOP / EDITOR, TERMINAL, APP</div><pre><code>{`# in your editor
 $EDITOR models/marts/revenue_by_region.sql
 
 # in the terminal, or Refresh in the app
-lakelet run revenue_by_region+
+querysolo run revenue_by_region+
 
 # look at the answer, keep the next question
-lakelet sql "select * from revenue_by_region"
-lakelet question save "Revenue by region, paid only" --sql "..."`}</code></pre></div></section>
-  <section class="web-section section-frame"><div class="feature-columns"><article><span class="index">01 / CHECKS</span><h3>Keep the intent.</h3><p>A saved question starts with a returns-rows check and a not-null check on its first column. Add the tests that reflect your data.</p></article><article><span class="index">02 / VERSIONS</span><h3>Keep the changes.</h3><p>Saves and runs become versions in the project’s Git repository. Inspect and restore saved work.</p></article><article><span class="index">03 / CATALOG</span><h3>Keep it readable.</h3><p>Tables use Iceberg and Parquet. Lakelet records view models in its catalog so another session can find them.</p></article></div></section>
+querysolo sql "select * from revenue_by_region"
+querysolo question save "Revenue by region, paid only" --sql "..."`}</code></pre></div></section>
+  <section class="web-section section-frame"><div class="feature-columns"><article><span class="index">01 / CHECKS</span><h3>Keep the intent.</h3><p>A saved question starts with a returns-rows check and a not-null check on its first column. Add the tests that reflect your data.</p></article><article><span class="index">02 / VERSIONS</span><h3>Keep the changes.</h3><p>Saves and runs become versions in the project’s Git repository. Inspect and restore saved work.</p></article><article><span class="index">03 / CATALOG</span><h3>Keep it readable.</h3><p>Tables use Iceberg and Parquet. QuerySolo records view models in its catalog so another session can find them.</p></article></div></section>
   <section class="notice-band section-frame"><p class="eyebrow">What comes later</p><h3>Repeatable today. Scheduled later.</h3><p>Model runs, the Lineage graph, and the Changes feed are available. Hosted scheduling, shared Team infrastructure, and cloud bursts are planned.</p><a class="text-link" href={url('/docs')}>Read the current feature status ↗</a></section><NextStep title="Keep the questions that matter." />
 </Base>

@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 3 gate (app brief §4): on a 20 M-row table the first rows are on screen before the
 // query completes (timestamped); a lowered-threshold project shows Red with the sentence
@@ -41,7 +41,7 @@ test('the verdict comes before the rows and the first rows before the query comp
   await expect(page.getByTestId('table-big')).toContainText(BIG_ROWS.toLocaleString());
   const sql = 'select id, x, c from big where id % 300 = 0';
   await typeSql(page, sql);
-  await expect(page.getByTestId('query').getByTestId('command').locator('code')).toHaveText(`lakelet sql '${sql}'`);
+  await expect(page.getByTestId('query').getByTestId('command').locator('code')).toHaveText(`querysolo sql '${sql}'`);
   await page.getByTestId('run').click();
 
   const gauge = page.getByTestId('gauge');
@@ -84,7 +84,7 @@ test('Red is a refusal with the sentence until "Run anyway"', async ({ page }) =
   await expect(gauge).toHaveAttribute('data-state', 'done');
   await expect(page.getByTestId('grid')).toHaveAttribute('data-rows', '1');
   await expect(page.getByTestId('grid').locator('.grid-row').first()).toContainText('3');
-  await expect(page.getByTestId('query').getByTestId('command').locator('code')).toHaveText("lakelet sql 'select count(*) as n from orders' --run-anyway");
+  await expect(page.getByTestId('query').getByTestId('command').locator('code')).toHaveText("querysolo sql 'select count(*) as n from orders' --run-anyway");
   const runs = await history(s, 2);
   expect(runs.map((r) => r.ran_where)).toEqual(['local', 'refused']);
 });

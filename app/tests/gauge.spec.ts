@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Real-data brief R8, step 4: the Gauge screen shows the runs recorded with their
 // estimates and actuals, the tiles, the scatter, and the four verbs: export writes a file
@@ -40,7 +40,7 @@ test('the gauge screen lists the runs, draws the scatter, exports without names,
   await expect(page.getByTestId('runs')).toContainText('Green');
   await expect(page.getByTestId('runs')).toContainText('failed');
   await expect(page.getByTestId('runs')).not.toContainText('nope_table_zz'); // the sentence is not the SQL
-  await expect(screen.getByTestId('command').first()).toContainText('lakelet gauge history');
+  await expect(screen.getByTestId('command').first()).toContainText('querysolo gauge history');
 
   // The scatter has a point per completed run with both numbers.
   await expect(page.getByTestId('scatter')).toBeVisible();
@@ -51,7 +51,7 @@ test('the gauge screen lists the runs, draws the scatter, exports without names,
   await page.getByTestId('export').click();
   const notice = page.getByTestId('gauge-notice');
   await expect(notice).toContainText('written to');
-  await expect(notice.getByTestId('command')).toContainText('lakelet gauge export');
+  await expect(notice.getByTestId('command')).toContainText('querysolo gauge export');
   const path = /written to (\S+\.jsonl)/.exec((await notice.textContent()) ?? '')![1];
   const lines = readFileSync(path, 'utf8').trim().split('\n');
   expect(lines.length).toBe(runsBefore);
@@ -62,7 +62,7 @@ test('the gauge screen lists the runs, draws the scatter, exports without names,
   // Probe: the machine line carries the new figure.
   await page.getByTestId('probe').click();
   await expect(notice).toContainText('Local disk reads at', { timeout: 60_000 });
-  await expect(notice.getByTestId('command')).toContainText('lakelet gauge probe');
+  await expect(notice.getByTestId('command')).toContainText('querysolo gauge probe');
   await expect(page.getByTestId('machine')).toContainText('MB/s local disk');
 
   // Reset asks first, then forgets.
@@ -70,7 +70,7 @@ test('the gauge screen lists the runs, draws the scatter, exports without names,
   await expect(page.getByTestId('confirm-reset')).toBeVisible();
   await page.getByTestId('reset-yes').click();
   await expect(notice).toContainText('forgotten');
-  await expect(notice.getByTestId('command')).toContainText('lakelet gauge reset --yes');
+  await expect(notice.getByTestId('command')).toContainText('querysolo gauge reset --yes');
   await expect(page.getByTestId('tile-runs')).toHaveText('0');
   await expect(page.getByTestId('runs')).toContainText('No runs yet');
   await expect(page.getByTestId('reset')).toBeDisabled();

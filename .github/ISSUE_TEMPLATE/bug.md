@@ -1,10 +1,10 @@
 ---
 name: Bug
-about: Something Lakelet did wrong, or did not do
+about: Something QuerySolo did wrong, or did not do
 labels: bug
 ---
 
-**Versions** (paste `lakelet --version`; it prints Lakelet's and DuckDB's):
+**Versions** (paste `querysolo --version`; it prints QuerySolo's and DuckDB's):
 
 **Machine**: macOS / Ubuntu, and the version.
 

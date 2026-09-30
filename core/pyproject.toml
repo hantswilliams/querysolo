@@ -1,11 +1,11 @@
 [project]
-name = "lakelet"
+name = "querysolo"
 dynamic = ["version"]
 description = "Your laptop is the warehouse until it can't be. A local-first lakehouse: Iceberg on Parquet, an Iceberg REST catalog, DuckDB, and a pre-flight gauge."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
-authors = [{ name = "Lakelet contributors" }]
+authors = [{ name = "QuerySolo contributors" }]
 # Runtime dependencies and ceilings follow the brief, D15.
 dependencies = [
   "duckdb>=1.5.3,<1.6",
@@ -24,12 +24,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# `lakelet run` (dbt through the catalog): `pip install 'lakelet[dbt]'`; a clone's `uv sync`
+# `querysolo run` (dbt through the catalog): `pip install 'querysolo[dbt]'`; a clone's `uv sync`
 # has it through the dev group.
 dbt = ["dbt-core>=1.12.4,<2", "dbt-duckdb>=1.11.0,<2"]
 
 [project.scripts]
-lakelet = "lakelet.cli:run"
+querysolo = "querysolo.cli:run"
 
 [dependency-groups]
 dev = [
@@ -51,10 +51,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "lakelet/__init__.py"
+path = "querysolo/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["lakelet"]
+packages = ["querysolo"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

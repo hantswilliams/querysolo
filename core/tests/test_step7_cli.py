@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 7 gate (brief §4): the CLI over every core operation (D17), the quickstart end to
 end, the gauge line on stderr and rows on stdout so it pipes (PRD F0.6.2), exit codes 2 and
@@ -19,7 +19,7 @@ import pytest
 from pyiceberg.catalog.rest import RestCatalog
 from typer.testing import CliRunner
 
-from lakelet.cli import app
+from querysolo.cli import app
 
 runner = CliRunner()
 
@@ -44,7 +44,7 @@ def project_dir(tmp_path):
 def test_init_prints_the_layout_and_the_extension_line(tmp_path) -> None:
     result = runner.invoke(app, ["init", str(tmp_path / "p"), "--probe-mb", "8"])
     assert result.exit_code == 0, result.output
-    assert "lakelet.toml" in result.output and "AGENTS.md" in result.output
+    assert "querysolo.toml" in result.output and "AGENTS.md" in result.output
     assert "DuckDB extensions" in result.output and "lakehouse ready" in result.output
     assert "MB/s" in result.output
     again = runner.invoke(app, ["init", str(tmp_path / "p")])
@@ -91,7 +91,7 @@ def test_config_set_writes_the_file_and_the_next_open_reads_it(project_dir) -> N
     shown = invoke(project_dir, "config", "show")
     assert "engine.memory_limit = 1GB" in shown.output and "engine.threads = 2" in shown.output
     # the CLI reads them: the engine of the next open runs with that limit and thread count
-    from lakelet import Project
+    from querysolo import Project
 
     with Project.open(project_dir) as p:
         assert p.config.engine.memory_limit == "1GB" and p.config.engine.threads == 2
@@ -144,7 +144,7 @@ def test_estimate_prints_the_line_or_json(project_dir, tmp_path) -> None:
 
 def test_red_exits_2_and_run_anyway_runs(project_dir, tmp_path) -> None:
     assert invoke(project_dir, "import", str(tmp_path / "orders.csv")).exit_code == 0
-    toml = project_dir / "lakelet.toml"
+    toml = project_dir / "querysolo.toml"
     toml.write_text(
         toml.read_text()
         .replace("green_max_seconds = 60", "green_max_seconds = 0.0000001")
@@ -209,7 +209,7 @@ def test_gauge_export_carries_no_names_and_reset_forgets(project_dir, tmp_path) 
 
     written = invoke(project_dir, "gauge", "export")
     assert written.exit_code == 0 and "run(s) written to" in written.output
-    exports = list((project_dir / ".lakelet" / "exports").glob("gauge-*.jsonl"))
+    exports = list((project_dir / ".querysolo" / "exports").glob("gauge-*.jsonl"))
     assert len(exports) == 1 and len(exports[0].read_text().splitlines()) == len(lines)
 
     history = invoke(project_dir, "gauge", "history")
@@ -221,7 +221,7 @@ def test_gauge_export_carries_no_names_and_reset_forgets(project_dir, tmp_path) 
 
 def test_not_a_project_is_a_clear_exit_1(tmp_path) -> None:
     result = invoke(tmp_path, "tables", "list")
-    assert result.exit_code == 1 and "not a Lakelet project" in result.output
+    assert result.exit_code == 1 and "not a QuerySolo project" in result.output
 
 
 def _free_port() -> int:
@@ -234,7 +234,7 @@ def test_catalog_serve_is_readable_from_another_process(project_dir, tmp_path) -
     assert invoke(project_dir, "import", str(tmp_path / "orders.csv")).exit_code == 0
     port = _free_port()
     proc = subprocess.Popen(
-        [sys.executable, "-m", "lakelet.cli", "-C", str(project_dir)]
+        [sys.executable, "-m", "querysolo.cli", "-C", str(project_dir)]
         + ["catalog", "serve", "--port", str(port)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -243,7 +243,7 @@ def test_catalog_serve_is_readable_from_another_process(project_dir, tmp_path) -
     try:
         line = proc.stdout.readline()
         assert f"catalog at http://127.0.0.1:{port}" in line, line
-        table = RestCatalog("lakelet", uri=f"http://127.0.0.1:{port}").load_table("main.orders")
+        table = RestCatalog("querysolo", uri=f"http://127.0.0.1:{port}").load_table("main.orders")
         assert table.scan().to_arrow().num_rows == 1000
     finally:
         proc.terminate()
@@ -254,7 +254,7 @@ def test_catalog_serve_is_readable_from_another_process(project_dir, tmp_path) -
 
 def test_catalog_serve_writes_the_dbt_profile(project_dir) -> None:
     """Real-data brief R5: a `dbt run` by hand needs a live catalog and a profile naming it;
-    `lakelet catalog serve` (and `lakelet serve`) write `.lakelet/dbt/profiles.yml` for
+    `querysolo catalog serve` (and `querysolo serve`) write `.querysolo/dbt/profiles.yml` for
     theirs when they start."""
     import subprocess
     import sys
@@ -264,7 +264,7 @@ def test_catalog_serve_writes_the_dbt_profile(project_dir) -> None:
         [
             sys.executable,
             "-m",
-            "lakelet.cli",
+            "querysolo.cli",
             "-C",
             str(project_dir),
             "catalog",
@@ -281,13 +281,13 @@ def test_catalog_serve_writes_the_dbt_profile(project_dir) -> None:
         assert line.startswith("catalog at http://127.0.0.1:"), line
         url = line.split()[2]
         for _ in range(50):
-            profile = project_dir / ".lakelet" / "dbt" / "profiles.yml"
+            profile = project_dir / ".querysolo" / "dbt" / "profiles.yml"
             if profile.exists() and url in profile.read_text():
                 break
             time.sleep(0.1)
         text = profile.read_text()
-        assert url in text and "module: lakelet.dbt.plugin" in text
-        assert "dbt run --profiles-dir" in text or "lakelet catalog serve" in text
+        assert url in text and "module: querysolo.dbt.plugin" in text
+        assert "dbt run --profiles-dir" in text or "querysolo catalog serve" in text
         # G11: the profile written for a `dbt` by hand turns dbt's usage statistics off.
         assert "send_anonymous_usage_stats: false" in text
     finally:
@@ -303,13 +303,13 @@ def test_audit_network_reports_nothing_left_the_machine(project_dir) -> None:
     assert "python outbound connection attempts: 0" in result.output
     assert "duckdb http requests beyond loopback: 0" in result.output
     assert "nothing left the machine" in result.output
-    # The quickstart builds a model too, because `lakelet run` is the one verb that hands
+    # The quickstart builds a model too, because `querysolo run` is the one verb that hands
     # the work to dbt (versions brief G11).
-    assert "lakelet run, which invokes dbt: 1 model(s) built" in result.output
+    assert "querysolo run, which invokes dbt: 1 model(s) built" in result.output
 
 
 def test_startup_budget_gauge_line_within_a_second(project_dir, tmp_path) -> None:
-    """The gauge line within a second of `lakelet sql` on a laptop. A shared CI runner is
+    """The gauge line within a second of `querysolo sql` on a laptop. A shared CI runner is
     about half a laptop (the imports alone, fastapi and pyiceberg, are most of the time;
     `LOAD iceberg` is 0.2 s of the rest), so there the budget is two seconds and the
     number is printed; the second is the promise, the runner is not the machine it is
@@ -326,7 +326,7 @@ def test_startup_budget_gauge_line_within_a_second(project_dir, tmp_path) -> Non
     for _ in range(3):
         started = time.perf_counter()
         completed = subprocess.run(
-            [sys.executable, "-m", "lakelet.cli", "-C", str(project_dir)]
+            [sys.executable, "-m", "querysolo.cli", "-C", str(project_dir)]
             + ["sql", "select count(*) from orders"],
             capture_output=True,
             text=True,
@@ -336,5 +336,5 @@ def test_startup_budget_gauge_line_within_a_second(project_dir, tmp_path) -> Non
         assert completed.returncode == 0, completed.stderr
         assert "● Runs here" in completed.stderr
     best = min(timings)
-    print(f"\nlakelet sql, process start to exit: best {best:.2f}s of {len(timings)} runs")
+    print(f"\nquerysolo sql, process start to exit: best {best:.2f}s of {len(timings)} runs")
     assert best < budget, f"startup budget missed: {best:.2f}s (budget {budget:.1f}s)"

@@ -1,6 +1,6 @@
 # The solo analyst with files, a bucket, or a warehouse they do not own
 
-*Persona · written 2026-09-24 · Status: **assumed, not observed** — this is the first outsider session in `decisions-for-review_092426.md` N3 (step 2); the questions at the end are what it must answer · Product name: Lakelet (working name; TBD\*).*
+*Persona · written 2026-09-24 · Status: **assumed, not observed** — this is the first outsider session in `decisions-for-review_092426.md` N3 (step 2); the questions at the end are what it must answer · Product name: QuerySolo.*
 
 This is N1's first user. They write SQL, or are willing to, which is what separates them from the PRD's P3, the non-developer with a question; that variant is noted at the end and is not served until the ask box exists. What separates them from the BigQuery or Databricks analyst (`analyst-bigquery-databricks.md`) is that nobody sends them the email about the expensive query. There is no platform team, no bill and no governance. The enemies are Excel's limits, pandas' memory, a folder of exports, and their own memory of what they did last month.
 
@@ -51,9 +51,9 @@ A two-gigabyte CSV of a year's transactions. Excel refuses, Sheets refuses, pand
 
 ### 2. The monthly re-run
 
-Last month's analysis with this month's export. Today it is a copied notebook and a changed filename. With the product the new file replaces or appends to the table, the saved question is a model, `lakelet run` rebuilds it with a verdict first, the Versions section shows what the SQL was each time, and the Changes feed shows the new snapshot and that it made the model stale. The number in this month's deck has a commit behind it.
+Last month's analysis with this month's export. Today it is a copied notebook and a changed filename. With the product the new file replaces or appends to the table, the saved question is a model, `querysolo run` rebuilds it with a verdict first, the Versions section shows what the SQL was each time, and the Changes feed shows the new snapshot and that it made the model stale. The number in this month's deck has a commit behind it.
 
-*Built today.* Replace or append on a re-import, save as question, `lakelet run`, run only what is stale, versions and restore, the Changes feed. *Planned:* the watcher, so the app notices a file changed in the folder (N3 step 4); a schedule (Team tier).
+*Built today.* Replace or append on a re-import, save as question, `querysolo run`, run only what is stale, versions and restore, the Changes feed. *Planned:* the watcher, so the app notices a file changed in the folder (N3 step 4); a schedule (Team tier).
 
 ### 3. The public dataset in a bucket they do not own
 
@@ -69,13 +69,13 @@ Read-only credentials to the company's Postgres replica, or a dataset a colleagu
 
 ### 5. The client data that cannot leave the laptop
 
-A consultant's client export under an NDA, or a researcher's extract adjacent to health records. Today every tool that would help is a tool that uploads, so they stay in Excel and pandas. With the product the project is a folder on their disk, the only download is the DuckDB extensions at `init`, and `lakelet audit network` measures zero outbound attempts on the whole quickstart. `PRIVACY.md` says what is stored where in plain sentences they can hand to whoever asks.
+A consultant's client export under an NDA, or a researcher's extract adjacent to health records. Today every tool that would help is a tool that uploads, so they stay in Excel and pandas. With the product the project is a folder on their disk, the only download is the DuckDB extensions at `init`, and `querysolo audit network` measures zero outbound attempts on the whole quickstart. `PRIVACY.md` says what is stored where in plain sentences they can hand to whoever asks.
 
 *Built today.* The audit, the privacy page, the local-only catalog. *Planned, and off by default:* the ask box, which would send the schema and sample rows to a model provider; for this person a local model is the only version they would turn on.
 
 ### 6. Handing the work to someone else, or to themselves in six months
 
-The analysis has to be reproducible: a colleague takes it over, a reviewer asks how the number was made, or they come back after a leave. Today it is a notebook, a folder and a README nobody wrote. With the product the project folder is a git repository, every save and every run is a commit, the models are SQL files anyone can read, lineage says what feeds what, and `lakelet changes` is the story in order. The recipient copies the folder and runs it. If they do not have the product, the tables are Parquet and Iceberg metadata, so pandas with pyiceberg, or Spark, reads them as they are.
+The analysis has to be reproducible: a colleague takes it over, a reviewer asks how the number was made, or they come back after a leave. Today it is a notebook, a folder and a README nobody wrote. With the product the project folder is a git repository, every save and every run is a commit, the models are SQL files anyone can read, lineage says what feeds what, and `querysolo changes` is the story in order. The recipient copies the folder and runs it. If they do not have the product, the tables are Parquet and Iceberg metadata, so pandas with pyiceberg, or Spark, reads them as they are.
 
 *Built today.* Git in the project, versions, lineage, the Changes feed, the folder as the backup, relocate after a move. *Planned:* a shared page for the result (Day 2), and the Team tier for the case where the colleague is a permanent colleague.
 

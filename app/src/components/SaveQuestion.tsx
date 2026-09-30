@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Save as question (versions brief G7): the button under the query, and the one-line box it
 // opens. The title is the only thing asked; the slug comes from it the way the CLI derives

@@ -1,11 +1,11 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // New project… (decisions P1), from the welcome screen and from Open…: a name under a
 // parent folder (the default one, or the dialog's), and where the tables go — in this
 // folder, or in a bucket you own. A bucket is checked before the folder is made: the
 // credentials the environment offers, and one object written under the prefix and
 // removed, so the first import is not the first thing to fail. The line beside the button
-// is the `lakelet init` it runs. "In this folder" and "in a bucket" are the words: the
+// is the `querysolo init` it runs. "In this folder" and "in a bucket" are the words: the
 // catalog and the engine are here either way. The bucket's credentials are an AWS profile
 // on this machine (decisions C1): the app stores a name, never a key, and the line under
 // the prefix says which one will be used, or what to do when there is none (C2).
@@ -175,14 +175,14 @@ export function NewProject({ canCreate, defaultParent, aws, profiles, onChoosePa
               {checkedThis && (
                 <em className={result.ok ? 'ok-line' : 'error-line'} data-testid="check-result" data-ok={result.ok ? 'true' : 'false'}>{result.sentence}</em>
               )}
-              <span className="muted">The keys stay in AWS's own files; Lakelet keeps only the profile's name, on this machine. Nothing is created in your account. In a terminal the check is <code>{bucketCheckCommand(trimmed || 's3://bucket/prefix', chosen)}</code>.</span>
+              <span className="muted">The keys stay in AWS's own files; QuerySolo keeps only the profile's name, on this machine. Nothing is created in your account. In a terminal the check is <code>{bucketCheckCommand(trimmed || 's3://bucket/prefix', chosen)}</code>.</span>
             </div>
           )}
         </fieldset>
         {error && <div className="error" data-testid="new-project-error"><pre>{error}</pre></div>}
         <footer className="actions">
           <button type="submit" className="primary" disabled={!canSubmit} data-testid="create-project">{busy ? 'making it…' : bucket && !checkedThis ? 'Check and create' : 'Create'}</button>
-          <Command line={folder ? initCommand(folder, bucket ? trimmed || 's3://bucket/prefix' : undefined, chosen) : `lakelet init <folder>${bucket ? ` --warehouse ${trimmed || 's3://bucket/prefix'}` : ''}`} />
+          <Command line={folder ? initCommand(folder, bucket ? trimmed || 's3://bucket/prefix' : undefined, chosen) : `querysolo init <folder>${bucket ? ` --warehouse ${trimmed || 's3://bucket/prefix'}` : ''}`} />
         </footer>
         {!canCreate && <p className="muted hint">In a browser the folder cannot be made; the app does it. The bucket check works here when a core is running.</p>}
       </form>

@@ -1,5 +1,17 @@
 # Names
 
+## Decided: QuerySolo (2026-09-30)
+
+The product is **QuerySolo**. The company will have a name of its own. The rename is `build-sessions/rename-querysolo-plan.md` (R1–R10, agreed 2026-09-30).
+
+How it got there, after round three below:
+
+- **OneQuery** was the starting point: "query" says data, "one" says simple. It was ruled out because it is taken in the same space. Wordbricks' OneQuery (onequery.dev, "governed data access for AI agents", Apache 2.0, active since March 2026, `@onequery/cli` on npm) is a direct neighbour, and OneQuery.app is a live AI web agent.
+- **1query** was free everywhere, but it is heard as "one query", which leads straight to the same product. A Python module name also cannot start with a digit.
+- **SoloQuery and UnoQuery** made the shortlist. UNO is Mattel's mark in class 9 (game software), and Uno Platform is a known .NET developer tool, so the risk was too high. "Solo" also says "for one".
+- **QuerySolo** was chosen: the same idea with "query" first. On 2026-09-30 it was free on PyPI (`querysolo`, `query-solo`, `querysolo-cli`), npm (`querysolo` and the `@querysolo` organisation), crates.io, Homebrew, conda-forge, GitHub (no user, organisation or repository), Docker Hub, the VS Code Marketplace and Open VSX, and both App Stores. querysolo.com, .dev, .app, .io, .ai, .net, .org, .co and .sh were all unregistered.
+- **The nearest names:** DB Solo, an older desktop SQL query tool, and QUERYSIGHT, a 2024 US application for data-analysis software. No QUERYSOLO filing was found in a web search. A USPTO clearance search in classes 9 and 42 is still to be made, and the filing goes in the company's name.
+
 *2026-09-24 · Candidates for the product's name, from the "a warehouse for one" positioning. Lakelet stays the working name until a box is ticked; the deadline is the ship brief's S7 (PyPI, brew, the signing identity, the domain). Registry checks were made on this date from this machine: PyPI via its JSON API, `.com` at Verisign's RDAP, `.dev` at Google Registry's RDAP, `.io` via rdap.org. A "taken" PyPI name may be a squat; `<name>-cli` is the fallback TASKS.md already names. No trademark search has been made; that is the open item in TASKS.md and is manual (USPTO, classes 9 and 42).*
 
 ## The test a name must pass

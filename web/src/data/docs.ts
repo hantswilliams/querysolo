@@ -7,12 +7,12 @@ import { getCollection } from 'astro:content';
 export const SECTIONS = ['Start', 'Guide', 'Reference', 'Develop'] as const;
 export type Section = (typeof SECTIONS)[number];
 
-export const REPO = 'https://github.com/hantswilliams/lakelet';
+export const REPO = 'https://github.com/hantswilliams/querysolo';
 export const EDIT_BASE = `${REPO}/edit/main/web/src/content/docs`;
 
 export function coreVersion(): string {
   try {
-    const src = readFileSync(new URL('../../../core/lakelet/__init__.py', import.meta.url), 'utf8');
+    const src = readFileSync(new URL('../../../core/querysolo/__init__.py', import.meta.url), 'utf8');
     return src.match(/__version__\s*=\s*"([^"]+)"/)?.[1] ?? 'unknown';
   } catch {
     return 'unknown';

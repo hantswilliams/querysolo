@@ -1,9 +1,9 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
-"""A stand-in for the ``lakelet`` executable for the shell's tests. ``init <folder>`` writes a
-``lakelet.toml`` the way core step 2 does and prints what it created; ``-C <project> serve``
-takes the real arguments, records them, writes ``.lakelet/serve.json`` the way core step 9
-does, prints the ``serving`` line, then lives for LAKELET_FAKE_LIFETIME seconds (0: refuse
+"""A stand-in for the ``querysolo`` executable for the shell's tests. ``init <folder>`` writes a
+``querysolo.toml`` the way core step 2 does and prints what it created; ``-C <project> serve``
+takes the real arguments, records them, writes ``.querysolo/serve.json`` the way core step 9
+does, prints the ``serving`` line, then lives for QUERYSOLO_FAKE_LIFETIME seconds (0: refuse
 and exit)."""
 
 import json
@@ -16,20 +16,20 @@ args = sys.argv[1:]
 
 if args and args[0] == "init":
     folder = args[1]
-    if os.path.exists(os.path.join(folder, "lakelet.toml")):
-        print(f"{folder} is already a Lakelet project", file=sys.stderr)
+    if os.path.exists(os.path.join(folder, "querysolo.toml")):
+        print(f"{folder} is already a QuerySolo project", file=sys.stderr)
         sys.exit(1)
     # `--warehouse s3://bucket/prefix` (decisions W1), refused for anything else, as the core does
     warehouse = args[args.index("--warehouse") + 1] if "--warehouse" in args else "./warehouse"
     if warehouse != "./warehouse" and not warehouse.startswith("s3://"):
         print(f"the warehouse is ./warehouse or an s3://bucket/prefix, not {warehouse}", file=sys.stderr)
         sys.exit(1)
-    os.makedirs(os.path.join(folder, ".lakelet"), exist_ok=True)
-    with open(os.path.join(folder, "lakelet.toml"), "w", encoding="utf-8") as f:
+    os.makedirs(os.path.join(folder, ".querysolo"), exist_ok=True)
+    with open(os.path.join(folder, "querysolo.toml"), "w", encoding="utf-8") as f:
         f.write(f'[project]\nname = "{os.path.basename(folder.rstrip(os.sep))}"\nwarehouse = "{warehouse}"\n')
-    print("  lakelet.toml\n  .lakelet/")
+    print("  querysolo.toml\n  .querysolo/")
     if warehouse != "./warehouse":
-        print(f"  every table's files go to {warehouse} (the catalog stays in .lakelet/)")
+        print(f"  every table's files go to {warehouse} (the catalog stays in .querysolo/)")
     sys.exit(0)
 
 if args[:2] == ["bucket", "check"]:
@@ -55,13 +55,13 @@ if args[:2] == ["bucket", "check"]:
     sys.exit(0 if result["ok"] else 1)
 
 project = args[args.index("-C") + 1]
-lifetime = int(os.environ.get("LAKELET_FAKE_LIFETIME", "60"))
-lakelet_dir = os.path.join(project, ".lakelet")
-os.makedirs(lakelet_dir, exist_ok=True)
-with open(os.path.join(lakelet_dir, "fake-args.txt"), "w", encoding="utf-8") as f:
+lifetime = int(os.environ.get("QUERYSOLO_FAKE_LIFETIME", "60"))
+querysolo_dir = os.path.join(project, ".querysolo")
+os.makedirs(querysolo_dir, exist_ok=True)
+with open(os.path.join(querysolo_dir, "fake-args.txt"), "w", encoding="utf-8") as f:
     f.write(" ".join(args))
-    if "LAKELET_DEV_ORIGIN" in os.environ:
-        f.write(f" env LAKELET_DEV_ORIGIN={os.environ['LAKELET_DEV_ORIGIN']}")
+    if "QUERYSOLO_DEV_ORIGIN" in os.environ:
+        f.write(f" env QUERYSOLO_DEV_ORIGIN={os.environ['QUERYSOLO_DEV_ORIGIN']}")
     if "AWS_PROFILE" in os.environ:
         f.write(f" env AWS_PROFILE={os.environ['AWS_PROFILE']}")
     f.write(f" cwd={os.getcwd()}")
@@ -71,7 +71,7 @@ if lifetime == 0:
     sys.exit(1)
 
 port = 40000 + (os.getpid() % 10000)
-with open(os.path.join(lakelet_dir, "serve.json"), "w", encoding="utf-8") as f:
+with open(os.path.join(querysolo_dir, "serve.json"), "w", encoding="utf-8") as f:
     json.dump({"port": port, "pid": os.getpid(), "token": secrets.token_urlsafe(32), "started": "now"}, f)
 print(f"serving http://127.0.0.1:{port}: /api (bearer token in serve.json) and /v1 (the catalog)")
 print("Ctrl-C stops it.")

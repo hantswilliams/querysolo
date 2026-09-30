@@ -1,24 +1,24 @@
 ---
 title: CLI reference
-description: Every lakelet verb with its arguments and options, generated from the CLI's own help text.
+description: Every querysolo verb with its arguments and options, generated from the CLI's own help text.
 section: Reference
 order: 1
 ---
 
-Generated from `lakelet --help` and every subcommand's help at version `0.1.0.dev0`
+Generated from `querysolo --help` and every subcommand's help at version `0.1.0.dev0`
 by `web/scripts/gen-cli-reference.py`. Do not edit by hand; re-run the script after a
 CLI change.
 
 Every verb runs against the project in the current folder; `-C <path>` points at another
 one, and `--profile <name>` names the AWS profile for a private bucket, as `AWS_PROFILE`
-would ([credentials](/docs/remote#credentials)). The gauge line goes to stderr and rows to stdout, so `lakelet sql … > out.csv` keeps
+would ([credentials](/docs/remote#credentials)). The gauge line goes to stderr and rows to stdout, so `querysolo sql … > out.csv` keeps
 the two apart. Exit codes: `0` ran; `1` an error, named on stderr; `2` a Red verdict that
 was refused (add `--run-anyway`); `4` a catalog conflict after retries.
 
-## `lakelet`
+## `querysolo`
 
 ```text
-Usage: lakelet [OPTIONS] COMMAND [ARGS]...
+Usage: querysolo [OPTIONS] COMMAND [ARGS]...
 
   Your laptop is the warehouse until it can't be.
 
@@ -29,7 +29,7 @@ Options:
   --help                Show this message and exit.
 
 Commands:
-  init      Turn a folder into a lakehouse: catalog, warehouse, lakelet.toml,...
+  init      Turn a folder into a lakehouse: catalog, warehouse, querysolo.toml,...
   import    Import a file or a folder of files into Iceberg tables.
   sql       Run SQL: the gauge line first (stderr), then the rows (stdout).
   estimate  The gauge only: verdict, bytes, memory, time, the burst half.
@@ -45,16 +45,16 @@ Commands:
   question  Saved questions: dbt models with checks.
   gauge     The gauge's record.
   audit     Prove what leaves the machine.
-  config    The settings in lakelet.toml.
+  config    The settings in querysolo.toml.
   bucket    A bucket you own, before a project uses it.
 ```
 
-### `lakelet init`
+### `querysolo init`
 
 ```text
-Usage: lakelet init [OPTIONS] [directory]
+Usage: querysolo init [OPTIONS] [directory]
 
-  Turn a folder into a lakehouse: catalog, warehouse, lakelet.toml, AGENTS.md, dbt
+  Turn a folder into a lakehouse: catalog, warehouse, querysolo.toml, AGENTS.md, dbt
   project.
 
 Arguments:
@@ -67,10 +67,10 @@ Options:
   --help             Show this message and exit.
 ```
 
-### `lakelet import`
+### `querysolo import`
 
 ```text
-Usage: lakelet import [OPTIONS] {path}
+Usage: querysolo import [OPTIONS] {path}
 
   Import a file or a folder of files into Iceberg tables.
 
@@ -85,10 +85,10 @@ Options:
   --help        Show this message and exit.
 ```
 
-### `lakelet sql`
+### `querysolo sql`
 
 ```text
-Usage: lakelet sql [OPTIONS] [query]
+Usage: querysolo sql [OPTIONS] [query]
 
   Run SQL: the gauge line first (stderr), then the rows (stdout).
 
@@ -104,10 +104,10 @@ Options:
   --help               Show this message and exit.
 ```
 
-### `lakelet estimate`
+### `querysolo estimate`
 
 ```text
-Usage: lakelet estimate [OPTIONS] [query]
+Usage: querysolo estimate [OPTIONS] [query]
 
   The gauge only: verdict, bytes, memory, time, the burst half. Nothing runs.
 
@@ -120,10 +120,10 @@ Options:
   --help             Show this message and exit.
 ```
 
-### `lakelet run`
+### `querysolo run`
 
 ```text
-Usage: lakelet run [OPTIONS] [select]...
+Usage: querysolo run [OPTIONS] [select]...
 
   Build the project's dbt models through the catalog, each with its verdict first. A
   `view` model becomes a view in the catalog; a `table` model an Iceberg table. The DAG
@@ -140,10 +140,10 @@ Options:
   --help         Show this message and exit.
 ```
 
-### `lakelet versions`
+### `querysolo versions`
 
 ```text
-Usage: lakelet versions [OPTIONS] {name}
+Usage: querysolo versions [OPTIONS] {name}
 
   The versions of one question or model: every commit that changed its SQL or its
   checks, newest first.
@@ -156,10 +156,10 @@ Options:
   --help         Show this message and exit.
 ```
 
-### `lakelet restore`
+### `querysolo restore`
 
 ```text
-Usage: lakelet restore [OPTIONS] {name} {version}
+Usage: querysolo restore [OPTIONS] {name} {version}
 
   Put an earlier version of a question or model back. The restore is itself a version;
   nothing in the history is rewritten.
@@ -172,10 +172,10 @@ Options:
   --help  Show this message and exit.
 ```
 
-### `lakelet lineage`
+### `querysolo lineage`
 
 ```text
-Usage: lakelet lineage [OPTIONS] [name]
+Usage: querysolo lineage [OPTIONS] [name]
 
   What a table, view or model reads and what reads it, and how each edge is known: a dbt
   ref() or source(), a table named in the SQL, or a catalog view's SQL. From the last
@@ -192,10 +192,10 @@ Options:
   --help               Show this message and exit.
 ```
 
-### `lakelet changes`
+### `querysolo changes`
 
 ```text
-Usage: lakelet changes [OPTIONS] [name]
+Usage: querysolo changes [OPTIONS] [name]
 
   Everything that happened to the project, newest first: every table's snapshots (and
   the models each made out of date), each model's and question's last run, and the
@@ -211,10 +211,10 @@ Options:
   --help              Show this message and exit.
 ```
 
-### `lakelet relocate`
+### `querysolo relocate`
 
 ```text
-Usage: lakelet relocate [OPTIONS]
+Usage: querysolo relocate [OPTIONS]
 
   After the project folder was moved or copied: rewrite every local table's locations
   under this folder so the tables resolve again. Every snapshot is kept; the old
@@ -225,13 +225,13 @@ Options:
   --help  Show this message and exit.
 ```
 
-### `lakelet serve`
+### `querysolo serve`
 
 ```text
-Usage: lakelet serve [OPTIONS]
+Usage: querysolo serve [OPTIONS]
 
   Run the core as the app's sidecar: catalog and API on one loopback port, named in
-  .lakelet/serve.json with a per-launch token.
+  .querysolo/serve.json with a per-launch token.
 
 Options:
   --port <int>          A fixed port; 0 picks a free one.  [default: 0]
@@ -241,10 +241,10 @@ Options:
   --help                Show this message and exit.
 ```
 
-### `lakelet tables`
+### `querysolo tables`
 
 ```text
-Usage: lakelet tables [OPTIONS] COMMAND [ARGS]...
+Usage: querysolo tables [OPTIONS] COMMAND [ARGS]...
 
   List, describe and sample tables.
 
@@ -263,10 +263,10 @@ Commands:
   discover  Candidate prefixes under a bucket, with their size and kind.
 ```
 
-#### `lakelet tables list`
+#### `querysolo tables list`
 
 ```text
-Usage: lakelet tables list [OPTIONS]
+Usage: querysolo tables list [OPTIONS]
 
   Tables in the catalog with rows, size, when they were last written, and location.
 
@@ -274,10 +274,10 @@ Options:
   --help  Show this message and exit.
 ```
 
-#### `lakelet tables rename`
+#### `querysolo tables rename`
 
 ```text
-Usage: lakelet tables rename [OPTIONS] {old} {new}
+Usage: querysolo tables rename [OPTIONS] {old} {new}
 
   Rename a table: one catalog commit, the data does not move. Finishes a replace that
   was interrupted between its drop and its rename.
@@ -290,10 +290,10 @@ Options:
   --help  Show this message and exit.
 ```
 
-#### `lakelet tables describe`
+#### `querysolo tables describe`
 
 ```text
-Usage: lakelet tables describe [OPTIONS] {name}
+Usage: querysolo tables describe [OPTIONS] {name}
 
   Columns, types, partitioning, freshness and the last commit of a table.
 
@@ -304,10 +304,10 @@ Options:
   --help  Show this message and exit.
 ```
 
-#### `lakelet tables publish`
+#### `querysolo tables publish`
 
 ```text
-Usage: lakelet tables publish [OPTIONS] {name} {prefix}
+Usage: querysolo tables publish [OPTIONS] {name} {prefix}
 
   Move a table built here into a bucket, every snapshot kept: its files are copied under
   the prefix, its metadata written again there, and the catalog moved to it in one
@@ -315,7 +315,7 @@ Usage: lakelet tables publish [OPTIONS] {name} {prefix}
   resumes: files already in the bucket at the same size are not copied twice.
 
 Arguments:
-  name    A table Lakelet wrote, under the local warehouse.  [required]
+  name    A table QuerySolo wrote, under the local warehouse.  [required]
   prefix  s3://bucket/prefix; the table goes under main/.  [required]
 
 Options:
@@ -324,10 +324,10 @@ Options:
   --help     Show this message and exit.
 ```
 
-#### `lakelet tables expire`
+#### `querysolo tables expire`
 
 ```text
-Usage: lakelet tables expire [OPTIONS] [name]
+Usage: querysolo tables expire [OPTIONS] [name]
 
   Drop snapshots older than the retention and delete the files only they referenced,
   plus any file under the table that no snapshot references and that is over an hour old
@@ -339,15 +339,15 @@ Arguments:
   name  A table; or --all.
 
 Options:
-  --all              Every table Lakelet wrote.
-  --keep-days <int>  Days of snapshots to keep; lakelet.toml's by default.
+  --all              Every table QuerySolo wrote.
+  --keep-days <int>  Days of snapshots to keep; querysolo.toml's by default.
   --help             Show this message and exit.
 ```
 
-#### `lakelet tables sample`
+#### `querysolo tables sample`
 
 ```text
-Usage: lakelet tables sample [OPTIONS] {name}
+Usage: querysolo tables sample [OPTIONS] {name}
 
   The first rows of a table.
 
@@ -359,10 +359,10 @@ Options:
   --help    Show this message and exit.
 ```
 
-#### `lakelet tables attach`
+#### `querysolo tables attach`
 
 ```text
-Usage: lakelet tables attach [OPTIONS] {name} {source}
+Usage: querysolo tables attach [OPTIONS] {name} {source}
 
   Register remote data as a read-only Iceberg table without copying it.
 
@@ -371,7 +371,7 @@ Arguments:
   source  s3://bucket/prefix/ of Parquet, or a …metadata.json  [required]
 
 Options:
-  --metadata-in-bucket  Keep the Iceberg metadata under s3://bucket/_lakelet/.
+  --metadata-in-bucket  Keep the Iceberg metadata under s3://bucket/_querysolo/.
   --anonymous           A public bucket: read it without credentials (metadata stays
                         local).
   --replace             Register the prefix again over an existing table (after files
@@ -379,10 +379,10 @@ Options:
   --help                Show this message and exit.
 ```
 
-#### `lakelet tables refresh`
+#### `querysolo tables refresh`
 
 ```text
-Usage: lakelet tables refresh [OPTIONS] {name}
+Usage: querysolo tables refresh [OPTIONS] {name}
 
   Add the files new under a registered prefix since it was attached. Refuses if a
   registered file is gone or was rewritten under the same path since the attach.
@@ -394,10 +394,10 @@ Options:
   --help  Show this message and exit.
 ```
 
-#### `lakelet tables discover`
+#### `querysolo tables discover`
 
 ```text
-Usage: lakelet tables discover [OPTIONS] {prefix}
+Usage: querysolo tables discover [OPTIONS] {prefix}
 
   Candidate prefixes under a bucket, with their size and kind.
 
@@ -409,10 +409,10 @@ Options:
   --help       Show this message and exit.
 ```
 
-### `lakelet catalog`
+### `querysolo catalog`
 
 ```text
-Usage: lakelet catalog [OPTIONS] COMMAND [ARGS]...
+Usage: querysolo catalog [OPTIONS] COMMAND [ARGS]...
 
   The Iceberg REST catalog.
 
@@ -423,10 +423,10 @@ Commands:
   serve  Expose the project's Iceberg REST catalog on a fixed loopback port.
 ```
 
-#### `lakelet catalog serve`
+#### `querysolo catalog serve`
 
 ```text
-Usage: lakelet catalog serve [OPTIONS]
+Usage: querysolo catalog serve [OPTIONS]
 
   Expose the project's Iceberg REST catalog on a fixed loopback port.
 
@@ -437,10 +437,10 @@ Options:
   --help        Show this message and exit.
 ```
 
-### `lakelet question`
+### `querysolo question`
 
 ```text
-Usage: lakelet question [OPTIONS] COMMAND [ARGS]...
+Usage: querysolo question [OPTIONS] COMMAND [ARGS]...
 
   Saved questions: dbt models with checks.
 
@@ -453,10 +453,10 @@ Commands:
   run   Run a saved question: the gauge first.
 ```
 
-#### `lakelet question save`
+#### `querysolo question save`
 
 ```text
-Usage: lakelet question save [OPTIONS] {title}
+Usage: querysolo question save [OPTIONS] {title}
 
   Save a question as a dbt model with two default checks.
 
@@ -469,10 +469,10 @@ Options:
   --help             Show this message and exit.
 ```
 
-#### `lakelet question list`
+#### `querysolo question list`
 
 ```text
-Usage: lakelet question list [OPTIONS]
+Usage: querysolo question list [OPTIONS]
 
   Saved questions with their last run.
 
@@ -480,10 +480,10 @@ Options:
   --help  Show this message and exit.
 ```
 
-#### `lakelet question run`
+#### `querysolo question run`
 
 ```text
-Usage: lakelet question run [OPTIONS] {slug}
+Usage: querysolo question run [OPTIONS] {slug}
 
   Run a saved question: the gauge first.
 
@@ -498,10 +498,10 @@ Options:
   --help               Show this message and exit.
 ```
 
-### `lakelet gauge`
+### `querysolo gauge`
 
 ```text
-Usage: lakelet gauge [OPTIONS] COMMAND [ARGS]...
+Usage: querysolo gauge [OPTIONS] COMMAND [ARGS]...
 
   The gauge's record.
 
@@ -515,10 +515,10 @@ Commands:
   history  Recent runs: verdict, estimate, actual.
 ```
 
-#### `lakelet gauge probe`
+#### `querysolo gauge probe`
 
 ```text
-Usage: lakelet gauge probe [OPTIONS]
+Usage: querysolo gauge probe [OPTIONS]
 
   Measure local disk throughput again and record it for the gauge (a project set up
   before September 11, 2026 measured the page cache, not the disk).
@@ -528,24 +528,24 @@ Options:
   --help      Show this message and exit.
 ```
 
-#### `lakelet gauge export`
+#### `querysolo gauge export`
 
 ```text
-Usage: lakelet gauge export [OPTIONS]
+Usage: querysolo gauge export [OPTIONS]
 
   Write the calibration record as JSON lines: fingerprint, machine class, operator
   counts, estimate, actual. Never SQL, table or column names, or values (PRD F0.3.9).
 
 Options:
   --out <str>  Where to write; '-' for stdout. Default:
-               .lakelet/exports/gauge-<time>.jsonl
+               .querysolo/exports/gauge-<time>.jsonl
   --help       Show this message and exit.
 ```
 
-#### `lakelet gauge reset`
+#### `querysolo gauge reset`
 
 ```text
-Usage: lakelet gauge reset [OPTIONS]
+Usage: querysolo gauge reset [OPTIONS]
 
   Forget every recorded run and what the gauge learned from them.
 
@@ -554,10 +554,10 @@ Options:
   --help  Show this message and exit.
 ```
 
-#### `lakelet gauge history`
+#### `querysolo gauge history`
 
 ```text
-Usage: lakelet gauge history [OPTIONS]
+Usage: querysolo gauge history [OPTIONS]
 
   Recent runs: verdict, estimate, actual.
 
@@ -566,10 +566,10 @@ Options:
   --help        Show this message and exit.
 ```
 
-### `lakelet audit`
+### `querysolo audit`
 
 ```text
-Usage: lakelet audit [OPTIONS] COMMAND [ARGS]...
+Usage: querysolo audit [OPTIONS] COMMAND [ARGS]...
 
   Prove what leaves the machine.
 
@@ -580,10 +580,10 @@ Commands:
   network  Run the quickstart with outbound connections blocked and report every...
 ```
 
-#### `lakelet audit network`
+#### `querysolo audit network`
 
 ```text
-Usage: lakelet audit network [OPTIONS]
+Usage: querysolo audit network [OPTIONS]
 
   Run the quickstart with outbound connections blocked and report every attempt.
 
@@ -591,25 +591,36 @@ Options:
   --help  Show this message and exit.
 ```
 
-### `lakelet config`
+#### `querysolo audit _run`
 
 ```text
-Usage: lakelet config [OPTIONS] COMMAND [ARGS]...
+Usage: querysolo audit _run [OPTIONS]
 
-  The settings in lakelet.toml.
+  The audit itself, in this process (what `audit network` spawns when frozen).
+
+Options:
+  --help  Show this message and exit.
+```
+
+### `querysolo config`
+
+```text
+Usage: querysolo config [OPTIONS] COMMAND [ARGS]...
+
+  The settings in querysolo.toml.
 
 Options:
   --help  Show this message and exit.
 
 Commands:
   show  The settings a hand or the app may change, with their current values.
-  set   Set one setting in lakelet.toml, leaving the rest of the file as it was.
+  set   Set one setting in querysolo.toml, leaving the rest of the file as it was.
 ```
 
-#### `lakelet config show`
+#### `querysolo config show`
 
 ```text
-Usage: lakelet config show [OPTIONS]
+Usage: querysolo config show [OPTIONS]
 
   The settings a hand or the app may change, with their current values.
 
@@ -617,13 +628,13 @@ Options:
   --help  Show this message and exit.
 ```
 
-#### `lakelet config set`
+#### `querysolo config set`
 
 ```text
-Usage: lakelet config set [OPTIONS] {key} {value}
+Usage: querysolo config set [OPTIONS] {key} {value}
 
-  Set one setting in lakelet.toml, leaving the rest of the file as it was. The engine
-  reads its settings at start, so a running `lakelet serve` keeps the old ones.
+  Set one setting in querysolo.toml, leaving the rest of the file as it was. The engine
+  reads its settings at start, so a running `querysolo serve` keeps the old ones.
 
 Arguments:
   key    engine.memory_limit, engine.threads or gauge.share_calibration.  [required]
@@ -633,10 +644,10 @@ Options:
   --help  Show this message and exit.
 ```
 
-### `lakelet bucket`
+### `querysolo bucket`
 
 ```text
-Usage: lakelet bucket [OPTIONS] COMMAND [ARGS]...
+Usage: querysolo bucket [OPTIONS] COMMAND [ARGS]...
 
   A bucket you own, before a project uses it.
 
@@ -647,10 +658,10 @@ Commands:
   check  Try a bucket the way a project would (decisions P1): the credentials in...
 ```
 
-#### `lakelet bucket check`
+#### `querysolo bucket check`
 
 ```text
-Usage: lakelet bucket check [OPTIONS] {prefix}
+Usage: querysolo bucket check [OPTIONS] {prefix}
 
   Try a bucket the way a project would (decisions P1): the credentials in the
   environment, a list of the prefix, one object written under it and removed. Nothing is

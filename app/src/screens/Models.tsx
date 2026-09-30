@@ -1,15 +1,15 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Screens 7 and 8 of the mockups (real-data brief R5, step 6): the project's dbt models
-// through the gauge. Technical mode is `lakelet run --plan` as a panel: the DAG with a
+// through the gauge. Technical mode is `querysolo run --plan` as a panel: the DAG with a
 // verdict per model, and a model's compiled SQL, lineage, tests, and last run; `Run all` is
-// `lakelet run`, `Run this` is `lakelet run <model>`, a Red model refuses until
+// `querysolo run`, `Run this` is `querysolo run <model>`, a Red model refuses until
 // `Run anyway`. Simple mode is the same DAG as cards: questions, checks, freshness, and
 // one `Refresh all`. The model's panel carries its history (versions brief G6, step 3):
 // the versions with the diff and Restore in Technical, the same as sentences behind
 // History on the card in Simple. Each model carries its state (decisions V3, step 4):
 // fresh, edited, upstream (an input changed) or never, on the DAG and the cards, and
-// `Run what changed` is `lakelet run --stale`. Nothing here does what the terminal cannot.
+// `Run what changed` is `querysolo run --stale`. Nothing here does what the terminal cannot.
 
 import { useCallback, useEffect, useState } from 'react';
 import { Api, ApiError, ago, humanBytes, type ModelResult, type PlannedModel, type RunReport, type TableInfo } from '../lib/api';
@@ -244,7 +244,7 @@ export function Models({ session, mode, tables, onChanged, select, onSelected, o
     <p className="muted" data-testid="no-models">
       {mode === 'simple'
         ? 'No questions saved yet. A question is a SQL file under models/; ask one on the Tables screen and save it there.'
-        : 'No models. A model is a SQL file under models/ (dbt); lakelet run builds them through the gauge.'}
+        : 'No models. A model is a SQL file under models/ (dbt); querysolo run builds them through the gauge.'}
     </p>
   );
 
@@ -303,7 +303,7 @@ export function Models({ session, mode, tables, onChanged, select, onSelected, o
         <section className="error" data-testid="models-error">
           <b>The plan failed.</b>
           <pre>{error}</pre>
-          <p>The plan is <code>lakelet run --plan</code>: dbt compiles the project, then every model is estimated. dbt comes with <code>pip install 'lakelet[dbt]'</code>.</p>
+          <p>The plan is <code>querysolo run --plan</code>: dbt compiles the project, then every model is estimated. dbt comes with <code>pip install 'querysolo[dbt]'</code>.</p>
         </section>
       )}
       {empty}
@@ -368,7 +368,7 @@ export function Models({ session, mode, tables, onChanged, select, onSelected, o
           )}
         </div>
       )}
-      {anyRed && !refusal && models && <p className="muted" data-testid="red-note">A Red model makes <code>lakelet run</code> refuse the whole DAG until <code>--run-anyway</code>; that is the gauge's promise, not a limit of the app.</p>}
+      {anyRed && !refusal && models && <p className="muted" data-testid="red-note">A Red model makes <code>querysolo run</code> refuse the whole DAG until <code>--run-anyway</code>; that is the gauge's promise, not a limit of the app.</p>}
     </section>
   );
 }

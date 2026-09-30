@@ -1,9 +1,9 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The Lineage screen (decisions L1): the whole project as a graph the app draws — every
 // table, view and model a node in layers left to right, every edge how lineage knows it,
 // a model coloured by its state. A node is a link to its detail: a model on the Models
-// screen, a table or view on the Tables screen. `lakelet lineage --all` is the same graph
+// screen, a table or view on the Tables screen. `querysolo lineage --all` is the same graph
 // as text; nothing here does what the terminal cannot.
 
 import { useEffect, useState } from 'react';

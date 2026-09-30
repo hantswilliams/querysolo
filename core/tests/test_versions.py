@@ -1,9 +1,9 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Versions step 0 gate (versions brief §4, G2, G3, G9): ``init`` makes the folder a git
 repository and commits what it wrote, a folder already in one is left as it is, every save is
 a commit with the title and git's own author, an unchanged save commits nothing, nothing of
-the user's is swept into Lakelet's commit, and a repository that cannot be written comes back
+the user's is swept into QuerySolo's commit, and a repository that cannot be written comes back
 as a reason instead of an exception."""
 
 import os
@@ -12,7 +12,7 @@ import stat
 import pytest
 from dulwich.repo import Repo
 
-from lakelet import Project, versions
+from querysolo import Project, versions
 
 SQL = "select customer, sum(amt) as revenue from orders group by 1"
 
@@ -59,7 +59,7 @@ def project(tmp_path, gitconfig):
     Project.init(root, probe_mb=8)
     p = Project.open(root)
     p.engine.execute(
-        "CREATE TABLE lakelet.main.orders AS SELECT range AS id, 'c' || (range % 5) AS customer, "
+        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, 'c' || (range % 5) AS customer, "
         "(range * 1.5)::DOUBLE AS amt FROM range(1000)"
     )
     yield p
@@ -79,15 +79,15 @@ def test_init_makes_the_folder_a_repository_and_commits_what_it_wrote(tmp_path, 
     with Repo.discover(str(root)) as repo:
         assert repo.refs.read_ref(b"HEAD") == b"ref: refs/heads/main"
 
-    assert log(root) == [("lakelet init", "Ada Lovelace <ada@example.com>")]
+    assert log(root) == [("querysolo init", "Ada Lovelace <ada@example.com>")]
     assert tracked(root) == [
         ".gitignore",
         "AGENTS.md",
         "dbt_project.yml",
-        "lakelet.toml",
-        "macros/lakelet.sql",
-        "macros/lakelet_views.sql",
+        "macros/querysolo.sql",
+        "macros/querysolo_views.sql",
         "models/.gitkeep",
+        "querysolo.toml",
     ]
 
 
@@ -95,8 +95,8 @@ def test_init_never_commits_the_catalog_the_warehouse_or_the_cache(tmp_path, git
     """G9: the commit carries model files and configuration, never data, history or cache."""
     root = tmp_path / "acme"
     Project.init(root, probe_mb=8)
-    assert (root / ".lakelet" / "catalog.db").exists()  # written, and not committed
-    assert not [p for p in tracked(root) if p.startswith((".lakelet/", "warehouse/"))]
+    assert (root / ".querysolo" / "catalog.db").exists()  # written, and not committed
+    assert not [p for p in tracked(root) if p.startswith((".querysolo/", "warehouse/"))]
 
 
 def test_an_existing_repository_is_used_as_it_is(tmp_path, gitconfig) -> None:
@@ -146,13 +146,13 @@ def test_a_second_save_is_a_second_version_and_an_unchanged_save_is_none(project
     assert messages[:3] == [
         "update question: Revenue by customer",
         "save question: Revenue by customer",
-        "lakelet init",
+        "querysolo init",
     ]
 
 
 def test_a_save_commits_its_own_files_and_leaves_the_users_work_alone(project) -> None:
     """G3's *not chosen*: `git add -A` would sweep a developer's work in progress into
-    Lakelet's commit. Neither their staged change nor their untracked file may appear."""
+    QuerySolo's commit. Neither their staged change nor their untracked file may appear."""
     from dulwich import porcelain
 
     (project.root / "models" / "theirs.sql").write_text("select 1\n", encoding="utf-8")
@@ -181,7 +181,7 @@ def test_a_project_made_before_this_version_gets_its_repository_on_its_next_save
     shutil.rmtree(root / ".git")  # as if init had never made one
 
     with Project.open(root) as p:
-        p.engine.execute("CREATE TABLE lakelet.main.orders AS SELECT 1 AS id, 2.0 AS amt")
+        p.engine.execute("CREATE TABLE querysolo.main.orders AS SELECT 1 AS id, 2.0 AS amt")
         q = p.questions.save("All orders", "select * from orders")
     assert q.commit and (root / ".git").is_dir()
     assert [m for m, _ in log(root)] == ["save question: All orders"]
@@ -204,7 +204,7 @@ def test_the_author_falls_back_to_the_os_user_when_git_has_no_identity(
 
 def test_a_global_commit_gpgsign_does_not_make_a_save_fail(tmp_path, monkeypatch) -> None:
     """The brief's §7 known unknown: a developer's `commit.gpgsign = true` must not fail a
-    save. Lakelet builds the commit object itself and signs nothing, so the commit is made
+    save. QuerySolo builds the commit object itself and signs nothing, so the commit is made
     and is unsigned."""
     use_gitconfig(
         monkeypatch,
@@ -218,7 +218,7 @@ def test_a_global_commit_gpgsign_does_not_make_a_save_fail(tmp_path, monkeypatch
     assert report.commit and report.git is None
 
     with Project.open(root) as p:
-        p.engine.execute("CREATE TABLE lakelet.main.orders AS SELECT 1 AS id, 2.0 AS amt")
+        p.engine.execute("CREATE TABLE querysolo.main.orders AS SELECT 1 AS id, 2.0 AS amt")
         q = p.questions.save("All orders", "select * from orders")
     assert q.commit and q.git is None
     with Repo.discover(str(root)) as repo:
@@ -264,7 +264,7 @@ def test_init_with_a_git_that_is_not_a_repository_still_makes_the_project(
     (root / ".git").write_text("not a repository\n", encoding="utf-8")
     report = Project.init(root, probe_mb=0)
     assert report.repository is None and report.commit is None and report.git
-    assert (root / "lakelet.toml").exists() and (root / ".lakelet" / "catalog.db").exists()
+    assert (root / "querysolo.toml").exists() and (root / ".querysolo" / "catalog.db").exists()
 
 
 # -- the module's own surface --------------------------------------------------------------

@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Versions step 3 (G6): the Versions section on the model detail, against the eighth
 // sidecar, whose question was saved twice by the CLI before the page opened. Technical
@@ -51,7 +51,7 @@ test('the versions, the diff, Gauge then and now, Restore as a third version, an
   await rows.nth(1).click();
   await expect(rows.nth(1)).toHaveClass('on');
   await expect(versions.getByTestId('diff-summary')).toContainText(`${firstId} against the version before: 3 lines added`);
-  await expect(versions.getByTestId('command')).toContainText(`lakelet restore ${name} ${firstId}`);
+  await expect(versions.getByTestId('command')).toContainText(`querysolo restore ${name} ${firstId}`);
 
   // Restore this version: a third version, linear, and the plan compiles the old SQL again
   await versions.getByTestId('restore').click();
@@ -117,7 +117,7 @@ test('the Recent strip on the detail, and the Changes screen: the saves, the res
   const changes = page.getByTestId('changes-screen');
   await expect(changes.getByTestId('changes-filter')).toHaveValue(name);
   await expect(changes.getByTestId('feed')).toBeVisible();
-  await expect(changes.getByTestId('command')).toContainText(`lakelet changes ${name} --last 100`);
+  await expect(changes.getByTestId('command')).toContainText(`querysolo changes ${name} --last 100`);
   await expect(changes.getByTestId('entry-run').first()).toContainText(`${name} built in`);
   // the versions the CLI and the test before made: the restore, the update, the first save
   await expect(changes.getByTestId('entry-version').first()).toContainText(`restore question: ${SEEDED_QUESTION.title}`);
@@ -127,9 +127,9 @@ test('the Recent strip on the detail, and the Changes screen: the saves, the res
 
   // the whole project: the import's snapshot and init's version at the bottom, the run at the top
   await changes.getByTestId('changes-filter').fill('');
-  await expect(changes.getByTestId('command')).toContainText('lakelet changes --last 100');
+  await expect(changes.getByTestId('command')).toContainText('querysolo changes --last 100');
   await expect(changes.getByTestId('entry-snapshot').last()).toContainText('orders: append +4 rows');
-  await expect(changes.getByTestId('entry-version').last()).toContainText('lakelet init');
+  await expect(changes.getByTestId('entry-version').last()).toContainText('querysolo init');
   // the run is at the top — unless the save-question spec, on the same sidecar, built its
   // question in the meantime, so the newest run entry about this name is what is asserted
   await expect(changes.getByTestId('entry-run').filter({ hasText: name }).first()).toContainText(`${name} built in`);

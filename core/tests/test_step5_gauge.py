@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 5 gate, the local half (brief §4): predicates from EXPLAIN into pyiceberg
 expressions (D20), pruning through the manifest cache, the model, the verdict in the site's
@@ -22,11 +22,11 @@ from pyiceberg.expressions import (
     StartsWith,
 )
 
-from lakelet import Project
-from lakelet.gauge import predicates
-from lakelet.gauge.model import LADDER, round_cap
-from lakelet.gauge.verdict import human_bytes, human_seconds
-from lakelet.query import RedRefused
+from querysolo import Project
+from querysolo.gauge import predicates
+from querysolo.gauge.model import LADDER, round_cap
+from querysolo.gauge.verdict import human_bytes, human_seconds
+from querysolo.query import RedRefused
 
 
 @pytest.mark.parametrize(
@@ -86,7 +86,7 @@ def project(tmp_path):
     assert report.throughput_probe in ("nocache", "direct", "cached")
     p = Project.open(root)
     p.engine.execute(
-        "CREATE TABLE lakelet.main.orders AS SELECT range AS id, 'c' || (range % 10) AS customer, "
+        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, 'c' || (range % 10) AS customer, "
         "(range * 1.5)::DOUBLE AS amt, DATE '2026-01-01' + (range % 365)::INTEGER AS d "
         "FROM range(1000000)"
     )
@@ -141,7 +141,7 @@ def test_second_estimate_is_within_the_budget(project) -> None:
 
 
 def test_query_overhead_beyond_duckdb_is_within_the_budget(project) -> None:
-    """Brief §6: what Lakelet adds around a statement (the estimate, the profile read, the
+    """Brief §6: what QuerySolo adds around a statement (the estimate, the profile read, the
     history row) is under 50 ms. Measured as the difference between a full ``query()``
     consumed to exhaustion and DuckDB alone on the same statement, warm, best of three."""
     sql = "select customer, count(*) from orders where d >= '2026-06-01' group by 1"
@@ -158,10 +158,10 @@ def test_query_overhead_beyond_duckdb_is_within_the_budget(project) -> None:
         return time.perf_counter() - started
 
     duckdb_alone = min(raw() for _ in range(3))
-    lakelet = min(full() for _ in range(3))
-    overhead = lakelet - duckdb_alone
+    querysolo = min(full() for _ in range(3))
+    overhead = querysolo - duckdb_alone
     print(
-        f"\nquery: duckdb {duckdb_alone * 1000:.0f} ms, lakelet {lakelet * 1000:.0f} ms, "
+        f"\nquery: duckdb {duckdb_alone * 1000:.0f} ms, querysolo {querysolo * 1000:.0f} ms, "
         f"overhead {overhead * 1000:.0f} ms"
     )
     load, cores = os.getloadavg()[0], os.cpu_count() or 1
@@ -173,7 +173,7 @@ def test_query_overhead_beyond_duckdb_is_within_the_budget(project) -> None:
 
 
 def _lower_thresholds(project: Project, green: float, yellow: float) -> Project:
-    toml = project.root / "lakelet.toml"
+    toml = project.root / "querysolo.toml"
     text = toml.read_text().replace("green_max_seconds = 60", f"green_max_seconds = {green}")
     text = text.replace("yellow_max_seconds = 600", f"yellow_max_seconds = {yellow}")
     toml.write_text(text)
@@ -239,8 +239,8 @@ def test_the_probe_bypasses_the_page_cache_and_says_how(tmp_path) -> None:
     and a figure from before the change reads as cached."""
     import sys
 
-    from lakelet.gauge import inputs
-    from lakelet.project import run_probe
+    from querysolo.gauge import inputs
+    from querysolo.project import run_probe
 
     probe = inputs.probe_throughput(tmp_path / "wh", 64)
     assert probe.size_bytes == 64 * 1024 * 1024 and probe.mbps > 0
@@ -253,14 +253,14 @@ def test_the_probe_bypasses_the_page_cache_and_says_how(tmp_path) -> None:
     if probe.method != "cached":
         # a 64 MB read through the page cache would report tens of thousands
         assert probe.mbps < 20_000, probe
-    assert not (tmp_path / "wh" / ".lakelet-probe.bin").exists(), "the file is removed"
+    assert not (tmp_path / "wh" / ".querysolo-probe.bin").exists(), "the file is removed"
 
     root = tmp_path / "proj"
     Project.init(root, probe_mb=8)
-    cache = inputs.load_machine_cache(root / ".lakelet" / "cache")
+    cache = inputs.load_machine_cache(root / ".querysolo" / "cache")
     assert cache["probe"] == probe.method and cache["probe_mb"] == 8
     again = run_probe(root, 16)
-    cache = inputs.load_machine_cache(root / ".lakelet" / "cache")
+    cache = inputs.load_machine_cache(root / ".querysolo" / "cache")
     assert cache["throughput_local_mbps"] == again.mbps and cache["probe_mb"] == 16
     assert inputs.probe_method({}) == "none"
     assert inputs.probe_method({"throughput_local_mbps": 84914.0}) == "cached", "before the change"

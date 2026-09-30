@@ -1,9 +1,9 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The shell's commands (app brief A7, A10). Inside Tauri each window asks the shell for its
 // project and its session once, and opens folders through it; in a browser (development,
-// Playwright) the session comes from the URL, ?port=…&token=…, against a `lakelet serve`
-// started with LAKELET_DEV_ORIGIN (A12), and there is no folder dialog.
+// Playwright) the session comes from the URL, ?port=…&token=…, against a `querysolo serve`
+// started with QUERYSOLO_DEV_ORIGIN (A12), and there is no folder dialog.
 
 export interface Session {
   port: number;
@@ -12,7 +12,7 @@ export interface Session {
   project: string;
   /** Spawn to `serving` line and serve.json read, as the shell measured it (§3.2). */
   ready_ms: number;
-  /** `lakelet init`'s output when opening this folder initialised it. */
+  /** `querysolo init`'s output when opening this folder initialised it. */
   initialised: string | null;
 }
 
@@ -49,7 +49,7 @@ export async function getSession(): Promise<Session> {
   const p = params();
   const port = Number(p.get('port'));
   const token = p.get('token') ?? '';
-  if (!port || !token) throw new Error('no session: open through the Lakelet app, or pass ?port=&token= from serve.json');
+  if (!port || !token) throw new Error('no session: open through the QuerySolo app, or pass ?port=&token= from serve.json');
   return { port, token, pid: 0, project: p.get('project') ?? '', ready_ms: Number(p.get('ready_ms') ?? 0), initialised: null };
 }
 
@@ -64,14 +64,14 @@ export async function pickFolder(): Promise<string | null> {
 }
 
 /** Open a folder as a project: this window when it has none, else a new one (A10). A
- *  `warehouse` (an `s3://bucket/prefix`, decisions W1) goes to `lakelet init --warehouse`
+ *  `warehouse` (an `s3://bucket/prefix`, decisions W1) goes to `querysolo init --warehouse`
  *  when the folder is not a project yet; a folder that is one already refuses it. */
 export async function openProject(path: string, warehouse?: string): Promise<void> {
   if (!inTauri()) throw new Error('opening a project is only in the app');
   return invoke<void>('open_project', { path, warehouse: warehouse?.trim() || null });
 }
 
-/** What `lakelet bucket check` says (decisions P1), from the shell or the core's route. */
+/** What `querysolo bucket check` says (decisions P1), from the shell or the core's route. */
 export interface BucketCheck {
   prefix: string;
   ok: boolean;
@@ -82,7 +82,7 @@ export interface BucketCheck {
   credentials: { configured: boolean; source: 'environment' | 'profile' | 'none'; profile: string | null; region: string; endpoint: string | null };
 }
 
-/** Decisions P1: the shell runs `lakelet bucket check <prefix> --json` (a window without
+/** Decisions P1: the shell runs `querysolo bucket check <prefix> --json` (a window without
  *  a project has no core to ask; one with a core may ask it through `Api.checkBucket`),
  *  with the chosen AWS profile in its environment (C1). */
 export async function checkBucket(prefix: string, profile?: string): Promise<BucketCheck> {
@@ -96,7 +96,7 @@ export async function awsProfiles(): Promise<string[]> {
   return inTauri() ? invoke<string[]>('aws_profiles') : [];
 }
 
-/** The About row (ship brief S8): the app's version and where its `lakelet` came from. */
+/** The About row (ship brief S8): the app's version and where its `querysolo` came from. */
 export interface About {
   version: string;
   sidecar: string;
@@ -123,7 +123,7 @@ export async function defaultParent(): Promise<string | null> {
   return inTauri() ? invoke<string | null>('default_parent') : null;
 }
 
-/** Decisions P1: `parent/name` made and opened as a project (`lakelet init`, with
+/** Decisions P1: `parent/name` made and opened as a project (`querysolo init`, with
  *  `--warehouse` for a bucket, and the AWS profile it should use, C1). Resolves to the
  *  folder's path. */
 export async function newProject(parent: string, name: string, warehouse?: string, profile?: string): Promise<string> {
@@ -159,8 +159,8 @@ export async function onDrop(handler: (e: { kind: 'over' | 'leave' | 'drop'; pat
 /** The shell's `sidecar` events for this window only. The shell emits them to a window
  *  by label; the global `listen` of `@tauri-apps/api/event` hears events sent to any
  *  target, so a second window's "ready" reached the first and put the second project's
- *  session, health and tables into it (Hants, 2026-09-21: a window titled lakelet-demo
- *  showing lakelet-second). Listening on the current webview window keeps them apart. */
+ *  session, health and tables into it (Hants, 2026-09-21: a window titled querysolo-demo
+ *  showing querysolo-second). Listening on the current webview window keeps them apart. */
 export async function onSidecarEvent(handler: (e: SidecarEvent) => void): Promise<() => void> {
   if (!inTauri()) return () => {};
   const { getCurrentWebviewWindow } = await import('@tauri-apps/api/webviewWindow');

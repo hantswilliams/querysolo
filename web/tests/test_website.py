@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Full-site gate against production HTML. Run npm run build first."""
 
@@ -81,7 +81,7 @@ def test_unavailable_features_and_proposed_prices_are_explicit():
     assert "MCP / Planned, not available yet" in text("agents")
     assert "Scheduled later" in text("medallion")
     for route in MARKETING:
-        assert "brew install lakelet" not in text(route)
+        assert "brew install querysolo" not in text(route)
         assert "Developer preview" in text(route)
 
 
@@ -141,7 +141,7 @@ def test_merged_features_are_available_and_documented():
             assert feature in content
         assert "Table publishing and remote compute are planned" not in content
     assert "lineage interface are planned" not in text("medallion")
-    for command in ["lakelet tables publish", "lakelet lineage", "lakelet changes", "--warehouse"]:
+    for command in ["querysolo tables publish", "querysolo lineage", "querysolo changes", "--warehouse"]:
         assert command in text("docs/cli")
     for endpoint in ["POST /tables/{name}/publish", "GET /lineage", "GET /changes"]:
         assert endpoint in text("docs/api")
@@ -189,7 +189,7 @@ def test_home_leads_with_a_warehouse_for_one():
     for phrase in ["an open-source warehouse for one machine, for SQL and dbt",
                    "Know what fits. Know what changed.", "Planned next:"]:
         assert phrase in flat("index")
-    assert headings("index", "title") == ["Lakelet — A warehouse for one"]
+    assert headings("index", "title") == ["QuerySolo — A warehouse for one"]
 
 
 def test_home_sections_follow_the_three_beats():
@@ -220,7 +220,7 @@ def test_the_third_door_is_marked_planned_from_status():
 @pytest.mark.parametrize("route", ROUTES)
 def test_the_gauge_is_lookahead_and_the_category_is_not_lakehouse(route):
     content = flat(route)
-    assert "Lakelet Lookahead" not in content
+    assert "QuerySolo Lookahead" not in content
     if route in MARKETING:
         assert "lakehouse" not in content.lower()
 

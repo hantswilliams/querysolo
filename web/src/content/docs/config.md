@@ -1,11 +1,11 @@
 ---
-title: lakelet.toml and the project folder
+title: querysolo.toml and the project folder
 description: Every setting the core reads, what init writes, and what lives where on disk.
 section: Reference
 order: 2
 ---
 
-A Lakelet project is a folder with a `lakelet.toml` in it. `lakelet init` writes the file below; the core reads four sections and carries every other section and unknown key through untouched, so a file written by a later version still opens in this one.
+A QuerySolo project is a folder with a `querysolo.toml` in it. `querysolo init` writes the file below; the core reads four sections and carries every other section and unknown key through untouched, so a file written by a later version still opens in this one.
 
 ## The file `init` writes
 
@@ -52,9 +52,9 @@ allow = []
 
 | Key | Default | Meaning |
 |---|---|---|
-| `mode` | `local` | `local` is the only mode implemented: an embedded Iceberg REST server on a loopback port over `.lakelet/catalog.db`. `team` and `external` are accepted by the schema and not yet acted on. |
+| `mode` | `local` | `local` is the only mode implemented: an embedded Iceberg REST server on a loopback port over `.querysolo/catalog.db`. `team` and `external` are accepted by the schema and not yet acted on. |
 | `url` | none | Reserved for `team` and `external`. |
-| `keep_snapshots_days` | `7` | How many days of table history `lakelet tables expire` keeps. The current snapshot always stays. Settable with `lakelet config set catalog.keep_snapshots_days N`. |
+| `keep_snapshots_days` | `7` | How many days of table history `querysolo tables expire` keeps. The current snapshot always stays. Settable with `querysolo config set catalog.keep_snapshots_days N`. |
 
 ### `[engine]`
 
@@ -78,7 +78,7 @@ The verdict rule that uses these is on [the gauge](/docs/gauge) page.
 
 | Key | Default | Meaning |
 |---|---|---|
-| `auto_commit` | `true` | Whether `lakelet run` commits the model files it is about to build. `false` stops that; saving a question is a version either way. Settable with `lakelet config set git.auto_commit false`, or the switch in the app's settings. See [dbt and views](/docs/dbt). |
+| `auto_commit` | `true` | Whether `querysolo run` commits the model files it is about to build. `false` stops that; saving a question is a version either way. Settable with `querysolo config set git.auto_commit false`, or the switch in the app's settings. See [dbt and views](/docs/dbt). |
 
 ### `[burst]` and `[agents]`
 
@@ -88,21 +88,21 @@ Written so the file is already valid for the sessions that will read them; the c
 
 | Path | Written by | What |
 |---|---|---|
-| `lakelet.toml` | `init` | The file above. |
-| `AGENTS.md` | `init`, refreshed by `import` and `tables attach` | A short guide for coding agents working in the folder, with one block per table between markers that Lakelet rewrites. Edit anything outside the markers. |
-| `dbt_project.yml` | `init` (only if absent) | A minimal dbt project with `+database: lakelet`, so dbt-duckdb builds models into the catalog. |
+| `querysolo.toml` | `init` | The file above. |
+| `AGENTS.md` | `init`, refreshed by `import` and `tables attach` | A short guide for coding agents working in the folder, with one block per table between markers that QuerySolo rewrites. Edit anything outside the markers. |
+| `dbt_project.yml` | `init` (only if absent) | A minimal dbt project with `+database: querysolo`, so dbt-duckdb builds models into the catalog. |
 | `models/` | `init` | dbt models. Saved questions land in `models/questions/`. |
-| `macros/lakelet.sql` | `init` (only if absent) | Lakelet's `table` materialisation for the Iceberg catalog, overriding dbt's built-in one for the project. See [Transactions and the catalog](/docs/transactions). |
+| `macros/querysolo.sql` | `init` (only if absent) | QuerySolo's `table` materialisation for the Iceberg catalog, overriding dbt's built-in one for the project. See [Transactions and the catalog](/docs/transactions). |
 | `tests/generic/returns_rows.sql` | first `question save` | The generic test every saved question carries. |
-| `.gitignore` | `init` (lines appended, never overwritten) | `warehouse/`, `.lakelet/` and `.DS_Store`. |
+| `.gitignore` | `init` (lines appended, never overwritten) | `warehouse/`, `.querysolo/` and `.DS_Store`. |
 | `.git/` | `init`, when the folder is not already in a repository | A git repository on branch `main`, whose first commit is what `init` wrote. Every save is a version in it; see [Questions](/docs/questions). A folder already inside a repository is used as it is. |
 | `warehouse/main/<table>/` | the catalog, on every write | The Iceberg tables: `data/*.parquet` and `metadata/*.metadata.json`, manifests and manifest lists. Format version 2. |
-| `.lakelet/catalog.db` | `init` | The catalog: namespaces, tables with their current metadata location, a `leased_until` column for later. SQLite in WAL mode. |
-| `.lakelet/history.db` | first run | Every `sql`, `estimate`, and question run, with estimates and actuals. |
-| `.lakelet/cache/machine.json` | `init`'s probe, the first remote attach | Local disk throughput, and bandwidth to the bucket once measured. |
-| `.lakelet/cache/` | the gauge | Manifest statistics per table and snapshot, and immutable objects fetched from S3. Safe to delete; rebuilt on the next estimate. |
-| `.lakelet/last-profile.json` | every statement | DuckDB's JSON profile of the last statement. |
-| `.lakelet/serve.json` | `lakelet serve`, while it runs | `{port, pid, token, started}`, mode 0600; removed on exit. |
+| `.querysolo/catalog.db` | `init` | The catalog: namespaces, tables with their current metadata location, a `leased_until` column for later. SQLite in WAL mode. |
+| `.querysolo/history.db` | first run | Every `sql`, `estimate`, and question run, with estimates and actuals. |
+| `.querysolo/cache/machine.json` | `init`'s probe, the first remote attach | Local disk throughput, and bandwidth to the bucket once measured. |
+| `.querysolo/cache/` | the gauge | Manifest statistics per table and snapshot, and immutable objects fetched from S3. Safe to delete; rebuilt on the next estimate. |
+| `.querysolo/last-profile.json` | every statement | DuckDB's JSON profile of the last statement. |
+| `.querysolo/serve.json` | `querysolo serve`, while it runs | `{port, pid, token, started}`, mode 0600; removed on exit. |
 
 ## Names
 
@@ -110,4 +110,4 @@ Table names and question slugs follow one rule: lower case; any run of other cha
 
 ## Environment
 
-The core reads no settings from the environment except for remote data. `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` (or `AWS_DEFAULT_REGION`) and `AWS_ENDPOINT_URL` configure both DuckDB and pyiceberg for `tables attach`; with no keys set, both fall back to the AWS default credential chain. Credentials are never written to `lakelet.toml`.
+The core reads no settings from the environment except for remote data. `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` (or `AWS_DEFAULT_REGION`) and `AWS_ENDPOINT_URL` configure both DuckDB and pyiceberg for `tables attach`; with no keys set, both fall back to the AWS default credential chain. Credentials are never written to `querysolo.toml`.

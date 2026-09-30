@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 2 gate, the preview: the columns with their notes, the name that shapes the command,
 // and the replace-or-append choice when the table exists.
@@ -24,7 +24,7 @@ describe('PreviewPanel', () => {
     expect(screen.getByText('decimal(38, 0)')).toBeTruthy();
     expect(screen.getByText('128-bit integer becomes decimal(38, 0)')).toBeTruthy();
     expect(screen.getByText('∅')).toBeTruthy();
-    expect(screen.getByTestId('command').textContent).toContain('lakelet import /data/orders.csv --name sales');
+    expect(screen.getByTestId('command').textContent).toContain('querysolo import /data/orders.csv --name sales');
     fireEvent.click(screen.getByTestId('import'));
     expect(onImport).toHaveBeenCalledWith('create');
   });
@@ -36,7 +36,7 @@ describe('PreviewPanel', () => {
     fireEvent.click(screen.getByTestId('append'));
     expect(onImport).toHaveBeenCalledWith('append');
     rerender(<PreviewPanel path="/data/orders.csv" folder={false} previews={[preview]} name="orders" mode="append" exists="orders" onName={() => {}} onImport={onImport} onCancel={() => {}} />);
-    expect(screen.getByTestId('command').textContent).toContain('lakelet import /data/orders.csv --append');
+    expect(screen.getByTestId('command').textContent).toContain('querysolo import /data/orders.csv --append');
   });
 
   it('a folder lists its files and the button counts the tables', () => {
@@ -44,7 +44,7 @@ describe('PreviewPanel', () => {
     render(<PreviewPanel path="/data/in" folder previews={[b, preview]} name="" mode="create" onName={() => {}} onImport={() => {}} onCancel={() => {}} />);
     expect(screen.getByTestId('import').textContent).toBe('Import 2 tables');
     expect(screen.getByText('customers.parquet')).toBeTruthy();
-    expect(screen.getByTestId('command').textContent).toContain('lakelet import /data/in');
+    expect(screen.getByTestId('command').textContent).toContain('querysolo import /data/in');
   });
 });
 
@@ -68,7 +68,7 @@ describe('PreviewPanel for a remote prefix (real-data R4)', () => {
     render(<PreviewPanel path={remote.source} folder={false} previews={[remote]} name="places" mode="create" onName={() => {}} onImport={() => {}} onAttach={onAttach} onCancel={() => {}} />);
     expect(screen.getByTestId('remote-summary').textContent).toContain('16 Parquet files, 10.5 GB, read in place without credentials');
     expect(screen.getByText('Arrow')).toBeTruthy();
-    expect(screen.getByTestId('command').textContent).toContain(`lakelet tables attach places --anonymous ${remote.source}`);
+    expect(screen.getByTestId('command').textContent).toContain(`querysolo tables attach places --anonymous ${remote.source}`);
     expect(screen.getByTestId('attach').textContent).toBe('Attach as places');
     fireEvent.click(screen.getByTestId('attach'));
     expect(onAttach).toHaveBeenCalled();

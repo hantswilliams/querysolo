@@ -1,6 +1,6 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
-// The Recent strip (decisions L2): the last few entries of `lakelet changes <name>` on a
+// The Recent strip (decisions L2): the last few entries of `querysolo changes <name>` on a
 // table's, a view's or a model's detail — what happened to this one thing, newest first —
 // with a link to the Changes screen filtered to it.
 

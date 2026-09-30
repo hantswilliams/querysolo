@@ -48,7 +48,7 @@ Unchanged: How it runs · App · Docs · Pricing · GitHub. The hero chip change
 
 **Headline:** Your machine. Your bucket. Your tables.
 **Job:** the measured zero, `PRIVACY.md` in a sentence, the scope of "nothing leaves" in the same paragraph, then the open format: Parquet and Iceberg in a folder or in your bucket, read by Spark, Trino, pyiceberg, BigQuery and Databricks as they are.
-**Shown:** the existing "The files are yours" folder tree (`warehouse/`, `models/`, `.lakelet/`, `.git/`, `lakelet.toml`) moves here from the bottom of the page.
+**Shown:** the existing "The files are yours" folder tree (`warehouse/`, `models/`, `.querysolo/`, `.git/`, `querysolo.toml`) moves here from the bottom of the page.
 **For:** the consultant and the researcher (the zero), the dbt person and the platform analyst (any engine).
 **Marks:** built; S3 only, and the page says "your bucket" without naming a second provider.
 
@@ -89,7 +89,7 @@ From source today, with the ten-minute quickstart; the waitlist (Formspree, live
 | Headline "Your data, near or far. Know what fits." | "A warehouse for one." |
 | Chip "Local lakehouse" | "A warehouse for one" |
 | "lakehouse" as the category, on the landing page and the App page | "warehouse" with its scope in the same sentence; "lakehouse" survives only in docs where it names the format lineage |
-| "Lakelet Lookahead" | "Lookahead", the gauge's own name, so the rename does not cascade |
+| "QuerySolo Lookahead" | "Lookahead", the gauge's own name, so the rename does not cascade |
 | The folder section last | the folder section fourth, as the trust beat |
 | "How it fits" fourth | fifth, tightened |
 | No routing section | "Three doors", the N2 doors as cards, one marked planned |

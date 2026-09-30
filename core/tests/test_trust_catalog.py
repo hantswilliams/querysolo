@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Trust round T6: the catalog's ``/v1`` answers only requests that name loopback and refuses
 what a browser page can send — a ``Host`` that is not loopback (DNS rebinding), an ``Origin``
@@ -11,7 +11,7 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from lakelet import Project
+from querysolo import Project
 
 
 @pytest.fixture
@@ -59,15 +59,15 @@ def test_an_origin_header_is_refused_on_v1_and_an_unknown_one_on_api(served) -> 
 def test_a_body_that_is_not_json_is_refused_before_any_route(served) -> None:
     with _client(served) as c:
         body = '{"namespace": ["evil"]}'
-        r = c.post("/v1/lakelet/namespaces", content=body, headers={"Content-Type": "text/plain"})
+        r = c.post("/v1/querysolo/namespaces", content=body, headers={"Content-Type": "text/plain"})
         assert r.status_code == 403 and "application/json" in r.json()["error"]["message"]
         r = c.post(
-            "/v1/lakelet/namespaces",
+            "/v1/querysolo/namespaces",
             content="namespace=evil",
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
         assert r.status_code == 403
-        assert "evil" not in c.get("/v1/lakelet/namespaces").text  # no route was reached
+        assert "evil" not in c.get("/v1/querysolo/namespaces").text  # no route was reached
         r = c.post(
             "/api/estimate",
             content='{"sql": "select 1"}',
@@ -75,7 +75,7 @@ def test_a_body_that_is_not_json_is_refused_before_any_route(served) -> None:
         )
         assert r.status_code == 403
         # JSON, as the engines and the app send it, goes through
-        r = c.post("/v1/lakelet/namespaces", json={"namespace": ["fine"]})
+        r = c.post("/v1/querysolo/namespaces", json={"namespace": ["fine"]})
         assert r.status_code == 200, r.text
         r = c.post("/api/estimate", json={"sql": "select 1"}, headers=_api_headers(served))
         assert r.status_code == 200

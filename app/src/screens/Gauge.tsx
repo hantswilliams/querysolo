@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Screen 5 of the mockups, the gauge's record (real-data brief R8): this machine, the runs
 // recorded and how the estimates held up, the run list, estimate versus actual on log

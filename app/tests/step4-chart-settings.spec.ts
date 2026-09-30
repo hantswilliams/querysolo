@@ -1,7 +1,7 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 4 gate (app brief §4): a bar chart for a group-by and none for two numbers (A5);
-// settings write lakelet.toml in place and the CLI reads them. Crash recovery is gated in
+// settings write querysolo.toml in place and the CLI reads them. Crash recovery is gated in
 // Rust (the supervisor) and Vitest (the window's reaction); a browser has no sidecar to kill.
 
 import { test, expect, type Page } from '@playwright/test';
@@ -68,25 +68,25 @@ test('dates, timestamps and decimals read as dates, timestamps and numbers in th
   await expect(page.getByTestId('chart').locator('svg')).toContainText('amount');
 });
 
-test('settings write lakelet.toml in place and `lakelet config show` reads them', async ({ page }) => {
+test('settings write querysolo.toml in place and `querysolo config show` reads them', async ({ page }) => {
   const s = readStates()[1];
   await openReady(page, s);
-  const toml = join(s.project, 'lakelet.toml');
+  const toml = join(s.project, 'querysolo.toml');
   const before = readFileSync(toml, 'utf8');
   expect(before).toContain('threads = "auto"');
 
   await page.keyboard.press(`${mod}+,`); // the settings key
   const panel = page.getByTestId('settings');
   await expect(panel).toBeVisible();
-  await expect(panel).toContainText('lakelet.toml');
+  await expect(panel).toContainText('querysolo.toml');
 
   const threads = page.getByTestId('input-engine.threads');
   await threads.fill('3');
-  await expect(page.getByTestId('setting-engine.threads').getByTestId('command').locator('code')).toHaveText('lakelet config set engine.threads 3');
+  await expect(page.getByTestId('setting-engine.threads').getByTestId('command').locator('code')).toHaveText('querysolo config set engine.threads 3');
   await page.getByTestId('save-engine.threads').click();
   await expect(page.getByTestId('save-engine.threads')).toHaveText('saved');
   await page.getByTestId('input-gauge.share_calibration').check();
-  await expect(page.getByTestId('setting-gauge.share_calibration').getByTestId('command').locator('code')).toHaveText('lakelet config set gauge.share_calibration true');
+  await expect(page.getByTestId('setting-gauge.share_calibration').getByTestId('command').locator('code')).toHaveText('querysolo config set gauge.share_calibration true');
 
   await expect.poll(() => readFileSync(toml, 'utf8')).toContain('share_calibration = true');
   const after = readFileSync(toml, 'utf8');

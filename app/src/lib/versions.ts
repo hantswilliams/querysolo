@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The Versions section's words (versions brief G6): the unified diff the core sends,
 // rendered line by line without a library; its one-line summary; and each version as a

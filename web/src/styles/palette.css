@@ -1,7 +1,7 @@
-/* Copyright 2026 Lakelet contributors
+/* Copyright 2026 QuerySolo contributors
    SPDX-License-Identifier: Apache-2.0
 
-   Lakelet's palette — the one source for the site and the app (decisions U3, September 20,
+   QuerySolo's palette — the one source for the site and the app (decisions U3, September 20,
    2026). The site imports it from `web/src/layouts/Base.astro` and the app from
    `app/src/main.tsx`; neither defines a colour of its own, and a test in the app
    (`src/styles/palette.test.ts`) holds both to it.

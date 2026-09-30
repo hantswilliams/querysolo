@@ -4,7 +4,7 @@
 # (Without it the deploy step fails with "Creating Pages deployment failed ... 404".)
 # Private repos need a paid plan for Pages; making the repo public also works.
 # Optional repo variables (Settings → Secrets and variables → Actions → Variables):
-#   SITE_URL             e.g. https://lakelet.dev   — set this when a custom domain is configured
+#   SITE_URL             e.g. https://querysolo.dev   — set this when a custom domain is configured
 #                        (also add the domain under Settings → Pages). Unset = https://<owner>.github.io/<repo>
 #   PUBLIC_WAITLIST_URL  REQUIRED for the waitlist to capture anything. Today:
 #                        https://formspree.io/f/meaqdnjv  (a form id is not a secret -- Astro

@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Trust round T1: a replace that fails leaves the old table exactly as it was. The new
 table is built under a temporary name before anything is dropped; the swap is a drop and a
@@ -9,10 +9,10 @@ from __future__ import annotations
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project
-from lakelet.catalog.store import REPLACE_SUFFIX
-from lakelet.cli import app
-from lakelet.tables import NotExpirable, ReservedName, TableExists, replace_name
+from querysolo import Project
+from querysolo.catalog.store import REPLACE_SUFFIX
+from querysolo.cli import app
+from querysolo.tables import NotExpirable, ReservedName, TableExists, replace_name
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ def orders(project, tmp_path):
 
 
 def _rows(project, name="orders") -> int:
-    return project.engine.execute(f"select count(*) from lakelet.main.{name}").fetchone()[0]
+    return project.engine.execute(f"select count(*) from querysolo.main.{name}").fetchone()[0]
 
 
 def _snapshots(project, name="orders") -> int:
@@ -63,7 +63,7 @@ def test_a_file_that_does_not_parse_leaves_the_old_table_with_its_rows_and_histo
 def test_a_failure_inside_the_create_leaves_the_old_table_and_no_temporary(
     project, orders, monkeypatch
 ) -> None:
-    from lakelet import tables
+    from querysolo import tables
 
     real = tables.run_with_retry
 
@@ -107,13 +107,13 @@ def test_the_temporary_name_is_refused_for_a_users_table(project, orders) -> Non
         "x" + REPLACE_SUFFIX,
     ]
     r = runner.invoke(app, args)
-    assert r.exit_code != 0 and "Lakelet's own" in r.output
+    assert r.exit_code != 0 and "QuerySolo's own" in r.output
 
 
 def test_an_interrupted_swap_is_listed_with_the_sentence_and_rename_finishes_it(
     project, orders, monkeypatch
 ) -> None:
-    from lakelet import tables
+    from querysolo import tables
 
     real = tables.run_with_retry
 
@@ -135,7 +135,7 @@ def test_an_interrupted_swap_is_listed_with_the_sentence_and_rename_finishes_it(
 
     runner = CliRunner()
     r = runner.invoke(app, ["-C", str(project.root), "tables", "list"])
-    assert f"lakelet tables rename {temp} orders" in " ".join(r.output.split())  # rich wraps
+    assert f"querysolo tables rename {temp} orders" in " ".join(r.output.split())  # rich wraps
 
     r = runner.invoke(app, ["-C", str(project.root), "tables", "rename", temp, "orders"])
     assert r.exit_code == 0, r.output
@@ -147,7 +147,7 @@ def test_an_interrupted_swap_is_listed_with_the_sentence_and_rename_finishes_it(
 def test_expire_refuses_while_a_replace_is_interrupted_and_rename_checks_both_names(
     project, orders, monkeypatch
 ) -> None:
-    from lakelet import tables
+    from querysolo import tables
 
     real = tables.run_with_retry
     monkeypatch.setattr(
@@ -155,7 +155,7 @@ def test_expire_refuses_while_a_replace_is_interrupted_and_rename_checks_both_na
         "run_with_retry",
         lambda e, sql, attempts=3: (
             (_ for _ in ()).throw(RuntimeError("crash"))
-            if sql.startswith('DROP TABLE lakelet.main."orders"')
+            if sql.startswith('DROP TABLE querysolo.main."orders"')
             else real(e, sql, attempts)
         ),
     )

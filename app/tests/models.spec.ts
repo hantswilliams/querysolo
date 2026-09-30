@@ -1,10 +1,10 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Real-data brief R5, step 6: the Models screen against the seventh sidecar, whose dbt
 // project has `stg` (a view over orders, two tests in schema.yml) and `by_customer` (a
 // table over stg). The plan lists both with verdicts; the detail shows the compiled SQL,
 // the lineage lines (versions brief G8: each name a link that opens that detail, across
-// screens) and the tests; Run all builds through `lakelet run`, the view lands in the
+// screens) and the tests; Run all builds through `querysolo run`, the view lands in the
 // catalog with its own detail shape, and the Gauge screen has the two runs; Simple mode
 // says question and check and the switch is remembered.
 
@@ -35,20 +35,20 @@ test('the plan, a model, Run all, the view detail, the runs, and Simple mode', a
   await expect(rows.nth(0)).toContainText('never');
   await expect(rows.nth(1)).toContainText('by_customer');
   await expect(rows.nth(1)).toContainText('table');
-  await expect(screen.getByTestId('command').first()).toContainText('lakelet run');
+  await expect(screen.getByTestId('command').first()).toContainText('querysolo run');
 
   // the first model is open: its compiled SQL, lineage, tests, and its line
   const detail = screen.getByTestId('model-detail');
   await expect(detail).toContainText('models/stg.sql');
   await expect(detail).toContainText('Orders with a positive amount.');
   await expect(detail.getByTestId('compiled-sql')).toContainText('amt > 0');
-  await expect(detail.getByTestId('compiled-sql')).toContainText('"lakelet"."main"."orders"');
+  await expect(detail.getByTestId('compiled-sql')).toContainText('"querysolo"."main"."orders"');
   await expect(detail.getByTestId('reads-from')).toHaveText('orders (table, source)', { timeout: 60_000 });
   await expect(detail.getByTestId('feeds')).toHaveText('by_customer (model, ref)');
   await expect(detail.getByTestId('tests')).toContainText('not_null(id)');
   await expect(detail.getByTestId('tests')).toContainText('unique(id)');
   await expect(detail).toContainText('run: never');
-  await expect(detail.getByTestId('command').first()).toContainText('lakelet run stg'); // the Versions section has its own line
+  await expect(detail.getByTestId('command').first()).toContainText('querysolo run stg'); // the Versions section has its own line
   await rows.nth(1).click();
   await expect(detail.getByTestId('reads-from')).toHaveText('stg (model, ref)', { timeout: 60_000 });
   await expect(detail.getByTestId('feeds')).toHaveText('nothing');
@@ -68,13 +68,13 @@ test('the plan, a model, Run all, the view detail, the runs, and Simple mode', a
   await expect(orders).toContainText('orders · 4 rows');
   await expect(orders.getByTestId('reads-from')).toHaveText('nothing', { timeout: 60_000 });
   await expect(orders.getByTestId('feeds')).toHaveText('stg (model, source)');
-  await expect(orders.getByTestId('command').first()).toContainText('lakelet tables describe orders');
+  await expect(orders.getByTestId('command').first()).toContainText('querysolo tables describe orders');
   await orders.getByTestId('lineage-stg').click();
   await expect(screen.getByTestId('dag')).toBeVisible({ timeout: 90_000 });
   await expect(rows.nth(0)).toHaveClass('on');
   await expect(detail).toContainText('models/stg.sql');
 
-  // Run all is lakelet run: both build, the view is recorded, the plan re-reads with last runs
+  // Run all is querysolo run: both build, the view is recorded, the plan re-reads with last runs
   await screen.getByTestId('run-all').click();
   await expect(screen.getByTestId('run-report')).toBeVisible({ timeout: 90_000 });
   await expect(screen.getByTestId('run-report')).toContainText('2 models built in');
@@ -97,7 +97,7 @@ test('the plan, a model, Run all, the view detail, the runs, and Simple mode', a
   await expect(view.getByTestId('view-sql')).toContainText('amt > 0');
   await expect(view.getByTestId('view-sql')).toContainText('"main"."orders"');
   await expect(view.getByTestId('view-version')).toContainText('1 version · this one just now');
-  await expect(view.getByTestId('view-model')).toContainText('lakelet run stg');
+  await expect(view.getByTestId('view-model')).toContainText('querysolo run stg');
   await expect(view.getByTestId('reads-from')).toHaveText('orders (table, source)', { timeout: 60_000 });
   await expect(view.getByTestId('feeds')).toHaveText('by_customer (table, ref)');
   await expect(view).not.toContainText('0 rows');
@@ -117,7 +117,7 @@ test('the plan, a model, Run all, the view detail, the runs, and Simple mode', a
   await expect(lineage.getByTestId('edge-stg-by_customer')).toHaveClass('edge ref');
   await expect(lineage.getByTestId('node-stg')).toHaveAttribute('data-state', 'fresh');
   await expect(lineage.getByTestId('node-by_customer')).toHaveAttribute('data-state', 'fresh');
-  await expect(lineage.getByTestId('command')).toContainText('lakelet lineage --all');
+  await expect(lineage.getByTestId('command')).toContainText('querysolo lineage --all');
   await lineage.getByTestId('node-by_customer').click();
   await expect(screen.getByTestId('dag')).toBeVisible({ timeout: 90_000 });
   await expect(rows.nth(1)).toHaveClass('on');
@@ -139,7 +139,7 @@ test('the plan, a model, Run all, the view detail, the runs, and Simple mode', a
   const newest = ordersDetail.getByTestId('snapshots').locator('tbody tr').first();
   await expect(newest.getByTestId('affects')).toHaveText('made out of date: stg, by_customer');
   await expect(ordersDetail.getByTestId('affected')).toContainText('2 models are out of date because of these commits.');
-  await expect(ordersDetail.getByTestId('affected').getByTestId('command')).toContainText('lakelet run --stale');
+  await expect(ordersDetail.getByTestId('affected').getByTestId('command')).toContainText('querysolo run --stale');
   await page.getByTestId('screen-lineage').click();
   await expect(lineage.getByTestId('graph')).toBeVisible({ timeout: 60_000 });
   await expect(lineage.getByTestId('node-stg')).toHaveAttribute('data-state', 'upstream');

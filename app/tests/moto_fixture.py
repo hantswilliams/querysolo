@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """A stand-in bucket for the attach test (real-data brief R4, step 2): an in-process Moto
 server with a public-read bucket holding three plain Parquet files under ``raw/events/``,
@@ -20,7 +20,7 @@ import boto3
 import duckdb
 from moto.server import ThreadedMotoServer
 
-BUCKET = "lakelet-test"
+BUCKET = "querysolo-test"
 PREFIX = "raw/events"
 
 

@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The Tables screen, a query workspace since decisions U1: the editor, the verdict and
 // the rows (screen 2) stacked with a draggable split, and in the results pane's place a
@@ -117,7 +117,7 @@ export function Tables({ session, tables, work, movedFrom, mode, onDone, onOpenM
         </Suspense>
       ) : (
         <Split
-          top={<p className="muted empty" data-testid="no-tables">No tables yet: drop a file on the sidebar, or run <code>lakelet import &lt;file&gt;</code>. The SQL box opens with the first table.</p>}
+          top={<p className="muted empty" data-testid="no-tables">No tables yet: drop a file on the sidebar, or run <code>querysolo import &lt;file&gt;</code>. The SQL box opens with the first table.</p>}
           bottom={<>{notices}{panel}</>}
         />
       )}

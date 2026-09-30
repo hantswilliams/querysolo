@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Snapshot expiry (decision 4, September 11, 2026): a rebuilt table stops growing once
 expired; the current snapshot and the files it needs always survive; every remaining
@@ -14,9 +14,9 @@ import pytest
 from pyiceberg.catalog.rest import RestCatalog
 from typer.testing import CliRunner
 
-from lakelet import Project
-from lakelet.cli import app
-from lakelet.tables import NotExpirable
+from querysolo import Project
+from querysolo.cli import app
+from querysolo.tables import NotExpirable
 
 runner = CliRunner()
 
@@ -42,9 +42,9 @@ def _rebuild(project: Project, csv: Path, n: int) -> None:
         f"FROM range({1000 * n})) TO '{csv}' (HEADER)"
     )
     if project.tables._exists("orders"):
-        project.engine.execute("DELETE FROM lakelet.main.orders")
+        project.engine.execute("DELETE FROM querysolo.main.orders")
         project.engine.execute(
-            f"INSERT INTO lakelet.main.orders SELECT * FROM read_csv_auto('{csv}')"
+            f"INSERT INTO querysolo.main.orders SELECT * FROM read_csv_auto('{csv}')"
         )
     else:
         project.tables.import_file(csv)
@@ -84,7 +84,7 @@ def test_expire_removes_old_snapshots_and_only_their_files(project, tmp_path) ->
     # the table reads back whole, through DuckDB and through pyiceberg
     rows = project.engine.execute("select count(*), max(amt) from orders").fetchone()
     assert rows == (4000, (4000 - 1) * 4.5)
-    catalog = RestCatalog("lakelet", uri=project.catalog_url, **project.io_properties)
+    catalog = RestCatalog("querysolo", uri=project.catalog_url, **project.io_properties)
     table = catalog.load_table("main.orders")
     assert table.scan().to_arrow().num_rows == 4000
     assert len(table.metadata.snapshots) == 1
@@ -147,7 +147,7 @@ def test_the_verb_the_setting_and_the_route(project, tmp_path) -> None:
     _rebuild(project, csv, 1)
     _rebuild(project, csv, 2)
     root = str(project.root)
-    toml = tomllib.loads((project.root / "lakelet.toml").read_text())
+    toml = tomllib.loads((project.root / "querysolo.toml").read_text())
     assert toml["catalog"]["keep_snapshots_days"] == 7
     assert (
         runner.invoke(
@@ -158,7 +158,7 @@ def test_the_verb_the_setting_and_the_route(project, tmp_path) -> None:
     project.close()
     described = runner.invoke(app, ["-C", root, "tables", "describe", "orders"])
     assert described.exit_code == 0 and "snapshot(s) older than 0 days" in described.output
-    assert "lakelet tables expire orders" in described.output
+    assert "querysolo tables expire orders" in " ".join(described.output.split()), "the hint, however it wraps"
     expired = runner.invoke(app, ["-C", root, "tables", "expire", "orders"])
     assert expired.exit_code == 0, expired.output
     assert "of 3 snapshot(s) expired (keeping 0 days)" in expired.output

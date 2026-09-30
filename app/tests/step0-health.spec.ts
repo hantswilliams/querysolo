@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 0 gate (app brief §4): the window reaches "core ready", the status strip shows what
 // health says, and the explorer is the empty-project state; a table imported through the
@@ -16,7 +16,7 @@ test('the dot goes green and health renders the versions', async ({ page }) => {
   await page.goto(pageUrl(s));
   await expect(page.getByRole('status')).toHaveText('core ready');
   const ready = Date.now() - t0;
-  await expect(page.getByTestId('health')).toContainText('lakelet');
+  await expect(page.getByTestId('health')).toContainText('querysolo');
   await expect(page.getByTestId('health')).toContainText('DuckDB');
   await expect(page.getByTestId('health')).toContainText('GiB'); // the 2GB limit the sidecar was given
   await expect(page.getByTestId('tables')).toContainText('No tables yet');
@@ -37,6 +37,6 @@ test('a table imported through the CLI appears in the panel', async ({ page }) =
 test('without a session the window is the welcome screen and says how to get one', async ({ page }) => {
   await page.goto('/');  // no ?port=&token=: no project, as a fresh app launch is (step 1)
   await expect(page.getByTestId('welcome')).toContainText('Open a folder');
-  await expect(page.getByTestId('hint')).toContainText('LAKELET_SIDECAR');
+  await expect(page.getByTestId('hint')).toContainText('QUERYSOLO_SIDECAR');
   await expect(page.getByRole('status')).toHaveCount(0);
 });

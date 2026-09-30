@@ -1,6 +1,6 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Decisions P1: `lakelet bucket check` tries a prefix the way a project would — the
+"""Decisions P1: `querysolo bucket check` tries a prefix the way a project would — the
 credentials, a list, one object written and removed — and says so in one sentence; the
 route says the same for the app. Against the suite's store (Moto by default)."""
 
@@ -12,9 +12,9 @@ import httpx
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project
-from lakelet.cli import app
-from lakelet.remote import check_prefix
+from querysolo import Project
+from querysolo.cli import app
+from querysolo.remote import check_prefix
 from tests.s3_helpers import open_store
 
 
@@ -53,7 +53,7 @@ def test_a_writable_prefix_passes_and_leaves_nothing_behind(env) -> None:
 
 
 def test_a_bucket_that_is_not_there_and_a_bad_prefix_say_why(env) -> None:
-    r = check_prefix("s3://lakelet-no-such-bucket-zz/acme")
+    r = check_prefix("s3://querysolo-no-such-bucket-zz/acme")
     assert not r.ok and r.write is False
     assert "bucket does not exist" in r.error
     assert "Request ID" not in r.sentence()
@@ -74,7 +74,7 @@ def test_a_profile_is_reported_when_the_chain_would_use_one(env, monkeypatch, tm
     """Decision C1: with no keys in the environment, `describe()` says `profile` for a named
     AWS_PROFILE, and `default` when AWS's own files have a [default] section; the CLI's
     --profile names one the way AWS_PROFILE does. The values in the file are never read."""
-    from lakelet.remote import S3Settings
+    from querysolo.remote import S3Settings
 
     monkeypatch.delenv("AWS_ACCESS_KEY_ID")
     monkeypatch.delenv("AWS_SECRET_ACCESS_KEY")
@@ -107,7 +107,7 @@ def test_the_cli_and_the_route(env, tmp_path) -> None:
     assert r.exit_code == 0, r.output
     data = json.loads(r.output)
     assert data["ok"] is True and data["prefix"] == prefix and data["credentials"]["configured"]
-    r = CliRunner().invoke(app, ["bucket", "check", "s3://lakelet-no-such-bucket-zz/x", "--json"])
+    r = CliRunner().invoke(app, ["bucket", "check", "s3://querysolo-no-such-bucket-zz/x", "--json"])
     assert r.exit_code == 1
     assert json.loads(r.output)["ok"] is False
 

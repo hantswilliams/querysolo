@@ -5,7 +5,7 @@
 // 2026-08-19.0, on 2026-09-11. If that page changes, change this file with it.
 //
 // Why this replaced the old demo (web/TASKS.md, item 3): the homepage used to show a
-// fictional 48 GB `events` table bursting to a worker for $0.41, driven by `lakelet ask`.
+// fictional 48 GB `events` table bursting to a worker for $0.41, driven by `querysolo ask`.
 // Burst is not built and `ask` is parked, so the one thing the page had to prove -- that
 // the gauge is real -- was the one thing a visitor could not check. This they can check:
 // it is a public bucket, the commands are five lines, and no account is involved.
@@ -58,7 +58,7 @@ export const demoQueries = [
 ] as const;
 
 /**
- * The gauge's own thresholds, from `[gauge]` in lakelet.toml (see /docs/config).
+ * The gauge's own thresholds, from `[gauge]` in querysolo.toml (see /docs/config).
  * Green under 60 s, Yellow to 600 s, Red at or above it — or when remote bytes
  * cannot arrive inside that window at the measured bandwidth.
  */

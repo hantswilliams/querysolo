@@ -8,7 +8,7 @@ One file per person the product is for: who they are, the tools their day alread
 - **Built or planned.** Every scenario ends with which parts are on `main` today and which wait on a named brief or decision. The README's status block is the authority on "built".
 - **A persona changes the build order only through a decisions file.** A file here can say "this suggests the warehouse door should open on BigQuery before Postgres"; it cannot decide it. The tick box lives in `build-sessions/decisions-for-review_<MMDDYY>.md`.
 - **No names, no partner data.** A persona is a composite. A recorded session is summarised, never transcribed, and the person is not identifiable.
-- **The product name** is Lakelet (working name). TBD\* marks where the final name goes; the placeholder is decided in the ship brief's S7 window.
+- **The product name** is QuerySolo (QuerySolo until 2026-09-30).
 
 ## The personas
 
@@ -24,7 +24,7 @@ One file per person the product is for: who they are, the tools their day alread
 ## The template
 
     # <The persona, as a phrase>
-    *Persona · written <date> · Status: assumed | observed on <date> · Product name: Lakelet (working name; TBD*)*
+    *Persona · written <date> · Status: assumed | observed on <date> · Product name: QuerySolo*
     ## Who
     ## Tools, and where the day goes        (a table: task | tool | what they see)
     ## What hurts

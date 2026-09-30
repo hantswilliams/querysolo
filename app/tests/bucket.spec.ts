@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decisions W1: a project whose warehouse is a bucket (`init --warehouse s3://…`, the tenth
 // sidecar on Moto) shows where its tables are — "bucket" in the panel, the location on the
@@ -16,14 +16,14 @@ test('a bucket warehouse says so in the panel and the detail, and a query runs',
   await expect(page.getByRole('status')).toHaveText('core ready');
   await expect(page.getByTestId('table-orders')).toContainText('3');
   await expect(page.getByTestId('where-orders')).toContainText('bucket');
-  await expect(page.getByTestId('where-orders')).toContainText('lakelet-test/…');
-  await expect(page.getByTestId('where-orders')).toHaveAttribute('title', /^s3:\/\/lakelet-test\/warehouse\/main\/orders/);
+  await expect(page.getByTestId('where-orders')).toContainText('querysolo-test/…');
+  await expect(page.getByTestId('where-orders')).toHaveAttribute('title', /^s3:\/\/querysolo-test\/warehouse\/main\/orders/);
   await expect(page.getByTestId('moved')).toHaveCount(0);
 
   await page.getByTestId('table-orders').click();
   const detail = page.getByTestId('detail');
   await expect(detail).toContainText('orders · 3 rows');
-  await expect(detail.getByTestId('detail-where')).toContainText("in a bucket, the project's warehouse: s3://lakelet-test/warehouse/main/orders");
+  await expect(detail.getByTestId('detail-where')).toContainText("in a bucket, the project's warehouse: s3://querysolo-test/warehouse/main/orders");
   await expect(detail.getByTestId('snapshots').locator('tbody tr')).toHaveCount(1);
   await expect(detail.getByTestId('reclaimable')).toContainText('Nothing to expire');
   await detail.getByRole('button', { name: 'Close' }).click();
@@ -54,14 +54,14 @@ test('New project… checks the bucket through the core and says what it found',
   await dialog.getByTestId('project-name').fill('acme');
   await dialog.getByTestId('where-bucket').check();
   await expect(dialog.getByTestId('no-credentials')).toHaveCount(0); // this core has keys (Moto's)
-  await dialog.getByTestId('warehouse').fill('s3://lakelet-test/new-acme');
-  await expect(dialog.getByTestId('command')).toContainText('lakelet init <folder> --warehouse s3://lakelet-test/new-acme'); // no parent in a browser
+  await dialog.getByTestId('warehouse').fill('s3://querysolo-test/new-acme');
+  await expect(dialog.getByTestId('command')).toContainText('querysolo init <folder> --warehouse s3://querysolo-test/new-acme'); // no parent in a browser
   await dialog.getByTestId('check-bucket').click();
   const result = dialog.getByTestId('check-result');
   await expect(result).toHaveAttribute('data-ok', 'true');
-  await expect(result).toContainText('s3://lakelet-test/new-acme is writable with keys from the environment; one object was written and removed.');
+  await expect(result).toContainText('s3://querysolo-test/new-acme is writable with keys from the environment; one object was written and removed.');
 
-  await dialog.getByTestId('warehouse').fill('s3://lakelet-no-such-bucket-zz/acme');
+  await dialog.getByTestId('warehouse').fill('s3://querysolo-no-such-bucket-zz/acme');
   await expect(result).toHaveCount(0); // the result was for the other prefix
   await dialog.getByTestId('check-bucket').click();
   await expect(result).toHaveAttribute('data-ok', 'false');

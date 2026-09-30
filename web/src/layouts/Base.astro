@@ -1,5 +1,5 @@
 ---
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 import '../styles/palette.css'; // the one palette the site and the app share (U3)
 import '../styles/exploration.css';
@@ -27,7 +27,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   <meta property="og:url" content={canonical}>
   <meta name="twitter:card" content="summary">
   <link rel="icon" type="image/svg+xml" href={url("/favicon.svg")}>
-  <meta name="lakelet:repo" content={site.github}>
+  <meta name="querysolo:repo" content={site.github}>
   <meta name="theme-color" content="#101f24">
   <slot name="head" />
 </head>
@@ -68,8 +68,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       }
     }
 
-    const repo = document.querySelector<HTMLMetaElement>('meta[name="lakelet:repo"]')?.content
-      || 'https://github.com/hantswilliams/lakelet';
+    const repo = document.querySelector<HTMLMetaElement>('meta[name="querysolo:repo"]')?.content
+      || 'https://github.com/hantswilliams/querysolo';
 
     document.querySelectorAll<HTMLFormElement>('form[data-waitlist]').forEach(f => {
       f.addEventListener('submit', async e => {
@@ -106,7 +106,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         // Anything else leaves the form standing, with the email still in it, and
         // tells the truth about why nothing was sent.
         if (outcome === 'unconfigured') {
-          say(`Early access isn't open for signups yet — this form has nowhere to go, so we're not going to pretend it does. Lakelet is public and buildable today: <a href="${repo}" rel="noopener">watch the repo</a> and you'll see the beta the moment it opens.`, false);
+          say(`Early access isn't open for signups yet — this form has nowhere to go, so we're not going to pretend it does. QuerySolo is public and buildable today: <a href="${repo}" rel="noopener">watch the repo</a> and you'll see the beta the moment it opens.`, false);
         } else {
           say(`Something went wrong sending that. Try again, or open an issue on <a href="${repo}" rel="noopener">GitHub</a>.`);
         }

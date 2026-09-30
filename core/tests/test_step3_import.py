@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 3 gate (brief §4): the five file types and folders become Iceberg tables through the
 catalog with explicit coercion (D24), replace and append (D16), preview, list, describe and
@@ -11,9 +11,9 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from pyiceberg.catalog.rest import RestCatalog
 
-from lakelet import Project
-from lakelet.project import TABLES_END, TABLES_START
-from lakelet.tables import NoSuchTable, TableExists, UnsupportedFile
+from querysolo import Project
+from querysolo.project import TABLES_END, TABLES_START
+from querysolo.tables import NoSuchTable, TableExists, UnsupportedFile
 
 BASE = (
     "SELECT * FROM (VALUES (1, 'alpha', 1.5, DATE '2026-01-01'), "
@@ -59,7 +59,7 @@ def test_each_file_type_becomes_an_iceberg_table_pyiceberg_can_read(project, sou
     info = project.tables.import_file(sources / f"orders.{ext}", name=f"orders_{ext}")
     assert info.name == f"orders_{ext}" and info.rows == 3 and info.bytes > 0
     assert [c for c, _ in info.columns] == ["id", "name", "amt", "d"]
-    table = RestCatalog("lakelet", uri=project.catalog_url).load_table(f"main.orders_{ext}")
+    table = RestCatalog("querysolo", uri=project.catalog_url).load_table(f"main.orders_{ext}")
     got = table.scan().to_arrow().sort_by("id").to_pydict()
     assert got["name"] == ["alpha", "beta", "gamma"]
 
@@ -169,7 +169,7 @@ def test_every_parquet_type_reads_back_with_the_type_the_preview_promised(
     promised = {c.name: c.iceberg_type for c in pv.columns}
     print("\npreview:", [(c.name, c.duckdb_type, c.iceberg_type, c.note) for c in pv.columns])
     project.tables.import_file(fixture, name="types")
-    table = RestCatalog("lakelet", uri=project.catalog_url).load_table("main.types")
+    table = RestCatalog("querysolo", uri=project.catalog_url).load_table("main.types")
     actual = {f.name: _normalise(str(f.field_type)) for f in table.schema().fields}
     assert actual == promised
     assert table.scan().to_arrow().num_rows == 1
@@ -180,9 +180,9 @@ def test_row_counts_subtract_position_deletes(project) -> None:
     after a delete-then-insert rebuild, because a DuckDB delete is a position-delete file
     and the data files keep their record counts. The list, describe and the snapshot list
     all take the deletes off."""
-    project.engine.execute("create table lakelet.main.t as select range as id from range(10)")
-    project.engine.execute("delete from lakelet.main.t where id < 6")
-    project.engine.execute("insert into lakelet.main.t select range from range(4)")
+    project.engine.execute("create table querysolo.main.t as select range as id from range(10)")
+    project.engine.execute("delete from querysolo.main.t where id < 6")
+    project.engine.execute("insert into querysolo.main.t select range from range(4)")
     assert project.engine.execute("select count(*) from t").fetchone()[0] == 8
     described = project.tables.describe("t")
     assert described.rows == 8

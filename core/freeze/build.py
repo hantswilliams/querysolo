@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Build the frozen core (ship brief S1–S3) in three steps, from `core/`:
 
@@ -6,9 +6,9 @@
     uv run --group freeze python freeze/build.py --check    # then run the quickstart from an
                                                             # empty HOME with no network
 
-1. PyInstaller on `freeze/lakelet.spec` → `dist/lakelet/` (the executable and `_internal/`).
+1. PyInstaller on `freeze/querysolo.spec` → `dist/querysolo/` (the executable and `_internal/`).
 2. The DuckDB extensions the core needs, for the running DuckDB's exact version and this
-   platform, laid out as DuckDB expects under `dist/lakelet/extensions/` (S2): copied from
+   platform, laid out as DuckDB expects under `dist/querysolo/extensions/` (S2): copied from
    this machine's `~/.duckdb/extensions` (or `--extensions-from <dir>`) when they are
    there, else downloaded by DuckDB itself. Five files: the four the engine loads and
    `avro`, which `iceberg` pulls in.
@@ -30,7 +30,7 @@ import tempfile
 from pathlib import Path
 
 CORE = Path(__file__).resolve().parent.parent
-DIST = CORE / "dist" / "lakelet"
+DIST = CORE / "dist" / "querysolo"
 
 # S3's trim list, the files: pyarrow's optional libraries and what only its own tests need.
 TRIM_GLOBS = [
@@ -57,7 +57,7 @@ def duckdb_target() -> tuple[str, str, list[str]]:
     and the extensions to bundle — from the same package the freeze carries."""
     import duckdb
 
-    from lakelet.engine import INSTALLED_EXTENSIONS
+    from querysolo.engine import INSTALLED_EXTENSIONS
 
     con = duckdb.connect()
     version = con.execute("select version()").fetchone()[0]
@@ -69,14 +69,14 @@ def duckdb_target() -> tuple[str, str, list[str]]:
 def freeze() -> None:
     print("1. PyInstaller", flush=True)
     subprocess.run(
-        [sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "freeze/lakelet.spec"],
+        [sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "freeze/querysolo.spec"],
         cwd=CORE,
         check=True,
     )
 
 
 def lay_out_extensions(source: Path | None) -> Path:
-    """The five extensions under ``dist/lakelet/extensions/``, laid out by DuckDB itself:
+    """The five extensions under ``dist/querysolo/extensions/``, laid out by DuckDB itself:
     ``SET extension_directory`` to the bundle folder and ``INSTALL`` each, so the download,
     the checksum and the layout are DuckDB's own (its extension CDN refuses a plain
     ``urllib`` client, and the layout has changed between versions). With
@@ -91,7 +91,7 @@ def lay_out_extensions(source: Path | None) -> Path:
     missing = [name for name in names if not (folder / f"{name}.duckdb_extension").exists()]
     if not missing:
         return folder
-    # first, the machine's own cache (`~/.duckdb/extensions`, where `lakelet init` and the
+    # first, the machine's own cache (`~/.duckdb/extensions`, where `querysolo init` and the
     # app put them, or `--extensions-from`): same files, no download
     cache = source or Path.home() / ".duckdb" / "extensions"
     for name in list(missing):
@@ -164,8 +164,8 @@ def trim() -> None:
 def check() -> int:
     """The gate: the quickstart's commands from an empty HOME with the network unreachable,
     against the frozen binary. Any fetch, any missing module, any wrong path fails here."""
-    default = DIST / ("lakelet.exe" if platform_module.system() == "Windows" else "lakelet")
-    exe = Path(os.environ.get("LAKELET_BIN") or default)
+    default = DIST / ("querysolo.exe" if platform_module.system() == "Windows" else "querysolo")
+    exe = Path(os.environ.get("QUERYSOLO_BIN") or default)
     if not exe.exists():
         print(f"no frozen binary at {exe}; run without --check first")
         return 2
@@ -190,7 +190,7 @@ def check() -> int:
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
         }
-        for key in ("LAKELET_EXTENSION_DIR", "TMPDIR", "TEMP", "TMP", "SYSTEMROOT"):
+        for key in ("QUERYSOLO_EXTENSION_DIR", "TMPDIR", "TEMP", "TMP", "SYSTEMROOT"):
             if key in os.environ:
                 env[key] = os.environ[key]
         project = Path(tmp) / "acme"
@@ -213,12 +213,12 @@ def check() -> int:
             ["-C", str(project), "audit", "network"],
         ]
         for args in steps:
-            print(f"   lakelet {' '.join(args)}", flush=True)
+            print(f"   querysolo {' '.join(args)}", flush=True)
             r = subprocess.run([str(exe), *args], env=env, capture_output=True, text=True, cwd=tmp)
             if r.returncode != 0:
                 print(r.stdout[-3000:])
                 print(r.stderr[-3000:])
-                print(f"FAILED: lakelet {' '.join(args)} exited {r.returncode}")
+                print(f"FAILED: querysolo {' '.join(args)} exited {r.returncode}")
                 return 1
             if args[0] == "init" and "bundled DuckDB extensions" not in r.stdout:
                 print(r.stdout)
@@ -235,7 +235,7 @@ def main() -> int:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "--check", action="store_true", help="run the gate against an existing dist/lakelet"
+        "--check", action="store_true", help="run the gate against an existing dist/querysolo"
     )
     parser.add_argument("--no-trim", action="store_true", help="keep pyarrow's optional libraries")
     parser.add_argument(
@@ -253,7 +253,7 @@ def main() -> int:
     if not args.no_trim:
         trim()
     after = folder_size(DIST)
-    print(f"dist/lakelet: {before / 1e6:,.0f} MB before the trim, {after / 1e6:,.0f} MB after")
+    print(f"dist/querysolo: {before / 1e6:,.0f} MB before the trim, {after / 1e6:,.0f} MB after")
     return 0
 
 

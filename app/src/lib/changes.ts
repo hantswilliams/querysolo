@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The Changes feed's sentences (decisions L2): each entry one line in the mode's words.
 // Technical: "orders: append +1,200 rows", "by_c built in 1.2 s, Green", "save question:

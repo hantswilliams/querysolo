@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Versions step 3 gate, the words: the unified diff the core sends becomes lines with a kind
 // each, its one-line summary counts what changed, a version is a sentence in Simple mode
@@ -13,13 +13,13 @@ const DIFF = [
   '+++ after',
   '@@ -1,3 +1,3 @@',
   ' -- Revenue by customer',
-  ' -- saved by lakelet on 2026-09-12',
+  ' -- saved by querysolo on 2026-09-12',
   '-select customer, sum(amt) as revenue from orders group by 1',
   '+select customer, sum(amt) as revenue from orders group by 1 order by 2 desc',
   '',
 ].join('\n');
 
-const ARRIVING = ['--- before', '+++ after', '@@ -0,0 +1,3 @@', '+-- Revenue by customer', '+-- saved by lakelet on 2026-09-12', '+select 1', ''].join('\n');
+const ARRIVING = ['--- before', '+++ after', '@@ -0,0 +1,3 @@', '+-- Revenue by customer', '+-- saved by querysolo on 2026-09-12', '+select 1', ''].join('\n');
 
 const version = (over: Partial<Version>): Version => ({
   id: 'abcdef0123456789', when: new Date(Date.now() - 240_000).toISOString(), author: 'Ada Lovelace <ada@example.com>',

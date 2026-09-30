@@ -1,8 +1,8 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
-// Settings (app brief, session 6 scope): only what the core reads from lakelet.toml, the
+// Settings (app brief, session 6 scope): only what the core reads from querysolo.toml, the
 // engine's memory limit and threads, plus the calibration-sharing toggle with nothing behind
-// it yet. Each save is `lakelet config set`, shown beside it. The engine reads these at
+// it yet. Each save is `querysolo config set`, shown beside it. The engine reads these at
 // start; the app gives each window its own memory share regardless (A8). The Bucket row
 // (decisions C1) is the shell's, not the file's: the AWS profile this project's bucket is
 // reached with, on this machine — a name, never a key.
@@ -18,7 +18,7 @@ const FIELDS: Array<{ key: SettingKey; label: string; help: string; kind: 'text'
   { key: 'engine.memory_limit', label: 'Memory limit for the CLI', help: '"auto" (DuckDB\'s 80% of RAM) or a size such as 8GB. Each app window gets its own share of RAM instead.', kind: 'text' },
   { key: 'engine.threads', label: 'Threads', help: '"auto" or a count.', kind: 'text' },
   { key: 'gauge.share_calibration', label: 'Share calibration', help: 'Whether this project would contribute anonymous gauge calibration. Nothing is sent yet; the switch is here so the file is ready.', kind: 'bool' },
-  { key: 'catalog.keep_snapshots_days', label: 'Keep snapshots for', help: 'Days of table history `lakelet tables expire` keeps; the current snapshot always stays. Expiry runs only when asked.', kind: 'text' },
+  { key: 'catalog.keep_snapshots_days', label: 'Keep snapshots for', help: 'Days of table history `querysolo tables expire` keeps; the current snapshot always stays. Expiry runs only when asked.', kind: 'text' },
   { key: 'git.auto_commit', label: 'Record a version on every save and run', help: 'Off means a run records no version. Saving a question is always a version, whatever this says.', kind: 'bool' },
 ];
 
@@ -39,8 +39,8 @@ export interface AboutInfo {
 
 const SOURCE_WORDS: Record<AboutInfo['sidecar_source'], string> = {
   bundled: 'the core that came with the app',
-  environment: 'the core named by LAKELET_SIDECAR (development)',
-  path: 'the lakelet on your PATH',
+  environment: 'the core named by QUERYSOLO_SIDECAR (development)',
+  path: 'the querysolo on your PATH',
 };
 
 export function SettingsPanel({ api, bucket, about, onClose }: { api: Api; bucket?: BucketSetting; about?: AboutInfo | null; onClose: () => void }) {
@@ -122,7 +122,7 @@ export function SettingsPanel({ api, bucket, about, onClose }: { api: Api; bucke
         <div className="setting" data-testid="setting-bucket">
           <label>
             <b>Bucket</b>
-            <span className="muted">The AWS profile this project's bucket is reached with, on this machine. The keys stay in AWS's own files; changing it starts the core again. In a terminal it is <code>lakelet --profile {bucket.profile ?? '<name>'} …</code>, or <code>AWS_PROFILE</code>.</span>
+            <span className="muted">The AWS profile this project's bucket is reached with, on this machine. The keys stay in AWS's own files; changing it starts the core again. In a terminal it is <code>querysolo --profile {bucket.profile ?? '<name>'} …</code>, or <code>AWS_PROFILE</code>.</span>
           </label>
           <div className="control">
             <select
@@ -148,11 +148,11 @@ export function SettingsPanel({ api, bucket, about, onClose }: { api: Api; bucke
         <div className="setting" data-testid="setting-about">
           <label>
             <b>About</b>
-            <span className="muted">Lakelet {about.version}. Every button here is a <code>lakelet</code> line; the app runs {SOURCE_WORDS[about.sidecar_source]}.</span>
+            <span className="muted">QuerySolo {about.version}. Every button here is a <code>querysolo</code> line; the app runs {SOURCE_WORDS[about.sidecar_source]}.</span>
           </label>
           <div className="control about">
             <code className="mono" data-testid="about-sidecar" title={about.sidecar}>{about.sidecar}</code>
-            <a href="https://github.com/hantswilliams/lakelet/releases" target="_blank" rel="noreferrer">Releases ↗</a>
+            <a href="https://github.com/hantswilliams/querysolo/releases" target="_blank" rel="noreferrer">Releases ↗</a>
           </div>
         </div>
       )}

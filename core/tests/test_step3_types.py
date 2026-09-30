@@ -1,10 +1,10 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Every row of the brief's §3.7, plus nested types, through the coercion (D24)."""
 
 import pytest
 
-from lakelet.types import coerce
+from querysolo.types import coerce
 
 ROWS = [
     ("BOOLEAN", None, "boolean"),

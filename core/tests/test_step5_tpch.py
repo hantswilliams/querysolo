@@ -1,19 +1,19 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 5 gate, the accuracy half (brief §4, architecture §4.5): TPC-H at SF1 from DuckDB's
 ``tpch`` extension, imported into Iceberg tables, all 22 queries estimated then run. 80%
 within 2x on time and 1.5x on bytes; no Green over 3 minutes; pruning full on every query.
 Runs in the default suite (about five seconds here). The time-accuracy assertion depends on
-the machine the constants were tuned on, so it is strict only with LAKELET_TPCH=1, the
+the machine the constants were tuned on, so it is strict only with QUERYSOLO_TPCH=1, the
 reference run; everywhere else the table is printed and the structural gates are asserted."""
 
 import os
 
 import duckdb
 
-from lakelet import Project
+from querysolo import Project
 
-STRICT_TIMING = os.environ.get("LAKELET_TPCH") == "1"
+STRICT_TIMING = os.environ.get("QUERYSOLO_TPCH") == "1"
 
 TABLES = ["customer", "lineitem", "nation", "orders", "part", "partsupp", "region", "supplier"]
 

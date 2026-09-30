@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decisions U1: the split opens where it was left, moves with a drag and the arrow keys,
 // stays within its bounds, and is remembered.

@@ -1,9 +1,9 @@
 # Services the default test suite does not need: `cd core && uv run pytest` runs without Docker.
 #
-# postgres  The second catalog dialect (brief D5). Start it, point LAKELET_TEST_PG_URL at it, and
+# postgres  The second catalog dialect (brief D5). Start it, point QUERYSOLO_TEST_PG_URL at it, and
 #           the Postgres variant of the step 1 suite runs:
 #             docker compose up -d --wait postgres
-#             cd core && LAKELET_TEST_PG_URL=postgresql+psycopg://lakelet:lakelet@127.0.0.1:5433/lakelet \
+#             cd core && QUERYSOLO_TEST_PG_URL=postgresql+psycopg://querysolo:querysolo@127.0.0.1:5433/querysolo \
 #               uv run pytest tests/test_step1_postgres.py
 #             docker compose down
 #           Port 5433 on the host so a native Postgres on 5432 is left alone. Data is on tmpfs.
@@ -12,14 +12,14 @@
 #           tests beyond the in-process mock, and the shared warehouse for the Spark and Trino
 #           smoke test. The s3:// tests run against it with:
 #             docker compose up -d --wait s3
-#             cd core && LAKELET_TEST_S3_ENDPOINT=http://127.0.0.1:9000 AWS_ACCESS_KEY_ID=lakelet \
-#               AWS_SECRET_ACCESS_KEY=lakeletlakelet uv run pytest tests/test_step1_s3.py
+#             cd core && QUERYSOLO_TEST_S3_ENDPOINT=http://127.0.0.1:9000 AWS_ACCESS_KEY_ID=querysolo \
+#               AWS_SECRET_ACCESS_KEY=querysoloquerysolo uv run pytest tests/test_step1_s3.py
 services:
   s3:
     image: rustfs/rustfs:latest
     environment:
-      RUSTFS_ACCESS_KEY: lakelet
-      RUSTFS_SECRET_KEY: lakeletlakelet
+      RUSTFS_ACCESS_KEY: querysolo
+      RUSTFS_SECRET_KEY: querysoloquerysolo
     ports:
       - "9000:9000"
     volumes:
@@ -33,24 +33,24 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: lakelet
-      POSTGRES_PASSWORD: lakelet
-      POSTGRES_DB: lakelet
+      POSTGRES_USER: querysolo
+      POSTGRES_PASSWORD: querysolo
+      POSTGRES_DB: querysolo
     ports:
       - "5433:5432"
     tmpfs:
       - /var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U lakelet -d lakelet"]
+      test: ["CMD-SHELL", "pg_isready -U querysolo -d querysolo"]
       interval: 2s
       timeout: 3s
       retries: 20
 
   # ---- engines profile: the catalog-serve smoke test (PRD F0.7 AC), opt-in --------------------
   #   docker compose --profile engines up -d --wait
-  #   cd core && LAKELET_SMOKE=1 uv run pytest tests/smoke -s
+  #   cd core && QUERYSOLO_SMOKE=1 uv run pytest tests/smoke -s
   #   docker compose --profile engines down
-  # catalog   Lakelet's catalog from the mounted core/, on the compose network, warehouse on s3.
+  # catalog   QuerySolo's catalog from the mounted core/, on the compose network, warehouse on s3.
   #           Test infrastructure: binds 0.0.0.0 inside its container; the product does not (D22).
   # spark     Spark 3.5 with the Iceberg runtime from Maven, cached in a volume after the first run.
   # trino     Trino with the Iceberg connector against the same catalog.
@@ -66,9 +66,9 @@ services:
     environment:
       UV_PROJECT_ENVIRONMENT: /opt/venv
       UV_CACHE_DIR: /opt/uv-cache
-      LAKELET_SMOKE_S3_ENDPOINT: http://s3:9000
-      AWS_ACCESS_KEY_ID: lakelet
-      AWS_SECRET_ACCESS_KEY: lakeletlakelet
+      QUERYSOLO_SMOKE_S3_ENDPOINT: http://s3:9000
+      AWS_ACCESS_KEY_ID: querysolo
+      AWS_SECRET_ACCESS_KEY: querysoloquerysolo
     ports:
       - "8181:8181"
     depends_on:
@@ -98,7 +98,7 @@ services:
     profiles: [engines]
     image: trinodb/trino:latest
     volumes:
-      - ./compose/trino/lakelet.properties:/etc/trino/catalog/lakelet.properties:ro
+      - ./compose/trino/querysolo.properties:/etc/trino/catalog/querysolo.properties:ro
     environment:
       AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
       AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED

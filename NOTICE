@@ -1,10 +1,10 @@
-Lakelet
-Copyright 2026 Lakelet contributors
+QuerySolo
+Copyright 2026 QuerySolo contributors
 
-This product includes software developed by the Lakelet contributors
+This product includes software developed by the QuerySolo contributors
 under the Apache License, Version 2.0.
 
 This product depends on dulwich (https://www.dulwich.io/), a pure-Python
 implementation of git, which is offered under the Apache License, Version 2.0
 or the GNU General Public License, version 2 or later, at the user's option.
-Lakelet takes it under the Apache License, Version 2.0.
+QuerySolo takes it under the Apache License, Version 2.0.

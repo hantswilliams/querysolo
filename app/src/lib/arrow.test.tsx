@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Cells as the grid shows them: Arrow JS hands dates over as milliseconds, times as
 // microseconds and decimals as four words; the grid shows dates, times and numbers.

@@ -1,9 +1,9 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Trust round T3: the gauge never says Green about a scan it could not attribute. A file
 read by function, a native or temp table, or anything else outside the catalog makes the
 estimate "not estimated" — the fourth verdict, ``none`` — with the scan named; the statement
-still runs; history records it; the calibration export leaves it out; ``lakelet run`` builds
+still runs; history records it; the calibration export leaves it out; ``querysolo run`` builds
 such a model and says so."""
 
 from __future__ import annotations
@@ -13,9 +13,9 @@ import json
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project
-from lakelet.cli import app
-from lakelet.gauge import export
+from querysolo import Project
+from querysolo.cli import app
+from querysolo.gauge import export
 
 
 @pytest.fixture
@@ -24,7 +24,7 @@ def project(tmp_path):
     Project.init(root, probe_mb=8)
     p = Project.open(root, serve=True)
     p.engine.execute(
-        "CREATE TABLE lakelet.main.orders AS SELECT range AS id, 'c' || (range % 5) AS customer, "
+        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, 'c' || (range % 5) AS customer, "
         "(range * 1.5)::DOUBLE AS amt FROM range(1000)"
     )
     p.engine.execute(
@@ -107,9 +107,9 @@ def test_the_cli_prints_the_hollow_dot_and_the_headers_carry_the_verdict(project
     client.close()
 
 
-def test_lakelet_run_builds_a_model_it_could_not_estimate_and_says_so(project, tmp_path) -> None:
+def test_querysolo_run_builds_a_model_it_could_not_estimate_and_says_so(project, tmp_path) -> None:
     pytest.importorskip("dbt")
-    from lakelet.dbt import runner
+    from querysolo.dbt import runner
 
     (project.root / "models" / "outside.sql").write_text(
         f"select id, v from read_parquet('{tmp_path}/outside.parquet')\n"

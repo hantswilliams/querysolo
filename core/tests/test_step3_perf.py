@@ -1,7 +1,7 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """PRD F0.1 AC: 200 MB CSV in 10 s, 2 GB CSV in 90 s with no swap. Generated fixtures, never
-in git (brief D12). Opt-in with LAKELET_PERF=1; run on the reference machine and recorded in
+in git (brief D12). Opt-in with QUERYSOLO_PERF=1; run on the reference machine and recorded in
 the session log."""
 
 import os
@@ -9,9 +9,9 @@ import time
 
 import pytest
 
-from lakelet import Project
+from querysolo import Project
 
-pytestmark = pytest.mark.skipif(os.environ.get("LAKELET_PERF") != "1", reason="set LAKELET_PERF=1")
+pytestmark = pytest.mark.skipif(os.environ.get("QUERYSOLO_PERF") != "1", reason="set QUERYSOLO_PERF=1")
 
 
 @pytest.mark.parametrize(
@@ -20,7 +20,7 @@ pytestmark = pytest.mark.skipif(os.environ.get("LAKELET_PERF") != "1", reason="s
 def test_csv_import_within_budget(tmp_path, rows, label, budget) -> None:
     root = tmp_path / "proj"
     Project.init(root)
-    toml = root / "lakelet.toml"
+    toml = root / "querysolo.toml"
     toml.write_text(toml.read_text().replace('memory_limit = "auto"', 'memory_limit = "8GB"'))
     csv = tmp_path / "big.csv"
     with Project.open(root) as p:

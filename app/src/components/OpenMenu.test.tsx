@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // "Open…" in the bar: the recent projects, the folder dialog, and — since the welcome
 // screen is never seen once a project exists — New project… (decisions P1).

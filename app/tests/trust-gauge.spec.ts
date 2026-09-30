@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Trust round T3: a scan the gauge cannot attribute is the fourth state on the query
 // screen — "Not estimated", grey, the scan named — and the rows still arrive. Against the

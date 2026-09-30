@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Shared pieces of the step 1 tests: a served catalog with a request log, the pyiceberg
 round trip that every backend variant must pass, and the DuckDB attach."""
@@ -12,7 +12,7 @@ import pyarrow as pa
 from fastapi import Request
 from pyiceberg.catalog.rest import RestCatalog
 
-from lakelet.catalog import EmbeddedCatalog, Store, create_app
+from querysolo.catalog import EmbeddedCatalog, Store, create_app
 
 SCHEMA = pa.schema([("id", pa.int64()), ("amt", pa.float64())])
 
@@ -34,7 +34,7 @@ def serve(store_url: str, warehouse: str, io_properties: dict | None = None) -> 
 
 
 def pyiceberg_round_trip(url: str, warehouse: str, client_properties: dict | None = None) -> None:
-    cat = RestCatalog("lakelet", uri=url, **(client_properties or {}))
+    cat = RestCatalog("querysolo", uri=url, **(client_properties or {}))
     cat.create_namespace("main")
     assert cat.list_namespaces() == [("main",)]
 
@@ -70,7 +70,7 @@ def attach(url: str, secret_sql: str | None = None) -> duckdb.DuckDBPyConnection
     if secret_sql:
         con.execute(secret_sql)
     con.execute(
-        f"ATTACH 'lakelet' AS lakelet (TYPE ICEBERG, ENDPOINT '{url}', "
+        f"ATTACH 'querysolo' AS querysolo (TYPE ICEBERG, ENDPOINT '{url}', "
         "AUTHORIZATION_TYPE 'none', DEFAULT_SCHEMA 'main')"
     )
     return con

@@ -1,9 +1,9 @@
 import { defineConfig } from '@playwright/test';
 
-// The screens are driven in a headless browser against a real `lakelet serve` (app brief
-// A12): global-setup inits a temp project and starts the sidecar with LAKELET_DEV_ORIGIN set
+// The screens are driven in a headless browser against a real `querysolo serve` (app brief
+// A12): global-setup inits a temp project and starts the sidecar with QUERYSOLO_DEV_ORIGIN set
 // to the Vite dev server's origin, and each test opens the page with ?port=&token= from
-// serve.json. LAKELET_SIDECAR names the executable (core/.venv/bin/lakelet by default).
+// serve.json. QUERYSOLO_SIDECAR names the executable (core/.venv/bin/querysolo by default).
 export default defineConfig({
   testDir: './tests',
   timeout: 60_000,

@@ -1,6 +1,6 @@
 # The data scientist in a notebook
 
-*Persona · written 2026-09-24 · Status: **assumed, not observed** — no session planned yet; named in the app conversation of this day as the cheapest unserved surface · Product name: Lakelet (working name; TBD\*).*
+*Persona · written 2026-09-24 · Status: **assumed, not observed** — no session planned yet; named in the app conversation of this day as the cheapest unserved surface · Product name: QuerySolo.*
 
 The solo analyst's fourth composite, seen from the notebook. Python first, SQL when it is shorter, pandas by habit and polars or DuckDB when pandas runs out. Their day is a kernel, and the product enters it only if it can be called from a cell. Today it cannot, except through the shell or the HTTP API.
 
@@ -55,7 +55,7 @@ Six weeks later a reviewer asks. Today the answer is a date and a guess. With th
 
 They built it in pandas. With the product the query that built it is a saved question, which is a model with two checks and a version, and the table is Iceberg that the engineer's Spark or warehouse reads without asking. `publish` moves it to the bucket when it is ready. A frame that was built in pandas rather than SQL goes in by writing Parquet and importing it.
 
-*Built today.* Save as question, `lakelet run`, `publish`, import from Parquet. *Planned:* a Python entry that writes a DataFrame into a table in one call.
+*Built today.* Save as question, `querysolo run`, `publish`, import from Parquet. *Planned:* a Python entry that writes a DataFrame into a table in one call.
 
 ### 5. The notebook a reviewer can rerun
 

@@ -1,8 +1,8 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 1 gate, s3:// warehouse: the same catalog with its metadata and data files on S3.
 Runs against Moto's threaded server in the default suite; against a real bucket when
-LAKELET_TEST_S3_BUCKET (or a self-hosted LAKELET_TEST_S3_ENDPOINT) and the AWS keys are
+QUERYSOLO_TEST_S3_BUCKET (or a self-hosted QUERYSOLO_TEST_S3_ENDPOINT) and the AWS keys are
 set (brief D16; tests/s3_helpers.py)."""
 
 import pytest
@@ -33,11 +33,11 @@ def test_pyiceberg_round_trip_on_s3(served) -> None:
 
 
 def test_duckdb_writes_to_an_s3_warehouse(served) -> None:
-    RestCatalog("lakelet", uri=served.url, **served.s3.props).create_namespace("main")
+    RestCatalog("querysolo", uri=served.url, **served.s3.props).create_namespace("main")
     con = attach(served.url, secret_sql=served.s3.duckdb_secret_sql())
-    con.execute("CREATE TABLE lakelet.main.orders (id BIGINT, amt DOUBLE)")
-    con.execute("INSERT INTO lakelet.main.orders VALUES (1, 1.0), (2, 2.0)")
-    assert con.execute("SELECT sum(amt) FROM lakelet.main.orders").fetchone()[0] == 3.0
-    table = RestCatalog("lakelet", uri=served.url, **served.s3.props).load_table("main.orders")
+    con.execute("CREATE TABLE querysolo.main.orders (id BIGINT, amt DOUBLE)")
+    con.execute("INSERT INTO querysolo.main.orders VALUES (1, 1.0), (2, 2.0)")
+    assert con.execute("SELECT sum(amt) FROM querysolo.main.orders").fetchone()[0] == 3.0
+    table = RestCatalog("querysolo", uri=served.url, **served.s3.props).load_table("main.orders")
     assert table.scan().to_arrow().num_rows == 2
     assert table.metadata_location.startswith("s3://")

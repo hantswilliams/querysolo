@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The screenshots in the README, the site and /docs/app, taken from the real app in its
 // browser harness against a real sidecar (the same page the Tauri window loads), at 2x.
@@ -7,11 +7,11 @@
 // change is cheap:
 //
 //   python3 examples/sample-data/make_sample.py /tmp/shots/sample
-//   lakelet init /tmp/shots/lakeside --probe-mb 0 && cd /tmp/shots/lakeside
-//   lakelet import ../sample/orders.csv   (and customers, products, daily_sales)
-//   lakelet question save "Revenue by region" --sql "..."   (see examples/sample-data/README.md)
-//   lakelet run
-//   LAKELET_DEV_ORIGIN=http://localhost:5173 lakelet serve &
+//   querysolo init /tmp/shots/lakeside --probe-mb 0 && cd /tmp/shots/lakeside
+//   querysolo import ../sample/orders.csv   (and customers, products, daily_sales)
+//   querysolo question save "Revenue by region" --sql "..."   (see examples/sample-data/README.md)
+//   querysolo run
+//   QUERYSOLO_DEV_ORIGIN=http://localhost:5173 querysolo serve &
 //   cd app && npm run dev &
 //   node scripts/screenshots.mjs /tmp/shots/lakeside <out-dir>
 //
@@ -27,8 +27,8 @@ if (!project || !outDir) {
   console.error('usage: node scripts/screenshots.mjs <project-folder> <out-dir>');
   process.exit(2);
 }
-const serve = JSON.parse(readFileSync(join(project, '.lakelet', 'serve.json'), 'utf8'));
-const origin = process.env.LAKELET_DEV_ORIGIN ?? 'http://localhost:5173';
+const serve = JSON.parse(readFileSync(join(project, '.querysolo', 'serve.json'), 'utf8'));
+const origin = process.env.QUERYSOLO_DEV_ORIGIN ?? 'http://localhost:5173';
 const url = `${origin}/?port=${serve.port}&token=${serve.token}&project=${encodeURIComponent(resolve(project))}&ready_ms=412`;
 
 const WIDTH = 1440;

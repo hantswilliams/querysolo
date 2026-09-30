@@ -5,6 +5,6 @@ const { stack = false } = Astro.props;
 ---
 <div class:list={['three', { stack }]}>
   <div class="g"><h3>Runs here</h3><p>Fits in memory, finishes in seconds. This is most queries on most teams' data. Costs nothing.</p></div>
-  <div class="y"><h3>Runs here, slowly</h3><p>Spills to disk or takes a few minutes. Lakelet shows the estimate and lets you decide whether to wait.</p></div>
+  <div class="y"><h3>Runs here, slowly</h3><p>Spills to disk or takes a few minutes. QuerySolo shows the estimate and lets you decide whether to wait.</p></div>
   <div class="r"><h3>Needs more machine</h3><p>Today: the run is refused, with the reason and the number that caused it, and <code>--run-anyway</code> if you want it regardless. Planned: one click starts a worker on your cloud account with the RAM this run needs, runs it against the same tables and shuts down, with the maximum cost on the button.</p></div>
 </div>

@@ -1,4 +1,4 @@
-# Lakelet — Architecture & Burst Spec
+# QuerySolo — Architecture & Burst Spec
 
 *Version 0.1 · September 7, 2026 · Amended September 8, 2026 by `build-sessions/core-v0.5-plan.md` §8; where the two differ, the brief wins*
 
@@ -8,13 +8,13 @@ This document turns the thesis ("your laptop is the warehouse until it can't be"
 
 ## 1. Design principles
 
-**One binary, local by default.** `lakelet` is a single executable that embeds DuckDB, a local Iceberg REST catalog, the estimator, and the dbt runner. `lakelet init` in an empty directory gives you a working lakehouse with no accounts, no cloud, no daemon.
+**One binary, local by default.** `querysolo` is a single executable that embeds DuckDB, a local Iceberg REST catalog, the estimator, and the dbt runner. `querysolo init` in an empty directory gives you a working lakehouse with no accounts, no cloud, no daemon.
 
-**Open formats at every layer.** Data is Apache Iceberg on Parquet. The catalog speaks the Iceberg REST spec. Transformations are dbt Core (Apache 2.0). Any engine that speaks Iceberg REST — Spark, Trino, Snowflake, Athena, S3 Tables — can read what Lakelet writes. There is no Lakelet-proprietary format anywhere in the data path, so leaving is as easy as pointing another engine at the bucket.
+**Open formats at every layer.** Data is Apache Iceberg on Parquet. The catalog speaks the Iceberg REST spec. Transformations are dbt Core (Apache 2.0). Any engine that speaks Iceberg REST — Spark, Trino, Snowflake, Athena, S3 Tables — can read what QuerySolo writes. There is no QuerySolo-proprietary format anywhere in the data path, so leaving is as easy as pointing another engine at the bucket.
 
 **The local/cloud boundary is visible and user-controlled.** Nothing runs in the cloud without a number on the screen and a click. The number is a hard cap, not an estimate.
 
-**Own the UX and the catalog, not the engine.** DuckDB is MIT-licensed and governed by the independent DuckDB Foundation (AWS acquired DuckLabs, the company, on Aug 26, 2026 — explicitly not the project). Lakelet's defensibility is in the estimator, the burst orchestration, the catalog service, and the desktop experience. If AWS ships "DuckDB serverless," Lakelet's burst layer can target it as one more worker backend.
+**Own the UX and the catalog, not the engine.** DuckDB is MIT-licensed and governed by the independent DuckDB Foundation (AWS acquired DuckLabs, the company, on Aug 26, 2026 — explicitly not the project). QuerySolo's defensibility is in the estimator, the burst orchestration, the catalog service, and the desktop experience. If AWS ships "DuckDB serverless," QuerySolo's burst layer can target it as one more worker backend.
 
 ---
 
@@ -23,7 +23,7 @@ This document turns the thesis ("your laptop is the warehouse until it can't be"
 ```mermaid
 flowchart LR
     subgraph Laptop["Laptop (free, open source)"]
-        CLI["lakelet CLI / Desktop app (Tauri)"]
+        CLI["querysolo CLI / Desktop app (Tauri)"]
         Gauge["Pre-flight estimator (the gauge)"]
         Duck["Embedded DuckDB + iceberg ext"]
         LCat["Local Iceberg REST catalog (SQLite)"]
@@ -35,7 +35,7 @@ flowchart LR
         Duck <--> LWH
     end
 
-    subgraph Cloud["Lakelet Cloud (hosted, metered)"]
+    subgraph Cloud["QuerySolo Cloud (hosted, metered)"]
         TCat["Team catalog (same REST catalog, Postgres)"]
         CP["Burst control plane: jobs, auth, metering, caps"]
         W["Ephemeral workers (Fargate / Cloud Run / spot)"]
@@ -59,7 +59,7 @@ There are three places data can live and two places a catalog can live, and the 
 | | Local | Cloud |
 |---|---|---|
 | **Data files** | `./warehouse/` (Parquet) | Customer bucket (`s3://…/warehouse/`) |
-| **Catalog** | SQLite, embedded in the binary | Postgres, hosted by Lakelet (or BYO Polaris / Lakekeeper / S3 Tables) |
+| **Catalog** | SQLite, embedded in the binary | Postgres, hosted by QuerySolo (or BYO Polaris / Lakekeeper / S3 Tables) |
 | **Compute** | Embedded DuckDB, bounded by RAM/cores | Ephemeral DuckDB workers, sized per job |
 
 ---
@@ -70,25 +70,25 @@ There are three places data can live and two places a catalog can live, and the 
 
 DuckDB v1.5.3 (May 29, 2026) made this possible: `MERGE INTO`, `ALTER TABLE`, `bucket()`/`truncate()` partition transforms, and Iceberg V3 (deletion vectors, row lineage) all work from a laptop against REST catalogs. Before that, writing Iceberg meant running Spark, which killed the "one binary" premise.
 
-DuckLake 1.0 (Apr 13, 2026) was seriously considered as the local format: it is exactly the "catalog in a SQL database" pattern Lakelet wants, and it now supports SQLite, Postgres, and DuckDB as catalog backends with multi-writer coordination through Postgres. It loses on one criterion that matters more than everything else: **the burst worker and every third-party engine speak Iceberg REST, not DuckLake.** Using Iceberg end-to-end means the local warehouse and the cloud warehouse are byte-for-byte the same format, and "burst" reduces to pointing a bigger DuckDB at the same prefix. DuckLake's Iceberg-compatible data layer (murmur3 bucketing, Puffin deletion vectors) means a future `lakelet import --from ducklake` is cheap, so we don't close the door.
+DuckLake 1.0 (Apr 13, 2026) was seriously considered as the local format: it is exactly the "catalog in a SQL database" pattern QuerySolo wants, and it now supports SQLite, Postgres, and DuckDB as catalog backends with multi-writer coordination through Postgres. It loses on one criterion that matters more than everything else: **the burst worker and every third-party engine speak Iceberg REST, not DuckLake.** Using Iceberg end-to-end means the local warehouse and the cloud warehouse are byte-for-byte the same format, and "burst" reduces to pointing a bigger DuckDB at the same prefix. DuckLake's Iceberg-compatible data layer (murmur3 bucketing, Puffin deletion vectors) means a future `querysolo import --from ducklake` is cheap, so we don't close the door.
 
-### 3.2 Catalog: Lakelet ships its own Iceberg REST catalog
+### 3.2 Catalog: QuerySolo ships its own Iceberg REST catalog
 
 DuckDB-Iceberg writes require a REST catalog. The options were to bundle an existing one or write one:
 
 | Option | Verdict |
 |---|---|
-| Apache Polaris | The open standard, but JVM-based and heavy. Wrong for a laptop binary. Lakelet will be Polaris-*compatible* (it's the same REST spec) and will support BYO Polaris as the team catalog. |
+| Apache Polaris | The open standard, but JVM-based and heavy. Wrong for a laptop binary. QuerySolo will be Polaris-*compatible* (it's the same REST spec) and will support BYO Polaris as the team catalog. |
 | Lakekeeper | Rust, closest to embeddable, but assumes Postgres. Viable as a hosted option. |
-| **Lakelet Catalog (own implementation)** | The Iceberg REST spec surface Lakelet needs — namespaces, tables, load, commit with optimistic concurrency, credential vending — is a few thousand lines. Backing it with SQLite locally and Postgres hosted gives *one codebase for both modes*, which is the Supabase move (Supabase is Postgres plus the tooling around it; Lakelet Catalog is the Iceberg REST spec plus the tooling around it). The server applies commit requirements and updates with pyiceberg's metadata code and writes metadata files with its FileIO; the routing and the state store are Lakelet's (brief D19). |
+| **QuerySolo Catalog (own implementation)** | The Iceberg REST spec surface QuerySolo needs — namespaces, tables, load, commit with optimistic concurrency, credential vending — is a few thousand lines. Backing it with SQLite locally and Postgres hosted gives *one codebase for both modes*, which is the Supabase move (Supabase is Postgres plus the tooling around it; QuerySolo Catalog is the Iceberg REST spec plus the tooling around it). The server applies commit requirements and updates with pyiceberg's metadata code and writes metadata files with its FileIO; the routing and the state store are QuerySolo's (brief D19). |
 
-The catalog is where team collaboration, access control, credential vending, and lineage metadata live. It's the layer Lakelet owns.
+The catalog is where team collaboration, access control, credential vending, and lineage metadata live. It's the layer QuerySolo owns.
 
 **Concurrency.** DuckDB is single-writer *per database file*, but that constraint does not apply here: each DuckDB process (a laptop, a burst worker) writes its own Parquet files and then attempts an atomic metadata commit through the catalog. The catalog enforces optimistic concurrency per table (the standard Iceberg `commit` with `requirements`); conflicting commits are retried by the client. This resolves the "single-writer DuckDB" risk in the original doc without depending on DuckLake's multi-writer work.
 
 ### 3.3 Object storage: bring your own bucket
 
-Lakelet never holds customer data at rest. Hosted components (team catalog, control plane) store metadata only. Data files live in the customer's S3, GCS, or R2 bucket. The team catalog vends short-lived, prefix-scoped credentials (STS `AssumeRole` with a session policy on AWS; equivalent on GCS/R2), so laptops and workers never see long-lived keys. This is the Polaris credential-vending pattern and it's the primary "no lock-in" argument against MotherDuck, whose storage is on their cloud in their format.
+QuerySolo never holds customer data at rest. Hosted components (team catalog, control plane) store metadata only. Data files live in the customer's S3, GCS, or R2 bucket. The team catalog vends short-lived, prefix-scoped credentials (STS `AssumeRole` with a session policy on AWS; equivalent on GCS/R2), so laptops and workers never see long-lived keys. This is the Polaris credential-vending pattern and it's the primary "no lock-in" argument against MotherDuck, whose storage is on their cloud in their format.
 
 ---
 
@@ -98,15 +98,15 @@ The gauge is the wedge feature, so this is the most detailed section. The goal i
 
 ### 4.1 Inputs
 
-**The plan.** `EXPLAIN (FORMAT JSON)` on the query gives DuckDB's logical plan with per-operator estimated cardinalities. For dbt, Lakelet compiles the project first (`dbt compile`) and runs EXPLAIN on each model's compiled SQL. Predicates for manifest pruning are read from the optimised plan's scan-node filters, not parsed from SQL; the plan's cardinalities are not used for bytes, because they do not reflect file pruning (brief D20).
+**The plan.** `EXPLAIN (FORMAT JSON)` on the query gives DuckDB's logical plan with per-operator estimated cardinalities. For dbt, QuerySolo compiles the project first (`dbt compile`) and runs EXPLAIN on each model's compiled SQL. Predicates for manifest pruning are read from the optimised plan's scan-node filters, not parsed from SQL; the plan's cardinalities are not used for bytes, because they do not reflect file pruning (brief D20).
 
-**Table statistics from Iceberg metadata.** Manifests carry per-data-file row counts, column sizes, null counts, and lower/upper bounds. Lakelet applies the query's partition and column predicates against these bounds to estimate *bytes actually scanned after pruning*, which is the single most predictive input. Reading manifests is cheap (KBs to low MBs) and works identically for local and S3 tables.
+**Table statistics from Iceberg metadata.** Manifests carry per-data-file row counts, column sizes, null counts, and lower/upper bounds. QuerySolo applies the query's partition and column predicates against these bounds to estimate *bytes actually scanned after pruning*, which is the single most predictive input. Reading manifests is cheap (KBs to low MBs) and works identically for local and S3 tables.
 
-**Data locality.** For each table: is it local disk, or a remote bucket? If remote, what is the measured download bandwidth from this laptop (Lakelet runs a 5-second probe at first use and re-measures opportunistically)? This matters more than CPU: scanning 50 GB from S3 over a 200 Mbps home connection takes ~35 minutes; a worker in the bucket's region does it in about a minute. **Most "Red" verdicts in practice will be bandwidth verdicts, not memory verdicts.**
+**Data locality.** For each table: is it local disk, or a remote bucket? If remote, what is the measured download bandwidth from this laptop (QuerySolo runs a 5-second probe at first use and re-measures opportunistically)? This matters more than CPU: scanning 50 GB from S3 over a 200 Mbps home connection takes ~35 minutes; a worker in the bucket's region does it in about a minute. **Most "Red" verdicts in practice will be bandwidth verdicts, not memory verdicts.**
 
 **Machine profile.** Physical RAM, DuckDB's `memory_limit` (default 80% of RAM), core count, free disk for spill, and whether the machine is on battery.
 
-**History.** Every execution records `(fingerprint, estimate, actual)` in a local SQLite table. Lakelet fits a per-machine correction factor per operator class. This is how the gauge gets better without anyone tuning it.
+**History.** Every execution records `(fingerprint, estimate, actual)` in a local SQLite table. QuerySolo fits a per-machine correction factor per operator class. This is how the gauge gets better without anyone tuning it.
 
 ### 4.2 Model
 
@@ -132,7 +132,7 @@ Every verdict shows its reasoning in one line: *"Red: scans 48 GB from s3://…,
 
 ### 4.4 The gauge for dbt runs
 
-`lakelet run` compiles the project, estimates each model, and presents the DAG colored by verdict with totals for the critical path. The user can run the whole DAG locally, burst everything, or let Lakelet split it: Red models run on workers, Green models run locally, and dependencies are respected because every model reads and writes the same Iceberg tables through the same catalog. A split run requires the tables to be reachable from the cloud (§5.2).
+`querysolo run` compiles the project, estimates each model, and presents the DAG colored by verdict with totals for the critical path. The user can run the whole DAG locally, burst everything, or let QuerySolo split it: Red models run on workers, Green models run locally, and dependencies are respected because every model reads and writes the same Iceberg tables through the same catalog. A split run requires the tables to be reachable from the cloud (§5.2).
 
 ### 4.5 Accuracy target and how it's measured
 
@@ -146,7 +146,7 @@ The first spike (§8) runs TPC-H at SF10 and SF100 on a MacBook Pro and against 
 
 ```mermaid
 sequenceDiagram
-    participant U as lakelet CLI
+    participant U as querysolo CLI
     participant CP as Control plane
     participant Cat as Catalog (team or synced)
     participant W as Worker
@@ -174,7 +174,7 @@ There are two cases and the CLI is honest about which one you're in.
 
 **Team catalog (hosted).** Laptop and worker both talk to the same catalog. The burst is stateless from the catalog's point of view. This is the default for paying users and the path of least complexity.
 
-**Local catalog only (free solo users).** The worker cannot reach a SQLite file on a laptop. Lakelet handles this with a *catalog lease*: on job submission, the CLI pushes the metadata tree for the involved tables (table metadata JSON, manifest lists and manifests when the table's metadata lives on the laptop, which is the default for registered remote tables; kilobytes, not data; brief D26) to the control plane, which serves it to the worker over the same REST interface. The worker commits back to the control plane; on completion the CLI replays the commit into the local catalog. For the duration of the lease the local catalog refuses writes to those tables. The data itself must already be in a bucket — if a table is local-only, the gauge says so: *"orders is local-only (12 GB). Publishing to s3://… takes ~9 min at your upload speed. Publish and burst?"*
+**Local catalog only (free solo users).** The worker cannot reach a SQLite file on a laptop. QuerySolo handles this with a *catalog lease*: on job submission, the CLI pushes the metadata tree for the involved tables (table metadata JSON, manifest lists and manifests when the table's metadata lives on the laptop, which is the default for registered remote tables; kilobytes, not data; brief D26) to the control plane, which serves it to the worker over the same REST interface. The worker commits back to the control plane; on completion the CLI replays the commit into the local catalog. For the duration of the lease the local catalog refuses writes to those tables. The data itself must already be in a bucket — if a table is local-only, the gauge says so: *"orders is local-only (12 GB). Publishing to s3://… takes ~9 min at your upload speed. Publish and burst?"*
 
 ### 5.3 Worker sizing and backends
 
@@ -184,7 +184,7 @@ Cold start is the known weakness: Fargate tasks take ~30–60 s to start. For jo
 
 ### 5.4 Cost, the cap, and metering
 
-Cost per job = (vCPU-seconds × vCPU rate + GB-seconds × memory rate) × Lakelet margin + S3 request charges (passed through). At Fargate on-demand list prices (~$0.04/vCPU-hr, ~$0.0044/GB-hr), a 16 vCPU / 64 GB worker costs about $0.93 per hour of run time before margin; most burst jobs will run for minutes, so the typical job is cents to low dollars. Spot capacity reduces this further for jobs that tolerate retry.
+Cost per job = (vCPU-seconds × vCPU rate + GB-seconds × memory rate) × QuerySolo margin + S3 request charges (passed through). At Fargate on-demand list prices (~$0.04/vCPU-hr, ~$0.0044/GB-hr), a 16 vCPU / 64 GB worker costs about $0.93 per hour of run time before margin; most burst jobs will run for minutes, so the typical job is cents to low dollars. Spot capacity reduces this further for jobs that tolerate retry.
 
 The **hard cap** shown before the click is `estimated cost × 2`, rounded up to a clean number. The worker enforces it: the control plane converts the cap to a wall-clock budget for the chosen size, and the agent kills DuckDB when the budget is reached, returning a partial-progress error rather than a surprise invoice. The user can raise the cap deliberately. The commercial promise is simple to state: **the bill for a burst can never exceed the number you clicked.**
 
@@ -192,13 +192,13 @@ Metering records per job: bytes scanned, bytes written, vCPU-s, GB-s, wall time,
 
 ### 5.5 Results
 
-A `SELECT` that produces under ~50 MB streams back inline (Arrow IPC over HTTPS). Larger results are written as Parquet to `s3://<bucket>/_lakelet/results/<job_id>/` and registered as a temporary table in the local DuckDB session, so the user can keep querying the result locally without pulling it all down. `CREATE TABLE AS`, `INSERT`, `MERGE`, and dbt models write directly to their target Iceberg tables through the catalog; nothing comes back but the commit.
+A `SELECT` that produces under ~50 MB streams back inline (Arrow IPC over HTTPS). Larger results are written as Parquet to `s3://<bucket>/_querysolo/results/<job_id>/` and registered as a temporary table in the local DuckDB session, so the user can keep querying the result locally without pulling it all down. `CREATE TABLE AS`, `INSERT`, `MERGE`, and dbt models write directly to their target Iceberg tables through the catalog; nothing comes back but the commit.
 
 ---
 
 ## 6. Security model
 
-Burst workers receive a single-use job token (JWT, TTL = job timeout) that authorizes exactly one job's table set. Storage access is via credentials vended by the catalog, scoped to the table prefixes involved and expiring with the job. Workers run one job each in a fresh container with no inbound network; the only outbound destinations are the catalog, the control plane, and the customer's bucket. Lakelet's hosted services store catalog metadata, job specs, and metrics; they never store customer data files. SQL text is retained only for the duration of the job unless the user opts into query history sync. Customers who require it can run the control plane and catalog in their own account (the "Ops-in-a-box, self-hosted" tier, later).
+Burst workers receive a single-use job token (JWT, TTL = job timeout) that authorizes exactly one job's table set. Storage access is via credentials vended by the catalog, scoped to the table prefixes involved and expiring with the job. Workers run one job each in a fresh container with no inbound network; the only outbound destinations are the catalog, the control plane, and the customer's bucket. QuerySolo's hosted services store catalog metadata, job specs, and metrics; they never store customer data files. SQL text is retained only for the duration of the job unless the user opts into query history sync. Customers who require it can run the control plane and catalog in their own account (the "Ops-in-a-box, self-hosted" tier, later).
 
 ---
 
@@ -207,17 +207,17 @@ Burst workers receive a single-use job token (JWT, TTL = job timeout) that autho
 ### 7.1 CLI (v0 surface)
 
 ```
-lakelet init [dir]                    # local catalog + warehouse + lakelet.toml
-lakelet sql "<query>" | lakelet sql -f file.sql
-lakelet estimate "<query>"            # gauge only, no execution
-lakelet run [dbt selectors] [--burst auto|never|all]
-lakelet publish <table> --to s3://bucket/prefix   # copy data files, register in team catalog
-lakelet catalog serve [--port 8181]   # expose the local catalog to other engines
-lakelet catalog attach <rest-url>     # use an external Polaris / S3 Tables / Lakekeeper catalog
-lakelet login | lakelet burst status | lakelet burst cancel <job> | lakelet cost [--month]
+querysolo init [dir]                    # local catalog + warehouse + querysolo.toml
+querysolo sql "<query>" | querysolo sql -f file.sql
+querysolo estimate "<query>"            # gauge only, no execution
+querysolo run [dbt selectors] [--burst auto|never|all]
+querysolo publish <table> --to s3://bucket/prefix   # copy data files, register in team catalog
+querysolo catalog serve [--port 8181]   # expose the local catalog to other engines
+querysolo catalog attach <rest-url>     # use an external Polaris / S3 Tables / Lakekeeper catalog
+querysolo login | querysolo burst status | querysolo burst cancel <job> | querysolo cost [--month]
 ```
 
-`lakelet sql` prints the gauge line, then runs (Green/Yellow) or prompts (Red). `--burst auto` accepts Red verdicts under a per-project cap set in `lakelet.toml` without prompting; this is what scheduled runs use.
+`querysolo sql` prints the gauge line, then runs (Green/Yellow) or prompts (Red). `--burst auto` accepts Red verdicts under a per-project cap set in `querysolo.toml` without prompting; this is what scheduled runs use.
 
 ### 7.2 Desktop app
 
@@ -226,14 +226,14 @@ Tauri shell (Rust backend, web frontend) over the same core library as the CLI: 
 ### 7.3 Configuration
 
 ```toml
-# lakelet.toml
+# querysolo.toml
 [project]
 name = "acme-analytics"
 warehouse = "./warehouse"            # or s3://acme-data/warehouse
 
 [catalog]
 mode = "local"                        # local | team | external
-# url = "https://catalog.lakelet.dev/acme"
+# url = "https://catalog.querysolo.dev/acme"
 
 [burst]
 default = "prompt"                    # prompt | auto | never
@@ -258,19 +258,19 @@ region = "us-east-1"
 
 **Week 7–10: Burst v0.** Control plane (single service, Postgres), Fargate backend in us-east-1, `publish`, catalog lease, hard cap enforcement, metering. Ten design partners running real workloads.
 
-**Week 11–12: dbt + team catalog alpha.** `lakelet run` with DAG-level verdicts and split execution; hosted catalog on Postgres with credential vending; billing on.
+**Week 11–12: dbt + team catalog alpha.** `querysolo run` with DAG-level verdicts and split execution; hosted catalog on Postgres with credential vending; billing on.
 
 ---
 
 ## 9. Risks and open questions
 
-*DuckDB-Iceberg write maturity.* The write path is three months old. Expect edge cases in schema evolution and V3 features. Mitigation: pin versions, keep an integration test suite against every DuckDB release, and keep the catalog implementation strictly to the REST spec so an engine bug is never a Lakelet data-format bug.
+*DuckDB-Iceberg write maturity.* The write path is three months old. Expect edge cases in schema evolution and V3 features. Mitigation: pin versions, keep an integration test suite against every DuckDB release, and keep the catalog implementation strictly to the REST spec so an engine bug is never a QuerySolo data-format bug.
 
 *Estimator trust.* If the gauge cries wolf, users ignore it; if it under-calls Green, they stop trusting the click. The asymmetric thresholds in §4.3 and the history-based correction are the mitigation, but this is the thing to watch in design-partner sessions.
 
-*AWS.* The obvious move is a managed "DuckDB serverless" that would compete with the burst layer. Lakelet's answers: multi-cloud backends, a catalog and UX AWS is unlikely to build for non-AWS storage, and the fact that DuckDB itself remains MIT under the Foundation. If AWS ships it, Lakelet makes it a backend.
+*AWS.* The obvious move is a managed "DuckDB serverless" that would compete with the burst layer. QuerySolo's answers: multi-cloud backends, a catalog and UX AWS is unlikely to build for non-AWS storage, and the fact that DuckDB itself remains MIT under the Foundation. If AWS ships it, QuerySolo makes it a backend.
 
-*MotherDuck.* $133M raised, $400M valuation at the 2023 Series B, and they removed the $25 tier in early 2026 (free tier is now 3 users / 10 GB / 10 compute-hours; Business is $250/month plus usage). Their hybrid execution decides for you and runs on their storage. Lakelet competes on your bucket, open catalog, visible boundary, and a free tier that stays useful for solo users.
+*MotherDuck.* $133M raised, $400M valuation at the 2023 Series B, and they removed the $25 tier in early 2026 (free tier is now 3 users / 10 GB / 10 compute-hours; Business is $250/month plus usage). Their hybrid execution decides for you and runs on their storage. QuerySolo competes on your bucket, open catalog, visible boundary, and a free tier that stays useful for solo users.
 
 *Cold start.* Addressed in §5.3; the honest version is that sub-2-minute jobs are not a great burst use case until the Lambda backend exists.
 

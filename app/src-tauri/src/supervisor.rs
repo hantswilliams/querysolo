@@ -1,8 +1,8 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
-//! The sidecar supervisor (app brief A6, A8, A11). One `lakelet serve` per window: spawned
+//! The sidecar supervisor (app brief A6, A8, A11). One `querysolo serve` per window: spawned
 //! with a per-window memory limit, ready when its stdout says `serving` and
-//! `.lakelet/serve.json` names the port and the token, restarted once if it exits, stopped
+//! `.querysolo/serve.json` names the port and the token, restarted once if it exits, stopped
 //! after two exits inside a minute, killed when the window closes.
 
 use serde::{Deserialize, Serialize};
@@ -18,7 +18,7 @@ use std::time::{Duration, Instant};
 /// What the webview needs to call `/api`: the loopback port and the per-launch token,
 /// from `serve.json` (core step 9), plus the sidecar's pid for the status line, how long
 /// spawn to ready took (the launch budget, §3.2, measured rather than eyeballed), and
-/// `lakelet init`'s output when opening this folder initialised it (A10).
+/// `querysolo init`'s output when opening this folder initialised it (A10).
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Session {
     pub port: u16,
@@ -31,14 +31,14 @@ pub struct Session {
 
 #[derive(Clone, Debug)]
 pub struct SidecarConfig {
-    /// The `lakelet` executable: `LAKELET_SIDECAR` in development and tests, the bundled
-    /// sidecar in a build (session 10), else `lakelet` on `PATH`.
+    /// The `querysolo` executable: `QUERYSOLO_SIDECAR` in development and tests, the bundled
+    /// sidecar in a build (session 10), else `querysolo` on `PATH`.
     pub executable: OsString,
     pub project: PathBuf,
-    /// DuckDB's limit for this process only (A8); `None` leaves `lakelet.toml`'s value.
+    /// DuckDB's limit for this process only (A8); `None` leaves `querysolo.toml`'s value.
     pub memory_limit: Option<String>,
     /// In a debug build the window's origin is the Vite dev server, not `tauri://localhost`,
-    /// so the sidecar must allow it (`LAKELET_DEV_ORIGIN`); a release build passes nothing.
+    /// so the sidecar must allow it (`QUERYSOLO_DEV_ORIGIN`); a release build passes nothing.
     pub dev_origin: Option<String>,
     pub ready_timeout: Duration,
     /// The AWS profile this project uses (decisions C1): `AWS_PROFILE` on the sidecar, so
@@ -63,22 +63,22 @@ impl SidecarConfig {
 /// The Vite dev server, as `tauri.conf.json`'s `devUrl` and `vite.config.ts` agree.
 pub const DEV_ORIGIN: &str = "http://localhost:5173";
 
-/// Where the `lakelet` executable is, in the order the ship brief fixes (S1):
-/// `LAKELET_SIDECAR` when set (development, the tests, a build pointed elsewhere), else the
-/// frozen core the bundle carries as a resource (`<resources>/lakelet/lakelet`, from
-/// `core/dist/lakelet/`), else `lakelet` on `PATH`.
+/// Where the `querysolo` executable is, in the order the ship brief fixes (S1):
+/// `QUERYSOLO_SIDECAR` when set (development, the tests, a build pointed elsewhere), else the
+/// frozen core the bundle carries as a resource (`<resources>/querysolo/querysolo`, from
+/// `core/dist/querysolo/`), else `querysolo` on `PATH`.
 pub fn sidecar_executable(resource_dir: Option<&Path>) -> OsString {
-    if let Some(set) = std::env::var_os("LAKELET_SIDECAR") {
+    if let Some(set) = std::env::var_os("QUERYSOLO_SIDECAR") {
         return set;
     }
     if let Some(dir) = resource_dir {
-        let name = if cfg!(windows) { "lakelet.exe" } else { "lakelet" };
-        let bundled = dir.join("lakelet").join(name);
+        let name = if cfg!(windows) { "querysolo.exe" } else { "querysolo" };
+        let bundled = dir.join("querysolo").join(name);
         if bundled.is_file() {
             return bundled.into_os_string();
         }
     }
-    OsString::from("lakelet")
+    OsString::from("querysolo")
 }
 
 #[derive(Debug)]
@@ -93,7 +93,7 @@ pub enum SidecarError {
 impl std::fmt::Display for SidecarError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SidecarError::Spawn(e) => write!(f, "could not start the lakelet sidecar: {e}"),
+            SidecarError::Spawn(e) => write!(f, "could not start the querysolo sidecar: {e}"),
             SidecarError::ExitedEarly(out) => write!(f, "the sidecar exited before it was ready:\n{out}"),
             SidecarError::NotReady(t) => write!(f, "the sidecar did not say `serving` within {t:?}"),
             SidecarError::ServeJson(e) => write!(f, "could not read serve.json: {e}"),
@@ -212,9 +212,9 @@ fn spawn(config: &SidecarConfig) -> Result<(Child, Session, mpsc::Receiver<Strin
     if let Some(limit) = &config.memory_limit {
         command.arg("--memory-limit").arg(limit);
     }
-    command.env_remove("LAKELET_DEV_ORIGIN");
+    command.env_remove("QUERYSOLO_DEV_ORIGIN");
     if let Some(origin) = &config.dev_origin {
-        command.env("LAKELET_DEV_ORIGIN", origin);
+        command.env("QUERYSOLO_DEV_ORIGIN", origin);
     }
     if let Some(profile) = &config.profile {
         command.env("AWS_PROFILE", profile);
@@ -287,7 +287,7 @@ struct ServeJson {
 }
 
 fn read_serve_json(project: &Path, pid: u32) -> Result<Session, SidecarError> {
-    let path = project.join(".lakelet").join("serve.json");
+    let path = project.join(".querysolo").join("serve.json");
     let text = std::fs::read_to_string(&path).map_err(|e| SidecarError::ServeJson(format!("{}: {e}", path.display())))?;
     let parsed: ServeJson = serde_json::from_str(&text).map_err(|e| SidecarError::ServeJson(e.to_string()))?;
     Ok(Session { port: parsed.port, token: parsed.token, pid, project: project.to_path_buf(), ready_ms: 0, initialised: None })
@@ -300,22 +300,22 @@ pub(crate) mod tests {
     #[test]
     fn the_sidecar_is_the_variable_then_the_bundled_one_then_path() {
         // the environment is process-wide; the test that sets it must also clear it
-        std::env::remove_var("LAKELET_SIDECAR");
+        std::env::remove_var("QUERYSOLO_SIDECAR");
         let dir = temp_dir("sidecar-order");
-        assert_eq!(sidecar_executable(None), OsString::from("lakelet"), "nothing set, nothing bundled: PATH");
-        assert_eq!(sidecar_executable(Some(&dir)), OsString::from("lakelet"), "a resource dir with no core in it: PATH");
-        let name = if cfg!(windows) { "lakelet.exe" } else { "lakelet" };
-        std::fs::create_dir_all(dir.join("lakelet")).unwrap();
-        std::fs::write(dir.join("lakelet").join(name), b"").unwrap();
-        assert_eq!(sidecar_executable(Some(&dir)), dir.join("lakelet").join(name).into_os_string(), "the bundled core");
-        std::env::set_var("LAKELET_SIDECAR", "/elsewhere/lakelet");
-        assert_eq!(sidecar_executable(Some(&dir)), OsString::from("/elsewhere/lakelet"), "the variable wins");
-        std::env::remove_var("LAKELET_SIDECAR");
+        assert_eq!(sidecar_executable(None), OsString::from("querysolo"), "nothing set, nothing bundled: PATH");
+        assert_eq!(sidecar_executable(Some(&dir)), OsString::from("querysolo"), "a resource dir with no core in it: PATH");
+        let name = if cfg!(windows) { "querysolo.exe" } else { "querysolo" };
+        std::fs::create_dir_all(dir.join("querysolo")).unwrap();
+        std::fs::write(dir.join("querysolo").join(name), b"").unwrap();
+        assert_eq!(sidecar_executable(Some(&dir)), dir.join("querysolo").join(name).into_os_string(), "the bundled core");
+        std::env::set_var("QUERYSOLO_SIDECAR", "/elsewhere/querysolo");
+        assert_eq!(sidecar_executable(Some(&dir)), OsString::from("/elsewhere/querysolo"), "the variable wins");
+        std::env::remove_var("QUERYSOLO_SIDECAR");
     }
 
-    /// A stand-in for the `lakelet` executable (`tests/fake_sidecar.py`): `init` writes a
-    /// `lakelet.toml`; `serve` writes serve.json, prints the `serving` line, then lives for
-    /// `LAKELET_FAKE_LIFETIME` seconds (or until killed). Python so it runs on every
+    /// A stand-in for the `querysolo` executable (`tests/fake_sidecar.py`): `init` writes a
+    /// `querysolo.toml`; `serve` writes serve.json, prints the `serving` line, then lives for
+    /// `QUERYSOLO_FAKE_LIFETIME` seconds (or until killed). Python so it runs on every
     /// platform the shell does; the launcher is a tiny wrapper written into the temp dir.
     pub(crate) fn fake_executable(dir: &Path, lifetime_secs: u32) -> OsString {
         let script = std::env::current_dir().unwrap().join("tests").join("fake_sidecar.py");
@@ -324,9 +324,9 @@ pub(crate) mod tests {
         // the script, expressed as an executable via a tiny wrapper written into the temp dir.
         let wrapper = dir.join(if cfg!(windows) { "fake.cmd" } else { "fake.sh" });
         let body = if cfg!(windows) {
-            format!("@echo off\r\nset LAKELET_FAKE_LIFETIME={lifetime_secs}\r\n\"{}\" \"{}\" %*\r\n", python.to_string_lossy(), script.display())
+            format!("@echo off\r\nset QUERYSOLO_FAKE_LIFETIME={lifetime_secs}\r\n\"{}\" \"{}\" %*\r\n", python.to_string_lossy(), script.display())
         } else {
-            format!("#!/bin/sh\nexport LAKELET_FAKE_LIFETIME={lifetime_secs}\nexec \"{}\" \"{}\" \"$@\"\n", python.to_string_lossy(), script.display())
+            format!("#!/bin/sh\nexport QUERYSOLO_FAKE_LIFETIME={lifetime_secs}\nexec \"{}\" \"{}\" \"$@\"\n", python.to_string_lossy(), script.display())
         };
         std::fs::write(&wrapper, body).unwrap();
         #[cfg(unix)]
@@ -339,7 +339,7 @@ pub(crate) mod tests {
 
     fn fake_sidecar(dir: &Path, lifetime_secs: u32) -> SidecarConfig {
         let project = dir.join("proj");
-        std::fs::create_dir_all(project.join(".lakelet")).unwrap();
+        std::fs::create_dir_all(project.join(".querysolo")).unwrap();
         SidecarConfig {
             executable: fake_executable(dir, lifetime_secs),
             project,
@@ -351,7 +351,7 @@ pub(crate) mod tests {
     }
 
     pub(crate) fn temp_dir(name: &str) -> PathBuf {
-        let dir = std::env::temp_dir().join(format!("lakelet-supervisor-{name}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("querysolo-supervisor-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
@@ -381,10 +381,10 @@ pub(crate) mod tests {
         assert!(session.ready_ms > 0, "spawn to ready is measured");
         assert!(sup.check().is_none(), "healthy sidecar reports nothing");
         // the fake records the arguments it was given, so the memory limit is checkable
-        let args = std::fs::read_to_string(config.project.join(".lakelet").join("fake-args.txt")).unwrap();
+        let args = std::fs::read_to_string(config.project.join(".querysolo").join("fake-args.txt")).unwrap();
         assert!(args.contains("--memory-limit 1GB"), "{args}");
         assert!(args.contains("serve --port 0"), "{args}");
-        assert!(args.contains("env LAKELET_DEV_ORIGIN=http://localhost:5173"), "{args}");
+        assert!(args.contains("env QUERYSOLO_DEV_ORIGIN=http://localhost:5173"), "{args}");
         sup.stop();
         assert!(sup.child.try_wait().unwrap().is_some(), "stopped");
     }

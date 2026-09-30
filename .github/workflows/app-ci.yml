@@ -55,4 +55,4 @@ jobs:
       - run: npx playwright test
         working-directory: app
         env:
-          LAKELET_SIDECAR: ${{ github.workspace }}/core/.venv/bin/lakelet
+          QUERYSOLO_SIDECAR: ${{ github.workspace }}/core/.venv/bin/querysolo

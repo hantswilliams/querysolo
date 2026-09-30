@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decision D1, in a real window: the switch changes what the window is actually painted in,
 // the choice survives a reload, and System follows the machine. Asserted on the computed

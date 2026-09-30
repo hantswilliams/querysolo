@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The window (app brief steps 0 to 2): the welcome screen when it has no project, else the
 // project with its own sidecar: the bar (the status dot, Open…, the mode and theme
@@ -224,7 +224,7 @@ export default function App() {
         <span className="wordmark" data-testid="wordmark">
           {/* the site's mark (web/src/components/Brand.astro), in the brand colour */}
           <svg width="22" height="18" viewBox="0 0 33 27" aria-hidden="true" fill="none"><path d="M2 16C7 11 10 11 15 16C20 21 24 21 31 14M2 23C7 18 10 18 15 23C20 28 24 27 31 21" stroke="currentColor" strokeWidth="2.5" /><path d="M10 7c2-6 9-7 12-1-3 6-9 7-12 1Z" fill="currentColor" /><path d="m11 7-5-4v8Z" fill="currentColor" /></svg>
-          lakelet
+          querysolo
         </span>
         <span className="project" data-testid="project">{health?.project ?? (project ? baseName(project) : '')}</span>
         {project !== null && <StatusDot status={status} detail={detail} />}
@@ -276,8 +276,8 @@ export default function App() {
                 <pre>{error}</pre>
                 {inTauri() && <p><button type="button" className="primary" onClick={() => void restart()} data-testid="restart">Restart the core</button></p>}
                 <p>
-                  In development, export <code>LAKELET_SIDECAR</code> (the <code>lakelet</code> executable, for example <code>core/.venv/bin/lakelet</code>)
-                  before <code>npm run tauri dev</code>; <code>LAKELET_PROJECT</code> names the folder to open.
+                  In development, export <code>QUERYSOLO_SIDECAR</code> (the <code>querysolo</code> executable, for example <code>core/.venv/bin/querysolo</code>)
+                  before <code>npm run tauri dev</code>; <code>QUERYSOLO_PROJECT</code> names the folder to open.
                 </p>
               </section>
             )}
@@ -338,12 +338,12 @@ export default function App() {
       )}
       {project !== null && health && (
         <footer className="strip" data-testid="health">
-          <div><b>{health.lakelet}</b><span>lakelet</span></div>
+          <div><b>{health.querysolo}</b><span>querysolo</span></div>
           <div><b>{health.duckdb}</b><span>DuckDB</span></div>
           <div><b>{health.machine.memory_limit_text ?? '—'}</b><span>memory limit, this window</span></div>
-          <div title={health.throughput_probe === 'cached' ? 'Measured through the page cache and capped; run `lakelet gauge probe` in the project to measure the disk.' : undefined}>
+          <div title={health.throughput_probe === 'cached' ? 'Measured through the page cache and capped; run `querysolo gauge probe` in the project to measure the disk.' : undefined}>
             <b>{health.throughput_local_mbps ? `${Math.round(health.throughput_local_mbps).toLocaleString()} MB/s` : '—'}</b>
-            <span>{health.throughput_probe === 'cached' ? 'local disk (cached; run lakelet gauge probe)' : 'local disk'}</span>
+            <span>{health.throughput_probe === 'cached' ? 'local disk (cached; run querysolo gauge probe)' : 'local disk'}</span>
           </div>
           <div data-testid="ready-ms"><b>{session?.ready_ms ? `${session.ready_ms} ms` : '—'}</b><span>core ready in</span></div>
         </footer>
