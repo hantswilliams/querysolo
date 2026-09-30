@@ -100,3 +100,22 @@ On `rename/querysolo` before any change, every suite was green:
 ## 8. The frozen build, on the Mac
 
 `uv run --group freeze python freeze/build.py`, then `--check`: `dist/querysolo` is 352 MB before the trim and 292 MB after (the same as under the old name). The check runs from an empty `HOME` with no network: the quickstart, including `querysolo run` (dbt, one model built), with zero Python outbound connection attempts and zero DuckDB requests beyond loopback. "Nothing left the machine."
+
+## 9. The mark (`logo-querysolo-plan.md`, L1–L6 all agreed)
+
+- **L1:** the rename committed on its own first (`7d91343`). This round is the second commit.
+- **The mark (L2):** the prompt, `>_`, with a lime cursor.
+  - **App icon masters:** off-white chevron and lime cursor on the deep green. The macOS one is on the Big Sur canvas (an 824 tile inset 100); the Linux one fills the canvas.
+  - **Favicon:** the Linux master.
+  - **Rendering:** the masters go to 1024 px PNGs in Playwright's Chromium, through the new `app/scripts/icon-masters.mjs`. That replaces the `cairosvg` step, which needs a Cairo library this Mac does not have.
+  - **Icon set:** `npx tauri icon` for both folders, pruned back to the six files the config names. `icons/README.md` is updated.
+  - **Checked** at 256, 128, 64, 32 and 16 px on light and dark: it reads at 16.
+- **Headers (L3):** the site header (`Brand.astro`), the design-study header (`exploration/Wordmark.astro`) and the app window (`App.tsx`) draw the chevron and "query" in ink, and the cursor and "solo" in the accent (lime on dark, deep green on light).
+  - The site's header CSS had coloured the whole wordmark lime. The first browser review caught that, and it was fixed before this commit.
+  - `Logo.astro`, still unused, is redrawn rather than deleted (L6).
+- **Art only (L4):** the home page's layout is unchanged.
+- **Screenshots (L5):** retaken with `app/scripts/screenshots.mjs` from a throwaway sample project: `make_sample.py`, the three saved questions (revenue by region, top customers, refunds by product) and a `run`, against a real `querysolo serve` and the app's dev server.
+  - Ten images on the site, plus `docs/screenshots/query-verdict.png` for the README.
+  - The provenance note and the README caption say September 30.
+- **Tests:** site 95 at both bases; Vitest 126; `tsc` clean; `cargo test` 15; README check current; `test_name.py` green.
+- **Open:** a DMG built on your Mac, to see the new Dock icon.

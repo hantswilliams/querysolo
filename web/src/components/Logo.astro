@@ -1,10 +1,14 @@
 ---
-// The querysolo wordmark with the leaping fish. `dark` renders white text (for dark bands).
+// Copyright 2026 QuerySolo contributors
+// SPDX-License-Identifier: Apache-2.0
+// The querysolo lockup: the prompt mark and the wordmark (logo-querysolo-plan.md L2, L3).
+// `dark` renders it for dark bands: off-white text and a lime accent.
 interface Props { width?: number; dark?: boolean; class?: string }
 const { width = 150, dark = false, class: cls = '' } = Astro.props;
-const fill = dark ? '#FFFFFF' : '#172029';
+const ink = dark ? '#F0F2E8' : '#1A2A26';
+const accent = dark ? '#D6EE83' : '#164F44';
 ---
 <svg width={width} height={Math.round(width * 70 / 300)} viewBox="0 0 300 70" role="img" aria-label="querysolo" class={cls}>
-  <text x="12" y="52" font-family="Manrope,system-ui,sans-serif" font-weight="800" font-size="40" letter-spacing="-0.9" fill={fill}>querysolo</text>
-  <g transform="translate(76,14) rotate(-18) scale(.6)"><path d="M-12 0 L-22 -8 C-19 -3, -19 3, -22 8 Z" fill="#E8731A"/><ellipse rx="14" ry="9" fill="#F5A623"/><path d="M-3 -8 C0 -14, 6 -13, 7 -7 Z" fill="#E8731A"/><circle cx="7" cy="-2" r="3" fill="#fff"/><circle cx="8" cy="-2" r="1.5" fill="#172029"/></g>
+  <g transform="translate(4,6) scale(.9)"><path d="M13 19 L27 32 L13 45" fill="none" stroke={ink} stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="39" width="20" height="7" rx="2.5" fill={accent}/></g>
+  <text x="62" y="50" font-family="Manrope,system-ui,sans-serif" font-weight="800" font-size="38" letter-spacing="-0.9" fill={ink}>query<tspan fill={accent}>solo</tspan></text>
 </svg>

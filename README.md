@@ -6,7 +6,7 @@ Developer preview, macOS and Linux, from source. Apache 2.0. Site and docs: **ht
 
 ![The window: the sidebar with the table explorer, the SQL box over the results, the verdict and the sentence before the rows, then the chart and the grid](docs/screenshots/query-verdict.png)
 
-*The real app in its browser harness on generated sample data, September 22, 2026; [more screens on the site](https://hantswilliams.github.io/querysolo/app/) and in [the app guide](https://hantswilliams.github.io/querysolo/docs/app/).*
+*The real app in its browser harness on generated sample data, September 30, 2026; [more screens on the site](https://hantswilliams.github.io/querysolo/app/) and in [the app guide](https://hantswilliams.github.io/querysolo/docs/app/).*
 
 ## What it is
 

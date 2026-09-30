@@ -9,7 +9,8 @@ Scope: `build-sessions/rename-querysolo-plan.md` (R1–R10, all agreed 2026-09-3
 - [x] Hants agreed R1–R10.
 - [x] Steps 0–6 built 2026-09-30, staged on `rename/querysolo` (not committed). Log: `querysolo-build-sessions_093026.md`.
 - [ ] Hants: open a copy of a real project on the Mac; the frozen build and DMG; the repository rename (R7); the names and the trademark search (R10).
-- [ ] Retake the app screenshots under the new name; the icon (R9); the deck.
+- [x] The mark, the icon and the screenshots (`logo-querysolo-plan.md`, L1–L6), 2026-09-30.
+- [ ] Hants: a DMG with the new icon; the deck under the new name.
 
 ## Website v2: a warehouse for one — built 2026-09-26, awaiting review
 

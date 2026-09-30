@@ -222,9 +222,9 @@ export default function App() {
     <div className="app">
       <header className="bar">
         <span className="wordmark" data-testid="wordmark">
-          {/* the site's mark (web/src/components/Brand.astro), in the brand colour */}
-          <svg width="22" height="18" viewBox="0 0 33 27" aria-hidden="true" fill="none"><path d="M2 16C7 11 10 11 15 16C20 21 24 21 31 14M2 23C7 18 10 18 15 23C20 28 24 27 31 21" stroke="currentColor" strokeWidth="2.5" /><path d="M10 7c2-6 9-7 12-1-3 6-9 7-12 1Z" fill="currentColor" /><path d="m11 7-5-4v8Z" fill="currentColor" /></svg>
-          querysolo
+          {/* the site's mark (web/src/components/Brand.astro): the prompt in ink, the cursor and "solo" in the brand colour */}
+          <svg width="22" height="17" viewBox="8 14 46 36" aria-hidden="true" fill="none"><path d="M13 19 L27 32 L13 45" stroke="var(--ink)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" /><rect x="32" y="39" width="20" height="7" rx="2.5" fill="var(--lake)" /></svg>
+          <span style={{ color: 'var(--ink)' }}>query<span style={{ color: 'var(--lake)' }}>solo</span></span>
         </span>
         <span className="project" data-testid="project">{health?.project ?? (project ? baseName(project) : '')}</span>
         {project !== null && <StatusDot status={status} detail={detail} />}

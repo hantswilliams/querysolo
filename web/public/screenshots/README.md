@@ -2,7 +2,7 @@
 
 Unedited captures of the real QuerySolo React application in its browser test harness — the
 same page the desktop window loads — backed by a real `querysolo serve`, at 2x. Nothing is
-mocked: the rows, the verdict and the chart are the core's answers. Taken September 22,
+mocked: the rows, the verdict and the chart are the core's answers. Taken September 30,
 2026 with `app/scripts/screenshots.mjs`, which is the whole recipe; run it again after a
 UI change.
 
