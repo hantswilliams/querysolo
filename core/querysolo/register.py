@@ -280,7 +280,9 @@ def _client(project: Project, anonymous: bool = False, bucket: str | None = None
 def _metadata_root(project: Project, name: str, prefix: str, in_bucket: bool) -> str:
     from querysolo.catalog.store import LEGACY_REPLACE_SUFFIX, REPLACE_SUFFIX
 
-    name = name.removesuffix(REPLACE_SUFFIX).removesuffix(LEGACY_REPLACE_SUFFIX)  # a replace's temporary shares the final folder
+    name = name.removesuffix(REPLACE_SUFFIX).removesuffix(
+        LEGACY_REPLACE_SUFFIX
+    )  # a replace's temporary shares the final folder
     if in_bucket:
         scheme, path = split_uri(prefix)
         bucket = path.split("/")[0]

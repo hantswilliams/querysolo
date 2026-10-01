@@ -152,7 +152,9 @@ class ManifestCache:
         data_paths = [f.path for f in files]
         remote = any(not p.startswith("file://") for p in data_paths)
         source = (
-            table_property(md.properties, "querysolo.source-prefix") or _common_prefix(data_paths) or md.location
+            table_property(md.properties, "querysolo.source-prefix")
+            or _common_prefix(data_paths)
+            or md.location
         )
         stats = TableStats(
             name=name,

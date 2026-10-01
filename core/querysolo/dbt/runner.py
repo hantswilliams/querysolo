@@ -155,8 +155,9 @@ def _dbt():
 
 
 def profiles_yml(catalog_url: str) -> str:
-    return f"""# Written by QuerySolo (`querysolo run`, `querysolo serve`, `querysolo catalog serve`) with
-# the address of the catalog that process serves; it is good while that process runs.
+    return f"""# Written by QuerySolo (`querysolo run`, `querysolo serve`,
+# `querysolo catalog serve`) with the address of the catalog that process serves; it is good
+# while that process runs.
 # For a `dbt run` or `dbt test` by hand: `querysolo catalog serve` in one terminal, then
 # `dbt run --profiles-dir .querysolo/dbt` in another. Build with `querysolo run` to record views.
 
@@ -633,7 +634,10 @@ def _record_views(
         return
     names = {m.name for m in planned}
     for view in project.views.list():
-        if table_property(view.properties, DBT_MODEL_PROPERTY) is not None and view.name not in names:
+        if (
+            table_property(view.properties, DBT_MODEL_PROPERTY) is not None
+            and view.name not in names
+        ):
             project.views.drop(view.name)
             report.views_dropped.append(view.name)
 

@@ -126,7 +126,8 @@ class Questions:
 
         self.write_entry(slug, title, sql)
         self._sql_path(slug).write_text(
-            f"-- {title}\n-- saved by querysolo on {now:%Y-%m-%d}\n{sql.strip()}\n", encoding="utf-8"
+            f"-- {title}\n-- saved by querysolo on {now:%Y-%m-%d}\n{sql.strip()}\n",
+            encoding="utf-8",
         )
         question = self.get(slug)
         # The save is a version: the model, its checks, and the generic test the first save

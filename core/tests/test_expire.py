@@ -158,7 +158,9 @@ def test_the_verb_the_setting_and_the_route(project, tmp_path) -> None:
     project.close()
     described = runner.invoke(app, ["-C", root, "tables", "describe", "orders"])
     assert described.exit_code == 0 and "snapshot(s) older than 0 days" in described.output
-    assert "querysolo tables expire orders" in " ".join(described.output.split()), "the hint, however it wraps"
+    assert "querysolo tables expire orders" in " ".join(described.output.split()), (
+        "the hint, however it wraps"
+    )
     expired = runner.invoke(app, ["-C", root, "tables", "expire", "orders"])
     assert expired.exit_code == 0, expired.output
     assert "of 3 snapshot(s) expired (keeping 0 days)" in expired.output

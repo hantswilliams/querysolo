@@ -44,7 +44,14 @@ from pyiceberg.typedef import IcebergBaseModel
 
 from querysolo.catalog import commit as ic
 from querysolo.catalog import viewmeta
-from querysolo.catalog.store import LEGACY_REPLACE_SUFFIX, REPLACE_SUFFIX, AlreadyExists, Conflict, NotFound, Store
+from querysolo.catalog.store import (
+    LEGACY_REPLACE_SUFFIX,
+    REPLACE_SUFFIX,
+    AlreadyExists,
+    Conflict,
+    NotFound,
+    Store,
+)
 
 PREFIX = "querysolo"
 NAMESPACE_SEPARATOR = "\x1f"

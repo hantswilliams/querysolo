@@ -99,10 +99,9 @@ def _root() -> Path:
 
 def _open():
     from querysolo import Project
+    from querysolo.layout import LayoutConflict
     from querysolo.project import NotAProject
     from querysolo.schema import SchemaTooNew
-
-    from querysolo.layout import LayoutConflict
 
     try:
         return Project.open(_root())
@@ -111,7 +110,8 @@ def _open():
         raise typer.Exit(1) from None
     except NotAProject:
         err.print(
-            f"[red]not a QuerySolo project:[/red] no querysolo.toml in {_root()}; run `querysolo init`"
+            f"[red]not a QuerySolo project:[/red] no querysolo.toml in {_root()}; "
+            "run `querysolo init`"
         )
         raise typer.Exit(1) from None
     except SchemaTooNew as e:
@@ -163,7 +163,8 @@ def init(
         ),
     ] = None,
 ) -> None:
-    """Turn a folder into a lakehouse: catalog, warehouse, querysolo.toml, AGENTS.md, dbt project."""
+    """Turn a folder into a lakehouse: catalog, warehouse, querysolo.toml, AGENTS.md, dbt
+    project."""
     from querysolo import Project
     from querysolo.project import ProjectExists
 
@@ -416,7 +417,9 @@ def tables_describe(name: str) -> None:
 
 @tables_app.command("publish")
 def tables_publish(
-    name: Annotated[str, typer.Argument(help="A table QuerySolo wrote, under the local warehouse.")],
+    name: Annotated[
+        str, typer.Argument(help="A table QuerySolo wrote, under the local warehouse.")
+    ],
     prefix: Annotated[str, typer.Argument(help="s3://bucket/prefix; the table goes under main/.")],
     dry_run: Annotated[
         bool, typer.Option("--dry-run", help="Count and weigh the files; move nothing.")
@@ -1068,7 +1071,11 @@ def lineage(
         except runner.DbtFailed as e:
             _fail(f"dbt could not compile the models: {e}")
     if as_json:
-        out.print(json.dumps(result if all_ else _lineage_json(result), indent=2), highlight=False, soft_wrap=True)
+        out.print(
+            json.dumps(result if all_ else _lineage_json(result), indent=2),
+            highlight=False,
+            soft_wrap=True,
+        )
         return
     for line in graph_lines(result) if all_ else lineage_lines(result):
         out.print(line, highlight=False, soft_wrap=True)
@@ -1097,7 +1104,9 @@ def changes(
     with _open() as p:
         feed = changes(p, since=cutoff, last=last, name=name)
     if as_json:
-        out.print(json.dumps([c.as_dict() for c in feed], indent=2), highlight=False, soft_wrap=True)
+        out.print(
+            json.dumps([c.as_dict() for c in feed], indent=2), highlight=False, soft_wrap=True
+        )
         return
     if not feed:
         out.print("nothing yet" if name is None else f"nothing about {name}", highlight=False)

@@ -278,8 +278,8 @@ def publish(
     md = project.metadata_io.read(old_location)
     if table_property(md.properties, SOURCE_PROPERTY) is not None:
         raise NotPublishable(
-            f"{name} is registered from {table_property(md.properties, SOURCE_PROPERTY)}; its files are not "
-            "QuerySolo's to move"
+            f"{name} is registered from {table_property(md.properties, SOURCE_PROPERTY)}; "
+            "its files are not QuerySolo's to move"
         )
     if _local_path(md.location) is None:
         raise NotPublishable(f"{name} is already in a bucket: {md.location}")

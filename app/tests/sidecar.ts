@@ -116,7 +116,9 @@ async function startMoto(project: string): Promise<{ endpoint: string; child: Ch
     });
     child.stderr!.on('data', (d) => { out += d; });
     child.on('exit', (code) => fail(new Error(`moto exited (${code}) before serving:\n${out}`)));
-    setTimeout(() => fail(new Error(`moto not ready in 30 s:\n${out}`)), 30_000);
+    // 120 s: a cold macOS runner compiles boto3, botocore and Moto on first import, which took
+    // more than 30 s on CI (2026-09-30) while Ubuntu and a laptop take a few.
+    setTimeout(() => fail(new Error(`moto not ready in 120 s:\n${out}`)), 120_000);
   });
   return { endpoint, child, flag };
 }

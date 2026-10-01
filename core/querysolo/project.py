@@ -361,7 +361,11 @@ class Project:
         try:
             with engine.begin() as c:
                 c.execute(meta.delete().where(meta.c.key == "renamed_from"))
-                c.execute(meta.insert().values(key="renamed_from", value=f"{layout.OLD} {datetime.now(UTC):%Y-%m-%d}"))
+                c.execute(
+                    meta.insert().values(
+                        key="renamed_from", value=f"{layout.OLD} {datetime.now(UTC):%Y-%m-%d}"
+                    )
+                )
         finally:
             engine.dispose()
 

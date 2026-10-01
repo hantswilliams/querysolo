@@ -21,7 +21,8 @@ def project(tmp_path):
     Project.init(root)
     p = Project.open(root)
     p.engine.execute(
-        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, 'c' || (range % 10) AS customer, "
+        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, "
+        "'c' || (range % 10) AS customer, "
         "(range * 1.5)::DOUBLE AS amt FROM range(10000)"
     )
     yield p

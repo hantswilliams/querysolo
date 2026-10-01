@@ -38,7 +38,9 @@ jobs:
           enable-cache: true
           cache-dependency-glob: core/uv.lock
       # The sidecar the screens run against: the core from this checkout, with its extensions.
-      - run: uv sync --locked
+      # --compile-bytecode: Moto and botocore compile on first import otherwise, and a cold
+      # macOS runner took over 30 s to start the test bucket.
+      - run: uv sync --locked --compile-bytecode
         working-directory: core
       - run: uv run python -c "import duckdb; duckdb.connect().execute('INSTALL iceberg; INSTALL httpfs; INSTALL excel; INSTALL aws')"
         working-directory: core

@@ -129,3 +129,20 @@ After PR #2 merged, GitHub Actions showed two failures that predate the rename:
   - Both now pass `soft_wrap=True`.
   - `test_json_survives_a_narrow_terminal` runs both at `COLUMNS=40`. It fails without the fix and passes with it.
   - `estimate --json` uses Rich's `print_json`, which does not wrap, and was already safe.
+
+## 11. The pull request's first checks
+
+The pull request ran CI on the renamed code for the first time. Three jobs failed: both `core` jobs and `app` on macOS.
+
+- **core (Linux and macOS): lint, not tests.** The rename made names two characters longer, and 30 lines crossed Ruff's 100-column limit or its formatting. Ruff runs before pytest, so the tests never ran.
+  - Fixed with `ruff format` (13 files) and `ruff check --fix` (two import blocks).
+  - The eight remaining long lines were wrapped by hand, with no change to the text they produce.
+  - `ruff check` and `ruff format --check` are clean.
+- **app (macOS): the Moto test bucket did not start within 30 s.**
+  - It printed nothing and did not exit. The fixture flushes its ready line, so it was not output buffering. It passes on Ubuntu and on this Mac, which points to a cold start: a fresh virtualenv compiling boto3, botocore and Moto on first import on a slow macOS runner.
+  - Three changes:
+    - CI's `uv sync` now compiles bytecode.
+    - The wait is 120 s.
+    - The fixture writes "moto fixture: importing" to stderr before its heavy imports, so a future timeout shows whether the process started.
+  - This is a likely cause, not a confirmed one. The next macOS run will tell.
+- **Locally:** core 283 passed, 7 skipped (with the narrow-terminal test); Playwright 31.

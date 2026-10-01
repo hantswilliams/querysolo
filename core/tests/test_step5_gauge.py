@@ -86,7 +86,8 @@ def project(tmp_path):
     assert report.throughput_probe in ("nocache", "direct", "cached")
     p = Project.open(root)
     p.engine.execute(
-        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, 'c' || (range % 10) AS customer, "
+        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, "
+        "'c' || (range % 10) AS customer, "
         "(range * 1.5)::DOUBLE AS amt, DATE '2026-01-01' + (range % 365)::INTEGER AS d "
         "FROM range(1000000)"
     )

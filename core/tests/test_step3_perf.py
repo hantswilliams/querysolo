@@ -11,7 +11,9 @@ import pytest
 
 from querysolo import Project
 
-pytestmark = pytest.mark.skipif(os.environ.get("QUERYSOLO_PERF") != "1", reason="set QUERYSOLO_PERF=1")
+pytestmark = pytest.mark.skipif(
+    os.environ.get("QUERYSOLO_PERF") != "1", reason="set QUERYSOLO_PERF=1"
+)
 
 
 @pytest.mark.parametrize(

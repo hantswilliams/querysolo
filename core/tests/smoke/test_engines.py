@@ -19,7 +19,8 @@ from pyiceberg.exceptions import NamespaceAlreadyExistsError, NoSuchTableError
 from tests.catalog_helpers import SCHEMA, attach
 
 pytestmark = pytest.mark.skipif(
-    os.environ.get("QUERYSOLO_SMOKE") != "1", reason="set QUERYSOLO_SMOKE=1 with the engines profile up"
+    os.environ.get("QUERYSOLO_SMOKE") != "1",
+    reason="set QUERYSOLO_SMOKE=1 with the engines profile up",
 )
 
 ROOT = Path(__file__).resolve().parents[3]

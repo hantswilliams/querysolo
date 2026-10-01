@@ -15,7 +15,10 @@ from pathlib import Path
 OLD = "lakelet"
 OLD_DIR, NEW_DIR = f".{OLD}", ".querysolo"
 OLD_TOML, NEW_TOML = f"{OLD}.toml", "querysolo.toml"
-MACROS = ((f"macros/{OLD}.sql", "macros/querysolo.sql"), (f"macros/{OLD}_views.sql", "macros/querysolo_views.sql"))
+MACROS = (
+    (f"macros/{OLD}.sql", "macros/querysolo.sql"),
+    (f"macros/{OLD}_views.sql", "macros/querysolo_views.sql"),
+)
 
 
 class LayoutConflict(Exception):
@@ -39,7 +42,9 @@ def migrate(root: str | Path) -> bool:
             "remove the other, then open it again"
         )
     if (root / OLD_DIR).exists() and (root / NEW_DIR).exists():
-        raise LayoutConflict(f"{root} has both {OLD_DIR}/ and {NEW_DIR}/; keep one and open it again")
+        raise LayoutConflict(
+            f"{root} has both {OLD_DIR}/ and {NEW_DIR}/; keep one and open it again"
+        )
     for old, new in MACROS:
         if (root / old).exists() and (root / new).exists():
             raise LayoutConflict(f"{root} has both {old} and {new}; keep one and open it again")
@@ -53,7 +58,10 @@ def migrate(root: str | Path) -> bool:
     gitignore = root / ".gitignore"
     if gitignore.exists():
         lines = gitignore.read_text().splitlines()
-        gitignore.write_text("\n".join(f"{NEW_DIR}/" if line.strip() == f"{OLD_DIR}/" else line for line in lines) + "\n")
+        gitignore.write_text(
+            "\n".join(f"{NEW_DIR}/" if line.strip() == f"{OLD_DIR}/" else line for line in lines)
+            + "\n"
+        )
     agents = root / "AGENTS.md"
     if agents.exists():
         agents.write_text(_renamed(agents.read_text()))

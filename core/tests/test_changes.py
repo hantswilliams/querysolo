@@ -127,7 +127,10 @@ def test_json_survives_a_narrow_terminal(project) -> None:
     temporary paths) must not be wrapped into the middle of a string."""
     p = project
     runner.run(p)
-    p.questions.save("A question with a long enough title to pass forty columns", "select sum(amt) as total from src")
+    p.questions.save(
+        "A question with a long enough title to pass forty columns",
+        "select sum(amt) as total from src",
+    )
     for argv in (["changes", "--json"], ["lineage", "--all", "--json"]):
         r = CliRunner().invoke(app, ["-C", str(p.root), *argv], env={"COLUMNS": "40"})
         assert r.exit_code == 0, r.output
