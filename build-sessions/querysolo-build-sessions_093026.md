@@ -149,3 +149,8 @@ The pull request ran CI on the renamed code for the first time. Three jobs faile
 - **Second run, 2026-10-01.** The Moto fix held: the bucket started, and 31 of 32 tests passed on macOS.
   - **The one failure:** `save-question.spec.ts` pressed `Control+a` to replace the SQL box's text. In CodeMirror on a Mac, select-all is ⌘A and Ctrl+A moves to the line's start, so the new SQL was prepended to the old and the query failed. A failed query never sets `data-done-ms`, which is why the test timed out.
   - **The fix:** `ControlOrMeta+a`, Playwright's portable modifier. The test passes locally. Why it passed on this Mac before is not explained.
+- **Third run.** `save-question` now passed, and two `versions.spec` tests failed on macOS. The second failed only because the first stopped before its restore.
+  - **What the log shows:** in the first test, the version list showed two rows (the count check passed), then re-rendered and did not show a second row within 5 s.
+  - **What was ruled out:** it does not reproduce locally, in parallel or with CI's single worker and file order. And `save-question`, which shares the sidecar and now runs to its end, waits for its last run to report fresh before it finishes.
+  - **Best explanation:** timing on the slow macOS runner, not confirmed.
+  - **Changes:** the version-list assertions wait 30 s, and `app-ci.yml` now uploads `app/test-results/` (traces, page snapshots) when a job fails. If this was not timing, the next failure can be read rather than guessed at.

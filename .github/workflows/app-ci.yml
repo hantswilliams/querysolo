@@ -62,3 +62,10 @@ jobs:
         working-directory: app
         env:
           QUERYSOLO_SIDECAR: ${{ github.workspace }}/core/.venv/bin/querysolo
+      # On a failure, keep what Playwright saw (traces, page snapshots) to read afterwards.
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results-${{ matrix.os }}
+          path: app/test-results/
+          retention-days: 7

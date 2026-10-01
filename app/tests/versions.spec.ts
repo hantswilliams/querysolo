@@ -31,13 +31,15 @@ test('the versions, the diff, Gauge then and now, Restore as a third version, an
   const versions = detail.getByTestId('versions');
   await expect(versions.getByTestId('git-line')).toHaveText('git · main · origin not set');
   const rows = versions.getByTestId('version-list').locator('tbody tr');
-  await expect(rows).toHaveCount(2);
-  await expect(rows.nth(0)).toContainText(`update question: ${SEEDED_QUESTION.title}`);
-  await expect(rows.nth(0)).toContainText('checks unchanged');
-  await expect(rows.nth(0)).toContainText(/[0-9a-f]{7}/);
-  await expect(rows.nth(1)).toContainText(`save question: ${SEEDED_QUESTION.title}`);
-  await expect(rows.nth(1)).toContainText('checks changed');
-  await expect(rows.nth(0)).toHaveClass('on');
+  // 30 s: on a slow macOS runner the list was seen to re-render and take longer than 5 s to
+  // come back (CI, 2026-10-01); a laptop and Linux take a fraction of a second
+  await expect(rows).toHaveCount(2, { timeout: 30_000 });
+  await expect(rows.nth(0)).toContainText(`update question: ${SEEDED_QUESTION.title}`, { timeout: 30_000 });
+  await expect(rows.nth(0)).toContainText('checks unchanged', { timeout: 30_000 });
+  await expect(rows.nth(0)).toContainText(/[0-9a-f]{7}/, { timeout: 30_000 });
+  await expect(rows.nth(1)).toContainText(`save question: ${SEEDED_QUESTION.title}`, { timeout: 30_000 });
+  await expect(rows.nth(1)).toContainText('checks changed', { timeout: 30_000 });
+  await expect(rows.nth(0)).toHaveClass('on', { timeout: 30_000 });
   await expect(versions.getByTestId('diff-summary')).toContainText('1 line changed');
   await expect(versions.getByTestId('diff').locator('.add')).toContainText('order by 2 desc');
   await expect(versions.getByTestId('diff').locator('.del')).toContainText(SEEDED_QUESTION.first);
