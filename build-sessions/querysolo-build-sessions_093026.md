@@ -146,3 +146,6 @@ The pull request ran CI on the renamed code for the first time. Three jobs faile
     - The fixture writes "moto fixture: importing" to stderr before its heavy imports, so a future timeout shows whether the process started.
   - This is a likely cause, not a confirmed one. The next macOS run will tell.
 - **Locally:** core 283 passed, 7 skipped (with the narrow-terminal test); Playwright 31.
+- **Second run, 2026-10-01.** The Moto fix held: the bucket started, and 31 of 32 tests passed on macOS.
+  - **The one failure:** `save-question.spec.ts` pressed `Control+a` to replace the SQL box's text. In CodeMirror on a Mac, select-all is ⌘A and Ctrl+A moves to the line's start, so the new SQL was prepended to the old and the query failed. A failed query never sets `data-done-ms`, which is why the test timed out.
+  - **The fix:** `ControlOrMeta+a`, Playwright's portable modifier. The test passes locally. Why it passed on this Mac before is not explained.

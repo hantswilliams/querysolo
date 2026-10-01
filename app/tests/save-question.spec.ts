@@ -92,7 +92,9 @@ test('a question is saved from the query screen and appears on the Models screen
   // changed makes it fresh again
   await page.getByTestId('screen-tables').click();
   await editor.click();
-  await page.keyboard.press('Control+a');
+  // select-all is ⌘A on a Mac and Ctrl+A elsewhere; Ctrl+A on a Mac moves to the line's start,
+  // which prepends the new SQL to the old and fails the query (macOS CI, 2026-10-01)
+  await page.keyboard.press('ControlOrMeta+a');
   await page.keyboard.insertText('select customer, sum(amt) as total, count(*) as orders from orders group by 1');
   await page.keyboard.press('Escape');
   await page.getByTestId('run').click();
