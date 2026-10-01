@@ -119,3 +119,13 @@ On `rename/querysolo` before any change, every suite was green:
   - The provenance note and the README caption say September 30.
 - **Tests:** site 95 at both bases; Vitest 126; `tsc` clean; `cargo test` 15; README check current; `test_name.py` green.
 - **Open:** a DMG built on your Mac, to see the new Dock icon.
+
+## 10. CI on `main` was red before the rename; fixed on this branch
+
+After PR #2 merged, GitHub Actions showed two failures that predate the rename:
+
+- **app (Linux and macOS):** `cargo test` failed in the build script, because `tauri.conf.json` bundles `core/dist/<name>/` (ship step 1) and a fresh checkout has no such folder. This is the gap noted in §0. `app-ci.yml` now creates the empty folder before `cargo test`.
+- **core (macOS):** `test_changes.py::test_the_cli_and_the_route` failed with "Invalid control character". `changes --json` and `lineage --json` printed through Rich without `soft_wrap`, so a JSON line longer than the terminal (80 columns on CI, with its long temporary paths) was broken inside a string.
+  - Both now pass `soft_wrap=True`.
+  - `test_json_survives_a_narrow_terminal` runs both at `COLUMNS=40`. It fails without the fix and passes with it.
+  - `estimate --json` uses Rich's `print_json`, which does not wrap, and was already safe.

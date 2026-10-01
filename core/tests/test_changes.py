@@ -122,6 +122,18 @@ def test_since_parsing() -> None:
         parse_since("yesterday")
 
 
+def test_json_survives_a_narrow_terminal(project) -> None:
+    """`--json` is for programs: a line longer than the terminal (CI's 80 columns and its long
+    temporary paths) must not be wrapped into the middle of a string."""
+    p = project
+    runner.run(p)
+    p.questions.save("A question with a long enough title to pass forty columns", "select sum(amt) as total from src")
+    for argv in (["changes", "--json"], ["lineage", "--all", "--json"]):
+        r = CliRunner().invoke(app, ["-C", str(p.root), *argv], env={"COLUMNS": "40"})
+        assert r.exit_code == 0, r.output
+        json.loads(r.output)
+
+
 def test_the_cli_and_the_route(project) -> None:
     p = project
     runner.run(p)

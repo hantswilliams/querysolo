@@ -42,6 +42,10 @@ jobs:
         working-directory: core
       - run: uv run python -c "import duckdb; duckdb.connect().execute('INSTALL iceberg; INSTALL httpfs; INSTALL excel; INSTALL aws')"
         working-directory: core
+      # tauri.conf.json bundles the frozen core (ship S1) as a resource, and the build script
+      # refuses a missing resource path; the tests do not need the core in it, so an empty
+      # folder stands in for the one `freeze/build.py` makes for a release.
+      - run: mkdir -p core/dist/querysolo
       - run: cargo test
         working-directory: app/src-tauri
       - run: npm ci

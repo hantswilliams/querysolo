@@ -1068,7 +1068,7 @@ def lineage(
         except runner.DbtFailed as e:
             _fail(f"dbt could not compile the models: {e}")
     if as_json:
-        out.print(json.dumps(result if all_ else _lineage_json(result), indent=2), highlight=False)
+        out.print(json.dumps(result if all_ else _lineage_json(result), indent=2), highlight=False, soft_wrap=True)
         return
     for line in graph_lines(result) if all_ else lineage_lines(result):
         out.print(line, highlight=False, soft_wrap=True)
@@ -1097,7 +1097,7 @@ def changes(
     with _open() as p:
         feed = changes(p, since=cutoff, last=last, name=name)
     if as_json:
-        out.print(json.dumps([c.as_dict() for c in feed], indent=2), highlight=False)
+        out.print(json.dumps([c.as_dict() for c in feed], indent=2), highlight=False, soft_wrap=True)
         return
     if not feed:
         out.print("nothing yet" if name is None else f"nothing about {name}", highlight=False)
