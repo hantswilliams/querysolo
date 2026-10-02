@@ -333,6 +333,17 @@ pub(crate) mod tests {
         {
             use std::os::unix::fs::PermissionsExt;
             std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
+            // Linux refuses to run a file that any process holds open for writing ("Text file
+            // busy"), and a test forking in another thread inherits our write handle until
+            // its child execs. Run the launcher once, retrying while it is busy, so the test
+            // that uses it never sees that (Ubuntu CI, 2026-10-02). With `--help` and no `-C`
+            // the fake exits at once and writes nothing.
+            for _ in 0..100 {
+                match std::process::Command::new(&wrapper).arg("--help").output() {
+                    Err(e) if e.raw_os_error() == Some(26) => std::thread::sleep(std::time::Duration::from_millis(20)),
+                    _ => break,
+                }
+            }
         }
         wrapper.into_os_string()
     }
