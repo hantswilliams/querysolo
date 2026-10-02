@@ -34,7 +34,9 @@ test('a bucket warehouse says so in the panel and the detail, and a query runs',
   await page.keyboard.insertText('select customer, sum(amt) as total from orders group by 1 order by 2 desc');
   await page.keyboard.press('Escape');
   await page.getByTestId('run').click();
-  await expect(page.getByTestId('query')).toHaveAttribute('data-done-ms', /\d+/);
+  // the first estimate on a bucket probes the bandwidth by reading from Moto, which took over
+  // 5 s on the macOS runner (the page read "estimating…"; CI, 2026-10-01)
+  await expect(page.getByTestId('query')).toHaveAttribute('data-done-ms', /\d+/, { timeout: 30_000 });
   await expect(page.getByTestId('gauge')).toHaveAttribute('data-verdict', /green|yellow/);
   await expect(page.getByTestId('grid')).toContainText('c1');
 });

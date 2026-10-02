@@ -7,6 +7,10 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   timeout: 60_000,
+  // An assertion waits 5 s on a laptop, so a slowdown there still shows. On CI it waits 15 s:
+  // the macOS runner is slow (the 20M-row import took 6.3 s there) and missed 5 s waits in
+  // three different specs on 2026-10-01; the assertions themselves are unchanged.
+  expect: { timeout: process.env.CI ? 15_000 : 5_000 },
   retries: 0,
   globalSetup: './tests/global-setup.ts',
   globalTeardown: './tests/global-teardown.ts',

@@ -154,3 +154,7 @@ The pull request ran CI on the renamed code for the first time. Three jobs faile
   - **What was ruled out:** it does not reproduce locally, in parallel or with CI's single worker and file order. And `save-question`, which shares the sidecar and now runs to its end, waits for its last run to report fresh before it finishes.
   - **Best explanation:** timing on the slow macOS runner, not confirmed.
   - **Changes:** the version-list assertions wait 30 s, and `app-ci.yml` now uploads `app/test-results/` (traces, page snapshots) when a job fails. If this was not timing, the next failure can be read rather than guessed at.
+- **Fourth run.** The versions tests passed with their 30 s waits. A different spec failed the same way: `bucket.spec.ts` waited 5 s for its first query.
+  - The uploaded trace settled it: the page's status line read "estimating…". The first estimate on a bucket table probes bandwidth by reading from Moto, and on the macOS runner that probe alone took more than 5 s. That run was slower than the last (the 20M-row import took 6.3 s against 3.3 s).
+  - Three different specs missing 5 s waits on one slow runner is one cause, not three. Fixing them one CI round at a time would keep finding the next.
+  - **Changes:** `playwright.config.ts` sets the assertion wait to 15 s when `CI` is set, and keeps 5 s locally, so a slowdown still shows on a laptop. The bucket test's first query gets 30 s, with the reason beside it. No assertion changed what it checks.
