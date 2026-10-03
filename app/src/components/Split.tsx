@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Two panes stacked with a draggable split (decisions U1): the editor above, the results
 // below. The top pane's share of the height is remembered for the window, so the next
@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
-export const SPLIT_KEY = 'lakelet.split';
+export const SPLIT_KEY = 'querysolo.split';
 export const DEFAULT_SPLIT = 0.36;
 const MIN = 0.15;
 const MAX = 0.85;

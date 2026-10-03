@@ -1,6 +1,6 @@
 # The dbt person in a small team
 
-*Persona · written 2026-09-24 · Status: **assumed, not observed** — this is the second outsider session in `decisions-for-review_092426.md` N3 (step 2): a dbt person with an existing project · Product name: Lakelet (working name; TBD\*).*
+*Persona · written 2026-09-24 · Status: **assumed, not observed** — this is the second outsider session in `decisions-for-review_092426.md` N3 (step 2): a dbt person with an existing project · Product name: QuerySolo.*
 
 This is N1's second reader and the PRD's P1: the person Technical mode and the CLI are written for. They already have an editor, a warehouse, a project and a way of working, and they will find the team seam in an hour. What they are promised today is a local runtime for the workflow they already have, with a verdict on every model. What they are not promised, and the site must not say, is "team".
 
@@ -38,27 +38,27 @@ Each: the situation, what happens today, what happens with the product, and whic
 
 ### 1. Opening the project they already have
 
-A dbt project with a profile for Snowflake and a `sources.yml` naming forty raw tables. Today the product does nothing for it. With the product, `lakelet init` in the project folder reads `dbt_project.yml` and `sources.yml`, says which sources are found in the project, attachable from a bucket, importable from a file, or missing, and a compile pass lists what will not compile on DuckDB before anything runs. The profile the core writes takes the name their project declares.
+A dbt project with a profile for Snowflake and a `sources.yml` naming forty raw tables. Today the product does nothing for it. With the product, `querysolo init` in the project folder reads `dbt_project.yml` and `sources.yml`, says which sources are found in the project, attachable from a bucket, importable from a file, or missing, and a compile pass lists what will not compile on DuckDB before anything runs. The profile the core writes takes the name their project declares.
 
 *Planned.* N3 step 4, two to three days, a decision to tick when it comes up. *Today:* the profile name is a bug, `sources.yml` is unread, and a model in the warehouse's dialect fails at run time rather than before.
 
 ### 2. The dev loop, on the laptop
 
-Edit a model in VS Code, run it, look at rows. Today that is a warehouse round trip and a second window. With the product it is `lakelet run stg_orders+` in the terminal, or Refresh in the app, a verdict for every model in the selection before it builds, the DAG by verdict, and the rows in the results pane. Sub-second on their laptop, no credits, no dev-schema collision, and every button in the app shows the `lakelet` line it is, so the terminal is enough.
+Edit a model in VS Code, run it, look at rows. Today that is a warehouse round trip and a second window. With the product it is `querysolo run stg_orders+` in the terminal, or Refresh in the app, a verdict for every model in the selection before it builds, the DAG by verdict, and the rows in the results pane. Sub-second on their laptop, no credits, no dev-schema collision, and every button in the app shows the `querysolo` line it is, so the terminal is enough.
 
-*Built today.* `lakelet run` with selectors and `--plan`, the DAG by verdict, the Models screen, Technical mode. *Planned:* the watcher, so the app notices the file they just saved in the editor (N3 step 4); a thin VS Code client with the verdict inline, after the event stream.
+*Built today.* `querysolo run` with selectors and `--plan`, the DAG by verdict, the Models screen, Technical mode. *Planned:* the watcher, so the app notices the file they just saved in the editor (N3 step 4); a thin VS Code client with the verdict inline, after the event stream.
 
 ### 3. What to rebuild after a change
 
-They changed one staging model. Today the honest answer needs a production manifest and `state:modified+`; the usual answer is a full refresh. With the product every model carries a state, fresh, edited, upstream changed or never built, from its content fingerprint and its inputs' snapshots. `lakelet run --stale` builds exactly what an edit invalidated, Run what changed does the same from the app, and the Review section shows the SQL diff since the last run before they press it. In CI the same command with exit codes is the slim build without the artifact.
+They changed one staging model. Today the honest answer needs a production manifest and `state:modified+`; the usual answer is a full refresh. With the product every model carries a state, fresh, edited, upstream changed or never built, from its content fingerprint and its inputs' snapshots. `querysolo run --stale` builds exactly what an edit invalidated, Run what changed does the same from the app, and the Review section shows the SQL diff since the last run before they press it. In CI the same command with exit codes is the slim build without the artifact.
 
 *Built today.* The per-model state, `--stale`, the Review section, the exit codes. Renart's "Build stale" is the same idea; the difference is that here the snapshots of the tables count as changes too.
 
 ### 4. What happened last night
 
-A number is wrong in the morning. Today it is the scheduler's log, then the warehouse's query history, then git. With the product `lakelet changes` is one list, newest first: every table's snapshots, every run of every model, every commit, and each snapshot names the models it made out of date. Lineage says what feeds the wrong number, and the model's versions show whether the SQL changed.
+A number is wrong in the morning. Today it is the scheduler's log, then the warehouse's query history, then git. With the product `querysolo changes` is one list, newest first: every table's snapshots, every run of every model, every commit, and each snapshot names the models it made out of date. Lineage says what feeds the wrong number, and the model's versions show whether the SQL changed.
 
-*Built today.* The Changes feed, `affects` on every snapshot, lineage, versions. *Planned:* the schedule itself and the alert (Team tier); until then cron or CI runs `lakelet run` and the feed records it.
+*Built today.* The Changes feed, `affects` on every snapshot, lineage, versions. *Planned:* the schedule itself and the alert (Team tier); until then cron or CI runs `querysolo run` and the feed records it.
 
 ### 5. The two models that do not fit
 
@@ -95,7 +95,7 @@ Suggestions, not decisions; the box goes in a decisions file.
 
 - Which warehouse and which dialect, and how many models fail to compile when the project is opened as it is.
 - Do they accept editing in VS Code and looking in the app, or do they want the editor inside. Does the terminal alone hold them.
-- Does `lakelet run --stale` replace their slim CI in their head, and do they trust the state a model shows.
+- Does `querysolo run --stale` replace their slim CI in their head, and do they trust the state a model shows.
 - Is the Changes feed the morning-after answer, or do they still open the warehouse console.
 - Do they already have a bucket, and would they put the tables there.
 - How do they schedule today, and what would they need to stop.

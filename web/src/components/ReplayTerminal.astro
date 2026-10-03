@@ -11,13 +11,13 @@
 // web/TASKS.md, item 3. Three verdicts, one laptop, numbers anyone can check.
 import Terminal from './Terminal.astro';
 ---
-<Terminal title="zsh · ~/lakelet-open · lakelet · no AWS account" class="term-replay" label="A lakelet terminal session against a public 472-million-row dataset: one query runs here in four seconds, one runs here slowly, and one needs more machine, with no cloud account involved.">
+<Terminal title="zsh · ~/querysolo-open · querysolo · no AWS account" class="term-replay" label="A querysolo terminal session against a public 472-million-row dataset: one query runs here in four seconds, one runs here slowly, and one needs more machine, with no cloud account involved.">
   <button slot="bar" type="button" class="replay" id="gaugeReplay" aria-label="Replay">↻ replay</button>
-<pre id="gaugeTerm" class="softwrap"><span class="ln cmd"><span class="p">$</span> lakelet tables attach places --anonymous <span class="o">s3://overturemaps-us-west-2/release/2026-08-19.0/theme=places/type=place/</span></span>
+<pre id="gaugeTerm" class="softwrap"><span class="ln cmd"><span class="p">$</span> querysolo tables attach places --anonymous <span class="o">s3://overturemaps-us-west-2/release/2026-08-19.0/theme=places/type=place/</span></span>
 <span class="ln"><span class="g">✓</span> <span class="w">73,631,092 rows</span> <span class="d">· 16 files · 10.5 GB · nothing copied · no credentials used</span></span>
 <span class="ln"><span class="d">  metadata written to ./warehouse · the Parquet stays where it is</span></span>
 <span class="ln gap"></span>
-<span class="ln cmd"><span class="p">$</span> lakelet sql <span class="o">"select count(*) from places where bbox.xmin between -73.2 and -73.0 and bbox.ymin between 40.85 and 40.95"</span></span>
+<span class="ln cmd"><span class="p">$</span> querysolo sql <span class="o">"select count(*) from places where bbox.xmin between -73.2 and -73.0 and bbox.ymin between 40.85 and 40.95"</span></span>
 <span class="ln"><span class="g">●</span> <span class="w">Runs here</span> <span class="d">· scans 104.8 MB of 10.5 GB · ~8 s at your 111 Mbps</span></span>
 <span class="ln tbl">  ┌──────────────┐</span>
 <span class="ln tbl">  │ count_star() │</span>
@@ -26,11 +26,11 @@ import Terminal from './Terminal.astro';
 <span class="ln tbl">  └──────────────┘</span>
 <span class="ln"><span class="d">  1 row · </span><span class="g">4.1 s</span><span class="d"> · the estimate said 8 s</span></span>
 <span class="ln gap"></span>
-<span class="ln cmd"><span class="p">$</span> lakelet estimate <span class="o">"select country, count(*) from addresses group by 1"</span></span>
+<span class="ln cmd"><span class="p">$</span> querysolo estimate <span class="o">"select country, count(*) from addresses group by 1"</span></span>
 <span class="ln"><span class="y">●</span> <span class="w">Runs here, slowly</span> <span class="d">· scans 218.9 MB of 21.9 GB · ~2 min at 15 Mbps on hotel wifi</span></span>
 <span class="ln"><span class="d">  one column of 472,797,160 rows · the other 21.7 GB is never read</span></span>
 <span class="ln gap"></span>
-<span class="ln cmd"><span class="p">$</span> lakelet estimate <span class="o">"select * from addresses"</span></span>
+<span class="ln cmd"><span class="p">$</span> querysolo estimate <span class="o">"select * from addresses"</span></span>
 <span class="ln"><span class="r">●</span> <span class="w">Needs more machine</span> <span class="d">· scans 21.9 GB · ~26 min at your 111 Mbps</span></span>
 <span class="ln"><span class="d">  bandwidth is the limit, not memory · nothing ran, and the exit code is 2</span></span>
 <span class="ln gap"></span>

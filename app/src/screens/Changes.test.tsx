@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decisions L2: the Changes screen lists the feed from GET /changes newest first, each
 // entry a sentence with a link to its detail; the filter is the CLI's name argument; the
@@ -58,12 +58,12 @@ describe('the Changes screen', () => {
     fireEvent.click(screen.getByTestId('open-total'));
     expect(onOpenModel).toHaveBeenCalledWith('total');
     expect(screen.getAllByTestId('open-stg')).toHaveLength(1); // the run-time version's second file
-    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('lakelet changes --last 100'))).toBe(true);
+    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('querysolo changes --last 100'))).toBe(true);
 
     fireEvent.change(screen.getByTestId('changes-filter'), { target: { value: 'total' } });
     await waitFor(() => expect(screen.getByTestId('changes-screen').textContent).toContain('1 entry about total'));
     expect(calls.at(-1)).toContain('name=total');
-    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('lakelet changes total --last 100'))).toBe(true);
+    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('querysolo changes total --last 100'))).toBe(true);
     fireEvent.change(screen.getByTestId('changes-filter'), { target: { value: 'nowhere' } });
     await waitFor(() => expect(screen.getByTestId('no-changes').textContent).toBe('Nothing about nowhere yet.'));
   });

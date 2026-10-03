@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """The README's "What is built, what is planned" block, generated from
 ``web/src/data/status.ts`` — the one place on the site that knows — so the README and the
@@ -35,7 +35,7 @@ def render(source: str) -> str:
         raise SystemExit("gen-readme-status: no surfaces parsed from status.ts")
     built = [e for e in entries if e["state"] == "built"]
     planned = [e for e in entries if e["state"] == "planned"]
-    site = "https://hantswilliams.github.io/lakelet"
+    site = "https://hantswilliams.github.io/querysolo"
     lines = [
         START,
         f"*Generated from `web/src/data/status.ts` (as of {as_of}); `python3 web/scripts/gen-readme-status.py` rewrites it, CI checks it.*",

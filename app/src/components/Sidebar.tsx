@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The sidebar (decisions U2): the five screens as entries — Tables, Models, Lineage,
 // Changes, Gauge, in Simple mode's words when it is on — with ⌘/Ctrl+1…5 as their keys,
@@ -30,7 +30,7 @@ export function screenForKey(e: { key: string; metaKey: boolean; ctrlKey: boolea
   return n >= 1 && n <= SCREENS.length ? SCREENS[n - 1] : undefined;
 }
 
-const SIDEBAR_KEY = 'lakelet.sidebar';
+const SIDEBAR_KEY = 'querysolo.sidebar';
 
 export function loadCollapsed(): boolean {
   try {
@@ -65,7 +65,7 @@ export interface SidebarProps {
   children?: ReactNode;
 }
 
-const WIDTH_KEY = 'lakelet.sidebar-width';
+const WIDTH_KEY = 'querysolo.sidebar-width';
 export const DEFAULT_WIDTH = 272;
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 520;

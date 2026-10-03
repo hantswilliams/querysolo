@@ -2,6 +2,16 @@
 
 *The one file to open to know where the build is. Updated every session; dates are when a status changed. "Now" names the brief the build is on. The briefs say what each step is and what its gate is (`ship-v0-plan.md` next, the versions round having closed 2026-09-17; `core-v0.5-plan.md` for the core, `app-v0-plan.md` for the desktop shell, both still authoritative for what they cover; a decision belonging to no brief is a dated `decisions-for-review_<MMDDYY>.md`); `lakelet-build-sessions.md` is the map of the sessions; the dated logs (`lakelet-build-sessions_<MMDDYY>.md`) say what happened. This file only says where we are and what comes next.*
 
+## Rename: Lakelet → QuerySolo — in progress 2026-09-30
+
+Scope: `build-sessions/rename-querysolo-plan.md` (R1–R10, all agreed 2026-09-30). Branch `rename/querysolo` in `../lakelet-rename`, cut from website v2 (`ddbb74e`).
+
+- [x] Hants agreed R1–R10.
+- [x] Steps 0–6 built 2026-09-30, staged on `rename/querysolo` (not committed). Log: `querysolo-build-sessions_093026.md`.
+- [ ] Hants: open a copy of a real project on the Mac; the frozen build and DMG; the repository rename (R7); the names and the trademark search (R10).
+- [x] The mark, the icon and the screenshots (`logo-querysolo-plan.md`, L1–L6), 2026-09-30.
+- [ ] Hants: a DMG with the new icon; the deck under the new name.
+
 ## Website v2: a warehouse for one — built 2026-09-26, awaiting review
 
 Scope: `build-sessions/website-story-v2-plan.md` (W1–W13), from `marketing/landing-page.md` after a review of `marketing/`, `personas/` and `research/`. PR #1 was merged 2026-09-18, so this builds on `main`.

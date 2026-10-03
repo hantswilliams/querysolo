@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Real-data step 6 gate: the Models screen lists the plan with a verdict per model, the
 // detail shows the compiled SQL, lineage, tests and last run; Simple mode shows the same as
@@ -14,7 +14,7 @@ const session = { port: 1, token: 't', pid: 0, project: '/p', ready_ms: 1, initi
 
 const stg: PlannedModel = {
   name: 'stg', unique_id: 'model.demo.stg', materialized: 'view', depends_on: [],
-  compiled_sql: 'select * from "lakelet"."main"."orders" where quantity > 0',
+  compiled_sql: 'select * from "querysolo"."main"."orders" where quantity > 0',
   verdict: 'green', words: 'Green — about 1 s', reason: 'reads 2.0 MB', est_wall_local: 1, est_bytes: 2_000_000, error: null,
   description: 'Orders with a quantity.', path: 'models/stg.sql',
   tests: [
@@ -59,7 +59,7 @@ const okReport = (names: string[]): RunReport => ({
 afterEach(() => vi.unstubAllGlobals());
 
 describe('the Models screen', () => {
-  it('lists the plan, shows a model, and Run this is lakelet run <model>', async () => {
+  it('lists the plan, shows a model, and Run this is querysolo run <model>', async () => {
     const calls = stub([stg, agg], (b) => new Response(JSON.stringify(okReport(b.select.length ? b.select : ['stg', 'agg'])), { status: 200 }));
     const onChanged = vi.fn(async () => {});
     const onOpenTable = vi.fn();
@@ -81,8 +81,8 @@ describe('the Models screen', () => {
     expect(screen.getByTestId('feeds').textContent).toBe('nothing');
     expect(screen.getByTestId('tests').textContent).toContain('none in schema.yml');
     expect(screen.getAllByTestId('command').map((c) => c.textContent)).toEqual(expect.arrayContaining([
-      expect.stringContaining('lakelet run'),
-      expect.stringContaining('lakelet run agg'),
+      expect.stringContaining('querysolo run'),
+      expect.stringContaining('querysolo run agg'),
     ]));
     // a lineage name is a link: a model of this project is selected here, an imported table opens on the Tables screen
     fireEvent.click(screen.getByTestId('lineage-stg'));
@@ -113,14 +113,14 @@ describe('the Models screen', () => {
     fireEvent.click(screen.getByTestId('run-all'));
     await waitFor(() => expect(screen.getByTestId('refusal')).toBeTruthy());
     expect(screen.getByTestId('refusal').textContent).toContain('need more machine: agg');
-    expect(screen.getByTestId('refusal').textContent).toContain('lakelet run --run-anyway');
+    expect(screen.getByTestId('refusal').textContent).toContain('querysolo run --run-anyway');
     fireEvent.click(screen.getByTestId('run-anyway'));
     await waitFor(() => expect(screen.getByTestId('run-report')).toBeTruthy());
     expect(posts).toEqual([{ select: [], burst: 'never', run_anyway: false, stale: false }, { select: [], burst: 'never', run_anyway: true, stale: false }]);
     expect(screen.queryByTestId('refusal')).toBeNull();
   });
 
-  it('the state (V3) is on the DAG and the detail, and Run what changed is lakelet run --stale', async () => {
+  it('the state (V3) is on the DAG and the detail, and Run what changed is querysolo run --stale', async () => {
     const posts: { select: string[]; run_anyway: boolean; stale: boolean }[] = [];
     const orders = new Date(Date.now() - 7200_000).toISOString();
     const stale: PlannedModel = {
@@ -149,7 +149,7 @@ describe('the Models screen', () => {
     expect(within(screen.getByTestId('review-late')).getByTestId('what-changed').textContent).toBe('orders · append +1,200 rows · 2 h ago');
     const button = screen.getByTestId('run-stale');
     expect(button.textContent).toBe('Run what changed (2)');
-    expect(screen.getAllByTestId('command').map((c) => c.textContent)).toEqual(expect.arrayContaining([expect.stringContaining('lakelet run --stale')]));
+    expect(screen.getAllByTestId('command').map((c) => c.textContent)).toEqual(expect.arrayContaining([expect.stringContaining('querysolo run --stale')]));
     fireEvent.click(button);
     await waitFor(() => expect(screen.getByTestId('run-report')).toBeTruthy());
     expect(posts).toEqual([{ select: [], burst: 'never', run_anyway: false, stale: true }]);
@@ -159,7 +159,7 @@ describe('the Models screen', () => {
   it('shows the SQL diff behind edited, and the model blamed behind upstream is a link', async () => {
     const edited: PlannedModel = {
       ...stg, state: 'edited', state_reason: 'the SQL changed since the last run',
-      state_diff: '--- last run\n+++ now\n@@ -1 +1 @@\n-select * from "lakelet"."main"."orders" where quantity > 0\n+select * from "lakelet"."main"."orders" where quantity > 1',
+      state_diff: '--- last run\n+++ now\n@@ -1 +1 @@\n-select * from "querysolo"."main"."orders" where quantity > 0\n+select * from "querysolo"."main"."orders" where quantity > 1',
     };
     const blames: PlannedModel = { ...agg, state: 'upstream', state_reason: 'stg is out of date', state_since: null };
     stub([edited, blames], () => new Response('{}', { status: 500 }));
@@ -270,11 +270,11 @@ describe('the Models screen', () => {
   });
 
   it('says when the plan failed, in the plan\'s own words', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ error: 'dbt', message: 'dbt is not installed: `pip install \'lakelet[dbt]\'`' }), { status: 400 })));
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ error: 'dbt', message: 'dbt is not installed: `pip install \'querysolo[dbt]\'`' }), { status: 400 })));
     render(<Models session={session} mode="technical" tables={[]} onChanged={async () => {}} />);
     await waitFor(() => expect(screen.getByTestId('models-error')).toBeTruthy());
     expect(screen.getByTestId('models-error').textContent).toContain('dbt is not installed');
-    expect(screen.getByTestId('models-error').textContent).toContain('lakelet run --plan');
+    expect(screen.getByTestId('models-error').textContent).toContain('querysolo run --plan');
     expect(screen.queryByTestId('no-models')).toBeNull();
   });
 });

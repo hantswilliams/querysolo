@@ -1,6 +1,6 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
-//! Projects (app brief A8, A10). Which folder a window opens, `lakelet init` when the folder
+//! Projects (app brief A8, A10). Which folder a window opens, `querysolo init` when the folder
 //! is not a project yet, the recent list in the app's data directory, the memory share each
 //! window's sidecar is given, and the registry of open windows: one project per window, one
 //! sidecar per window, stopped when the window closes. No Tauri in here, so `cargo test`
@@ -16,9 +16,9 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use crate::supervisor::{Session, SidecarConfig, SidecarEvent, Supervisor};
 
-/// A folder is a project when `lakelet.toml` is in it (core step 2).
+/// A folder is a project when `querysolo.toml` is in it (core step 2).
 pub fn is_project(path: &Path) -> bool {
-    path.join("lakelet.toml").is_file()
+    path.join("querysolo.toml").is_file()
 }
 
 /// The folder's name as the window title and the recent list show it.
@@ -36,7 +36,7 @@ pub fn memory_share(ram_bytes: u64, windows_open: usize) -> String {
 }
 
 /// A folder ready to open: initialised by this call when it was not a project yet, with
-/// `lakelet init`'s output so the window can show it (A10).
+/// `querysolo init`'s output so the window can show it (A10).
 #[derive(Clone, Debug, PartialEq)]
 pub struct Prepared {
     pub project: PathBuf,
@@ -51,7 +51,7 @@ pub fn canonical(folder: &Path) -> Result<PathBuf, String> {
     folder.canonicalize().map_err(|e| format!("{}: {e}", folder.display()))
 }
 
-/// Check the folder and run `lakelet init <folder>` when it has no `lakelet.toml`. A
+/// Check the folder and run `querysolo init <folder>` when it has no `querysolo.toml`. A
 /// `warehouse` (decisions W1: an `s3://bucket/prefix` for the tables' files) goes to `init`
 /// as `--warehouse`; it is fixed at init, so a folder that is a project already refuses it
 /// rather than opening with a warehouse other than the one asked for.
@@ -60,7 +60,7 @@ pub fn prepare(executable: &OsString, folder: &Path, warehouse: Option<&str>) ->
     if is_project(&project) {
         if let Some(w) = warehouse {
             return Err(format!(
-                "{} is a Lakelet project already; its warehouse was fixed when it was set up, so {w} cannot be applied to it. Open a new folder for a project whose tables live in a bucket.",
+                "{} is a QuerySolo project already; its warehouse was fixed when it was set up, so {w} cannot be applied to it. Open a new folder for a project whose tables live in a bucket.",
                 project.display()
             ));
         }
@@ -71,18 +71,18 @@ pub fn prepare(executable: &OsString, folder: &Path, warehouse: Option<&str>) ->
     if let Some(w) = warehouse {
         init.arg("--warehouse").arg(w);
     }
-    let output = init.output().map_err(|e| format!("could not run lakelet init: {e}"))?;
+    let output = init.output().map_err(|e| format!("could not run querysolo init: {e}"))?;
     let text = format!("{}{}", String::from_utf8_lossy(&output.stdout), String::from_utf8_lossy(&output.stderr));
     if !output.status.success() {
-        return Err(format!("lakelet init {} failed:\n{}", project.display(), text.trim()));
+        return Err(format!("querysolo init {} failed:\n{}", project.display(), text.trim()));
     }
     if !is_project(&project) {
-        return Err(format!("lakelet init {} wrote no lakelet.toml:\n{}", project.display(), text.trim()));
+        return Err(format!("querysolo init {} wrote no querysolo.toml:\n{}", project.display(), text.trim()));
     }
     Ok(Prepared { project, initialised: Some(text.trim().to_string()) })
 }
 
-/// What `lakelet bucket check --json` says (decisions P1): the credentials the environment
+/// What `querysolo bucket check --json` says (decisions P1): the credentials the environment
 /// offers, whether the prefix lists and takes a write, and the sentence for the dialog.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct BucketCheck {
@@ -105,13 +105,13 @@ pub fn check_bucket(executable: &OsString, prefix: &str, profile: Option<&str>) 
     if let Some(profile) = profile {
         command.env("AWS_PROFILE", profile);
     }
-    let output = command.output().map_err(|e| format!("could not run lakelet bucket check: {e}"))?;
+    let output = command.output().map_err(|e| format!("could not run querysolo bucket check: {e}"))?;
     let stdout = String::from_utf8_lossy(&output.stdout);
     let line = stdout.lines().find(|l| l.trim_start().starts_with('{'));
     match line {
-        Some(json) => serde_json::from_str(json).map_err(|e| format!("lakelet bucket check answered oddly: {e}\n{}", stdout.trim())),
+        Some(json) => serde_json::from_str(json).map_err(|e| format!("querysolo bucket check answered oddly: {e}\n{}", stdout.trim())),
         None => Err(format!(
-            "lakelet bucket check {} said nothing usable:\n{}{}",
+            "querysolo bucket check {} said nothing usable:\n{}{}",
             prefix,
             stdout.trim(),
             String::from_utf8_lossy(&output.stderr).trim()
@@ -134,7 +134,7 @@ pub fn new_folder(parent: &Path, name: &str) -> Result<PathBuf, String> {
             return Err(format!("{} exists and is not a folder", folder.display()));
         }
         if is_project(&folder) {
-            return Err(format!("{} is a Lakelet project already; open it instead", folder.display()));
+            return Err(format!("{} is a QuerySolo project already; open it instead", folder.display()));
         }
         let occupied = std::fs::read_dir(&folder).map_err(|e| format!("{}: {e}", folder.display()))?.next().is_some();
         if occupied {
@@ -179,7 +179,30 @@ pub fn aws_profiles(home: &Path) -> Vec<String> {
 
 /// Which AWS profile each project uses on this machine (decisions C1): a JSON file next
 /// to `recent.json`, `{"<canonical path>": {"profile": "name"}}`. A per-person, per-machine
-/// fact, so not in `lakelet.toml` (shared, in git) and not in the project's `.lakelet/`.
+/// fact, so not in `querysolo.toml` (shared, in git) and not in the project's `.querysolo/`.
+/// The app's data folder before the rename (build-sessions/rename-querysolo-plan.md R6): the
+/// folder is named after the bundle identifier, so it sits beside the new one on every OS.
+pub const LEGACY_IDENTIFIER: &str = "dev.lakelet.app";
+/// What the data folder holds that is worth keeping across the rename.
+const CARRIED: [&str; 2] = ["projects.json", "recent.json"];
+
+/// Copy the recent list and the per-project settings from the old data folder into the new
+/// one, once: only files the new folder does not have yet, and never a move, so the old app
+/// keeps working. Returns the files it copied.
+pub fn adopt_legacy_data(data_dir: &Path) -> Vec<&'static str> {
+    let Some(old) = data_dir.parent().map(|p| p.join(LEGACY_IDENTIFIER)) else { return vec![] };
+    let mut copied = vec![];
+    for name in CARRIED {
+        let (from, to) = (old.join(name), data_dir.join(name));
+        if from.is_file() && !to.exists() {
+            if std::fs::create_dir_all(data_dir).is_ok() && std::fs::copy(&from, &to).is_ok() {
+                copied.push(name);
+            }
+        }
+    }
+    copied
+}
+
 pub struct ProjectSettings {
     file: PathBuf,
 }
@@ -464,7 +487,7 @@ mod tests {
         for i in 0..12 {
             let p = dir.join(format!("p{i}"));
             std::fs::create_dir_all(&p).unwrap();
-            std::fs::write(p.join("lakelet.toml"), "").unwrap();
+            std::fs::write(p.join("querysolo.toml"), "").unwrap();
             recent.remember(&p).unwrap();
         }
         recent.remember(&dir.join("p3")).unwrap();
@@ -474,7 +497,7 @@ mod tests {
         assert_eq!(list[0].name, "p3");
         assert_eq!(list[1].path, dir.join("p11"));
         assert_eq!(list.iter().filter(|p| p.name == "p3").count(), 1, "remembered once");
-        std::fs::remove_file(dir.join("p11").join("lakelet.toml")).unwrap();
+        std::fs::remove_file(dir.join("p11").join("querysolo.toml")).unwrap();
         assert!(recent.existing().iter().all(|p| p.name != "p11"), "a folder that is no longer a project is not offered");
         assert_eq!(recent.list().len(), MAX_RECENT, "but is not forgotten");
     }
@@ -487,7 +510,7 @@ mod tests {
         std::fs::create_dir_all(&folder).unwrap();
         let prepared = prepare(&exe, &folder, None).expect("init runs");
         assert!(is_project(&prepared.project));
-        assert!(prepared.initialised.as_deref().unwrap_or("").contains("lakelet.toml"), "{prepared:?}");
+        assert!(prepared.initialised.as_deref().unwrap_or("").contains("querysolo.toml"), "{prepared:?}");
         let again = prepare(&exe, &folder, None).unwrap();
         assert_eq!(again.initialised, None, "an existing project is left alone");
         assert!(prepare(&exe, &dir.join("missing"), None).unwrap_err().contains("not a folder"));
@@ -499,11 +522,11 @@ mod tests {
         let exe = fake_executable(&dir, 60);
         let folder = dir.join("bucketed");
         std::fs::create_dir_all(&folder).unwrap();
-        let prepared = prepare(&exe, &folder, Some("s3://lakelet-test/acme")).expect("init runs with --warehouse");
+        let prepared = prepare(&exe, &folder, Some("s3://querysolo-test/acme")).expect("init runs with --warehouse");
         assert!(is_project(&prepared.project));
-        let toml = std::fs::read_to_string(prepared.project.join("lakelet.toml")).unwrap();
-        assert!(toml.contains("warehouse = \"s3://lakelet-test/acme\""), "{toml}");
-        assert!(prepared.initialised.as_deref().unwrap_or("").contains("s3://lakelet-test/acme"), "{prepared:?}");
+        let toml = std::fs::read_to_string(prepared.project.join("querysolo.toml")).unwrap();
+        assert!(toml.contains("warehouse = \"s3://querysolo-test/acme\""), "{toml}");
+        assert!(prepared.initialised.as_deref().unwrap_or("").contains("s3://querysolo-test/acme"), "{prepared:?}");
         // a folder that is a project already: the warehouse cannot apply, so it is refused
         let refused = prepare(&exe, &folder, Some("s3://other/prefix")).unwrap_err();
         assert!(refused.contains("fixed when it was set up"), "{refused}");
@@ -520,9 +543,9 @@ mod tests {
     fn the_bucket_check_carries_the_core_s_verdict_and_words() {
         let dir = temp_dir("bucket-check");
         let exe = fake_executable(&dir, 60);
-        let ok = check_bucket(&exe, " s3://lakelet-test/acme ", None).expect("the check runs");
+        let ok = check_bucket(&exe, " s3://querysolo-test/acme ", None).expect("the check runs");
         assert!(ok.ok && ok.read && ok.write && ok.error.is_none(), "{ok:?}");
-        assert_eq!(ok.prefix, "s3://lakelet-test/acme");
+        assert_eq!(ok.prefix, "s3://querysolo-test/acme");
         assert!(ok.sentence.contains("is writable"), "{ok:?}");
         assert_eq!(ok.credentials["source"], "environment");
         let denied = check_bucket(&exe, "s3://denied-bucket/acme", None).unwrap();
@@ -534,10 +557,10 @@ mod tests {
         assert!(nokeys.sentence.contains("no credentials"), "{nokeys:?}");
         let bad = check_bucket(&exe, "/tmp/elsewhere", None).unwrap();
         assert!(!bad.ok && bad.error.as_deref().unwrap_or("").contains("s3://bucket/prefix"), "{bad:?}");
-        let missing = OsString::from(dir.join("no-such-lakelet"));
+        let missing = OsString::from(dir.join("no-such-querysolo"));
         assert!(check_bucket(&missing, "s3://x/y", None).unwrap_err().contains("could not run"));
         // C1: the profile goes to the check as AWS_PROFILE, and the fake reports it
-        let with = check_bucket(&exe, "s3://lakelet-test/acme", Some("acme-data")).unwrap();
+        let with = check_bucket(&exe, "s3://querysolo-test/acme", Some("acme-data")).unwrap();
         assert_eq!(with.credentials["source"], "profile");
         assert_eq!(with.credentials["profile"], "acme-data");
     }
@@ -549,7 +572,7 @@ mod tests {
         assert_eq!(folder, dir.canonicalize().unwrap().join("acme"));
         assert!(folder.is_dir());
         assert_eq!(new_folder(&dir, "acme").unwrap(), folder, "an empty folder is fine to use");
-        std::fs::write(folder.join("lakelet.toml"), "").unwrap();
+        std::fs::write(folder.join("querysolo.toml"), "").unwrap();
         assert!(new_folder(&dir, "acme").unwrap_err().contains("project already"));
         let busy = dir.join("busy");
         std::fs::create_dir_all(&busy).unwrap();
@@ -578,6 +601,23 @@ mod tests {
     }
 
     #[test]
+    fn the_old_data_folder_is_copied_once_and_left_in_place() {
+        let dir = temp_dir("adopt-legacy");
+        let old = dir.join(LEGACY_IDENTIFIER);
+        let new = dir.join("dev.querysolo.app");
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(old.join("projects.json"), "{\"/p\":{\"profile\":\"work\"}}").unwrap();
+        std::fs::write(old.join("recent.json"), "[\"/p\"]").unwrap();
+        assert_eq!(adopt_legacy_data(&new), vec!["projects.json", "recent.json"]);
+        assert_eq!(ProjectSettings::at(new.join("projects.json")).profile_of(Path::new("/p")), Some("work".to_string()));
+        assert!(old.join("projects.json").is_file(), "copied, never moved: the old app still works");
+        std::fs::write(new.join("recent.json"), "[]").unwrap();
+        assert!(adopt_legacy_data(&new).is_empty(), "a second launch copies nothing");
+        assert_eq!(std::fs::read_to_string(new.join("recent.json")).unwrap(), "[]", "never over the new folder's own file");
+        assert!(adopt_legacy_data(&dir.join("fresh").join("dev.querysolo.app")).is_empty(), "no old folder, nothing to do");
+    }
+
+    #[test]
     fn a_project_s_profile_is_remembered_per_machine_and_forgotten_on_none() {
         let dir = temp_dir("project-settings");
         let settings = ProjectSettings::at(dir.join("data").join("projects.json"));
@@ -602,11 +642,11 @@ mod tests {
 
         let sa = open.open("project-1", a.clone(), None).expect("first sidecar starts");
         assert!(sa.ready_ms > 0 && sa.ready_ms < 10_000, "spawn to ready is measured: {}", sa.ready_ms);
-        assert!(sa.initialised.as_deref().unwrap_or("").contains("lakelet.toml"), "the init output reaches the window");
+        assert!(sa.initialised.as_deref().unwrap_or("").contains("querysolo.toml"), "the init output reaches the window");
         let sb = open.open("project-2", b.clone(), Some("acme-data".to_string())).expect("second sidecar starts");
         assert_ne!(sa.pid, sb.pid);
-        let args_a = std::fs::read_to_string(a.project.join(".lakelet").join("fake-args.txt")).unwrap();
-        let args_b = std::fs::read_to_string(b.project.join(".lakelet").join("fake-args.txt")).unwrap();
+        let args_a = std::fs::read_to_string(a.project.join(".querysolo").join("fake-args.txt")).unwrap();
+        let args_b = std::fs::read_to_string(b.project.join(".querysolo").join("fake-args.txt")).unwrap();
         assert!(args_a.contains("--memory-limit 6144MiB"), "{args_a}");
         assert!(args_b.contains("--memory-limit 3072MiB"), "halved for the second window: {args_b}");
         // C1: the project's profile reaches the sidecar as AWS_PROFILE; none means none

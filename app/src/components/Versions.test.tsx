@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Versions step 3 gate (G6), against a stubbed core: the section lists a question's two
 // versions newest first with the diff of the selected one, Gauge then is the estimate of
@@ -15,17 +15,17 @@ const session = { port: 1, token: 't', pid: 0, project: '/p', ready_ms: 1, initi
 
 const FIRST = 'select customer, sum(amt) as revenue from orders group by 1';
 const SECOND = FIRST + ' order by 2 desc';
-const file = (sql: string) => `-- Revenue by customer\n-- saved by lakelet on 2026-09-12\n${sql}\n`;
+const file = (sql: string) => `-- Revenue by customer\n-- saved by querysolo on 2026-09-12\n${sql}\n`;
 
 const v1: Version = {
   id: '1111111aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', when: new Date(Date.now() - 3600_000).toISOString(),
   author: 'Ada Lovelace <ada@example.com>', message: 'save question: Revenue by customer', sql_changed: true, checks_changed: true,
-  diff: ['--- before', '+++ after', '@@ -0,0 +1,3 @@', '+-- Revenue by customer', '+-- saved by lakelet on 2026-09-12', `+${FIRST}`, ''].join('\n'),
+  diff: ['--- before', '+++ after', '@@ -0,0 +1,3 @@', '+-- Revenue by customer', '+-- saved by querysolo on 2026-09-12', `+${FIRST}`, ''].join('\n'),
 };
 const v2: Version = {
   id: '2222222bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', when: new Date(Date.now() - 120_000).toISOString(),
   author: 'Ada Lovelace <ada@example.com>', message: 'update question: Revenue by customer', sql_changed: true, checks_changed: false,
-  diff: ['--- before', '+++ after', '@@ -1,3 +1,3 @@', ' -- Revenue by customer', ' -- saved by lakelet on 2026-09-12', `-${FIRST}`, `+${SECOND}`, ''].join('\n'),
+  diff: ['--- before', '+++ after', '@@ -1,3 +1,3 @@', ' -- Revenue by customer', ' -- saved by querysolo on 2026-09-12', `-${FIRST}`, `+${SECOND}`, ''].join('\n'),
 };
 const v3: Version = { ...v1, id: '3333333ccccccccccccccccccccccccccccccccc', when: new Date().toISOString(), message: 'restore question: Revenue by customer to 1111111', checks_changed: false };
 
@@ -89,12 +89,12 @@ describe('the Versions section', () => {
     await waitFor(() => expect(screen.getByTestId('gauge-then').textContent).toBe('Green — about 2 s · reads 2.0 MB'));
     expect(screen.getByTestId('gauge-now').textContent).toBe('Green — about 1 s · reads 2.0 MB');
     expect(calls.find((c) => c.path === '/estimate')?.body).toEqual({ sql: file(SECOND) });
-    expect(screen.getByTestId('command').textContent).toContain('lakelet restore revenue_by_customer 2222222');
+    expect(screen.getByTestId('command').textContent).toContain('querysolo restore revenue_by_customer 2222222');
     // selecting the first: the file arriving, and its own estimate
     fireEvent.click(rows[1]);
     expect(screen.getByTestId('diff-summary').textContent).toContain('1111111 against the version before: 3 lines added');
     await waitFor(() => expect(screen.getByTestId('gauge-then').textContent).toBe('Green — about 1 s · reads 2.0 MB'));
-    expect(screen.getByTestId('command').textContent).toContain('lakelet restore revenue_by_customer 1111111');
+    expect(screen.getByTestId('command').textContent).toContain('querysolo restore revenue_by_customer 1111111');
   });
 
   it('Restore this version posts the id, says the new version, re-reads the list and the plan', async () => {

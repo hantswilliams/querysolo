@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The gauge line above the grid: the verdict in the site's words and colours with the
 // sentence, from the response headers before any row (F0.8.4); Red is a refusal until "Run
@@ -29,7 +29,7 @@ export function GaugeLine({ state, onRunAnyway }: { state: RunState; onRunAnyway
       {state.kind === 'done' && (
         <span className="tail" data-testid="gauge-tail">
           · {state.rows.toLocaleString()} rows in {state.seconds.toFixed(state.seconds < 10 ? 2 : 1)} s
-          {state.capped && <> · showing the first {state.rows.toLocaleString()} of a stream; <code>lakelet sql --format parquet</code> for all of it</>}
+          {state.capped && <> · showing the first {state.rows.toLocaleString()} of a stream; <code>querysolo sql --format parquet</code> for all of it</>}
         </span>
       )}
       {state.kind === 'stopped' && <span className="tail" data-testid="gauge-tail">· stopped after {state.rows.toLocaleString()} rows, {state.seconds.toFixed(1)} s</span>}

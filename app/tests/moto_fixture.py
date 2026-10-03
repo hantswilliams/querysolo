@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """A stand-in bucket for the attach test (real-data brief R4, step 2): an in-process Moto
 server with a public-read bucket holding three plain Parquet files under ``raw/events/``,
@@ -9,18 +9,22 @@ the bucket and every object are granted public-read and the anonymous path is re
 
 from __future__ import annotations
 
-import logging
-import os
-import signal
 import sys
-import tempfile
-import time
 
-import boto3
-import duckdb
-from moto.server import ThreadedMotoServer
+# Before the slow imports, so a timeout in the test says whether this process started at all.
+print("moto fixture: importing", file=sys.stderr, flush=True)
 
-BUCKET = "lakelet-test"
+import logging  # noqa: E402
+import os  # noqa: E402
+import signal  # noqa: E402
+import tempfile  # noqa: E402
+import time  # noqa: E402
+
+import boto3  # noqa: E402
+import duckdb  # noqa: E402
+from moto.server import ThreadedMotoServer  # noqa: E402
+
+BUCKET = "querysolo-test"
 PREFIX = "raw/events"
 
 

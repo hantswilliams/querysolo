@@ -17,7 +17,7 @@ The words for the product, kept beside the code so they are held to the same rul
 ## Rules for every file here
 
 - **`web/src/data/status.ts` is the authority on built and planned.** A sentence that names a feature is checked there. A planned feature is on the "next" line, never in a feature sentence.
-- **The product name is a token.** Lakelet is the working name; TBD\* marks where the final name goes (decided in the ship brief's S7 window). Copy never compounds the name with a feature: the gauge is "the verdict" or "Lookahead", not "Lakelet Lookahead", so a rename does not cascade.
+- **The product name is QuerySolo** (decided 2026-09-30, `build-sessions/rename-querysolo-plan.md`; QuerySolo before it). The company will have its own name. Copy never compounds the name with a feature: the gauge is "the verdict" or "Lookahead", not "QuerySolo Lookahead", so a rename does not cascade.
 - **Numbers come from `docs/facts-and-messaging.md` or a dated measurement in a session log.** Market sizes and unverified figures stay out, per `research/README.md`. A burst number is arithmetic from a plan and is not used.
 - **"Nothing leaves your machine" is scoped exactly as `PRIVACY.md` scopes it:** the one extension download at `init`, and the buckets and bursts you ask for.
 - **Comparisons are fair.** BigQuery shows bytes before a run. The sandbox is free and real. MotherDuck is DuckDB in the cloud. We say what they do, and what we do that they do not.

@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The SQL box (app brief A3): CodeMirror 6 with the SQL language, table and column names
 // for completion, Cmd/Ctrl+Enter to run, Escape to cancel (F0.8.6).

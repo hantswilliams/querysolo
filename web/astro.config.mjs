@@ -2,11 +2,11 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
-const base = process.env.SITE_BASE || '/lakelet/';
+const base = process.env.SITE_BASE || '/querysolo/';
 
 // Markdown pages (the docs) link with root-relative paths such as /docs/cli, and show
 // images from /screenshots; on GitHub
-// Pages the site lives under /lakelet/, so prefix them the way src/lib/url.ts does for
+// Pages the site lives under /querysolo/, so prefix them the way src/lib/url.ts does for
 // .astro pages. Hand-rolled walk rather than a dependency: the tree is small.
 function rehypeBasePath() {
   const prefix = base.replace(/\/$/, '');

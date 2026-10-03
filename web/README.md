@@ -1,13 +1,13 @@
-# The Lakelet site
+# The QuerySolo site
 
-Live at <https://hantswilliams.github.io/lakelet/>. Running state and what is
+Live at <https://hantswilliams.github.io/querysolo/>. Running state and what is
 deliberately not done yet: **`TASKS.md` in this folder**.
 
 Static site built with [Astro](https://astro.build). Zero client-side framework; small scripts handle the data-story controls, mobile documentation navigation, and configured signup forms.
 
 ```
 npm install
-npm run dev        # http://localhost:4321/lakelet/   (the base path production uses)
+npm run dev        # http://localhost:4321/querysolo/   (the base path production uses)
 npm run build      # -> dist/
 npm run preview
 ```
@@ -15,7 +15,7 @@ npm run preview
 ## Data-story website (this branch)
 
 Branch `codex/website-exploration` is developed in the separate sibling worktree
-`/Users/hants/Development/Python/lakelet-website-exploration`. The selected concept,
+`/Users/hants/Development/Python/querysolo-website-exploration`. The selected concept,
 02 / Data story, now covers the complete website: home, app, how it runs, workflows,
 agent interfaces, pricing, and all developer documentation. This branch is shared
 for review; integration and deployment remain separate.
@@ -23,7 +23,7 @@ for review; integration and deployment remain separate.
 ```sh
 npm run build
 npm run preview -- --host 127.0.0.1 --port 4328
-# Open http://127.0.0.1:4328/lakelet/
+# Open http://127.0.0.1:4328/querysolo/
 ```
 
 Run the website gates after building, using a Python environment with the core dependencies and pytest available:
@@ -38,7 +38,7 @@ interactive markup, docs, and signup states. For a root-domain build, set
 `SITE_BASE=/` for both the build and pytest. Set `PUBLIC_WAITLIST_URL` for both
 when checking the configured form; otherwise the pricing page offers GitHub updates.
 
-Original study routes remain at `/lakelet/explore` and its `/product`, `/story`, and
+Original study routes remain at `/querysolo/explore` and its `/product`, `/story`, and
 `/editorial` children. They are excluded from the sitemap and carry noindex. The real
 site uses `Base.astro`, the selected theme, and `website.css`; the study keeps its
 own layout. `DataStory.astro` retains the measured Overture transfer demonstration on
@@ -111,12 +111,12 @@ Clean URLs: `build.format = 'file'` emits `dist/pricing.html`, which every stati
 
 The workflow at `.github/workflows/deploy-pages.yml` (repo root) builds `web/` and publishes it on every push to `main` that touches the site.
 
-1. In the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**. That's the only required step. The next push to `main` (or **Actions → Deploy site to GitHub Pages → Run workflow**) deploys to `https://hantswilliams.github.io/lakelet/`.
+1. In the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**. That's the only required step. The next push to `main` (or **Actions → Deploy site to GitHub Pages → Run workflow**) deploys to `https://hantswilliams.github.io/querysolo/`.
 2. Links, CSS, favicon and the sitemap are all base-aware (`src/lib/url.ts`, `SITE_BASE`), so the subpath works without code changes. Always write internal links as `href={url('/pricing')}`, never `href="/pricing"`.
-3. Custom domain (optional): add it under **Settings → Pages → Custom domain** (GitHub writes the `CNAME` file and handles HTTPS), point DNS at GitHub (`A` records to GitHub's Pages IPs, or a `CNAME` to `hantswilliams.github.io`), then add a repo **variable** `SITE_URL=https://lakelet.dev`. The workflow then builds with base `/` and the sitemap uses the real domain.
+3. Custom domain (optional): add it under **Settings → Pages → Custom domain** (GitHub writes the `CNAME` file and handles HTTPS), point DNS at GitHub (`A` records to GitHub's Pages IPs, or a `CNAME` to `hantswilliams.github.io`), then add a repo **variable** `SITE_URL=https://querysolo.dev`. The workflow then builds with base `/` and the sitemap uses the real domain.
 4. **Waitlist (required for the forms to capture anything).** GitHub Pages is static only, so `functions/api/waitlist.ts` doesn't run there. The form exists: add a repo variable `PUBLIC_WAITLIST_URL=https://formspree.io/f/meaqdnjv` (**Settings → Secrets and variables → Actions → Variables**). A form id is not a secret — Astro inlines every `PUBLIC_` variable into the browser bundle — so it is a variable, not a secret, and it lives in `.env.example` too. Any endpoint accepting a `multipart/form-data` POST with `email` and `stack` works. Without it the forms tell visitors that signups aren't open and point at the repo — they do **not** show the success state, because that silently discarded every signup between 2026-09-09 and 2026-09-11. The build prints a warning when the variable is missing.
 
-The defaults in `astro.config.mjs` already are the GitHub Pages ones (`site` = `https://hantswilliams.github.io`, `base` = `/lakelet/`), so a plain `npm run build` is the production build and a plain `npm run dev` has the production base path. That is deliberate: a base-path bug should show up on the first local page load, not on the first deploy. To preview as a root-domain site: `SITE_URL=https://example.com SITE_BASE=/ npm run build`.
+The defaults in `astro.config.mjs` already are the GitHub Pages ones (`site` = `https://hantswilliams.github.io`, `base` = `/querysolo/`), so a plain `npm run build` is the production build and a plain `npm run dev` has the production base path. That is deliberate: a base-path bug should show up on the first local page load, not on the first deploy. To preview as a root-domain site: `SITE_URL=https://example.com SITE_BASE=/ npm run build`.
 
 ## Deploy (Cloudflare Pages)
 

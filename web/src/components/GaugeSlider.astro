@@ -9,18 +9,18 @@ import { overture, demoQueries, fmtRows } from '../data/demo';
 const a = overture.addresses;
 ---
 <Terminal
-  title={`zsh · ~/lakelet-open · no AWS account · ${overture.laptopMbps} Mbps`}
+  title={`zsh · ~/querysolo-open · no AWS account · ${overture.laptopMbps} Mbps`}
   class="gauge-slider"
   label="Interactive terminal: a 472-million-row public dataset attached without credentials, with the gauge's verdict on two queries. Drag the slider to change the link speed and watch the verdicts change.">
-<pre><span class="p">$</span> lakelet tables attach addresses --anonymous \
+<pre><span class="p">$</span> querysolo tables attach addresses --anonymous \
     <span class="o">{a.prefix}</span>
   <span class="g">✓</span> {fmtRows(a.rows)} rows · {a.files} files · {a.gb} GB <span class="d">· nothing copied</span>
   <span class="d">public bucket · no credentials · metadata written to ./warehouse</span>
 
-<span class="p">$</span> lakelet estimate <span class="o">"{demoQueries[0].sql}"</span>
+<span class="p">$</span> querysolo estimate <span class="o">"{demoQueries[0].sql}"</span>
   <span id="q0dot" class="g">●</span> <span id="q0verdict" class="w">Runs here</span> <span id="q0detail" class="d">· scans 218.9 MB of 21.9 GB · ~16 s at your 111 Mbps</span>
 
-<span class="p">$</span> lakelet estimate <span class="o">"{demoQueries[1].sql}"</span>
+<span class="p">$</span> querysolo estimate <span class="o">"{demoQueries[1].sql}"</span>
   <span id="q1dot" class="r">●</span> <span id="q1verdict" class="w">Needs more machine</span> <span id="q1detail" class="d">· scans 21.9 GB · ~26 min at your 111 Mbps</span></pre>
   <div class="ctlrow"><span>your downlink</span><output id="mbpsOut">{overture.laptopMbps} Mbps · measured</output></div>
   <input type="range" id="mbps" min="5" max="400" value={overture.laptopMbps} step="1" aria-label="Your downlink speed in megabits per second">

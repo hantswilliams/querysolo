@@ -1,4 +1,4 @@
-# Lakelet — Day 0 Product Requirements
+# QuerySolo — Day 0 Product Requirements
 
 *BRD + PRD · v0.1 · September 7, 2026 · Scope: initial release (private beta) and the pre-seed raise · Companion to lakelet-product-spec.md (phase map) and lakelet-v0-build-spec.md (stack) · Amended September 8, 2026 by `build-sessions/core-v0.5-plan.md` §8; where the two differ, the brief wins*
 
@@ -33,20 +33,20 @@ P1 is the design partner; P2 is the launch audience; P3 is the test of the ask b
 ### A4. Design-partner program
 
 - Ten partners, recruited from: the waitlist, DuckDB and dbt community members who describe warehouse bills under $5K/month, and MotherDuck users in the gap between the free tier and $250/month.
-- Each partner: a 45-minute onboarding call, a shared Slack channel, weekly 20-minute check-in, free burst compute up to $50/month on Lakelet's account, and their real bill in exchange.
+- Each partner: a 45-minute onboarding call, a shared Slack channel, weekly 20-minute check-in, free burst compute up to $50/month on QuerySolo's account, and their real bill in exchange.
 - Partners agree to: a quote for the deck, a monthly usage export, and one recorded session.
 - Success: ≥8 of 10 still active in week 8; ≥5 bursting weekly; ≥5 written willingness-to-pay statements.
 
 ### A5. Non-goals for Day 0
 
-Team catalog, billing, scheduling, connectors, sharing, Windows desktop app, GCP/R2 backends, Lambda backend, warm pool, Lakelet-hosted LLM, public repository. Each is placed in Day 1–3 in the product spec.
+Team catalog, billing, scheduling, connectors, sharing, Windows desktop app, GCP/R2 backends, Lambda backend, warm pool, QuerySolo-hosted LLM, public repository. Each is placed in Day 1–3 in the product spec.
 
 ### A6. Constraints
 
 - Three people, eight weeks of build after two weeks of spikes.
 - Python core + Tauri shell per the v0 build spec; no Rust beyond the shell.
 - Cloud spend during Day 0 under $1,500 total.
-- No customer data at rest on any Lakelet-controlled system.
+- No customer data at rest on any QuerySolo-controlled system.
 
 ---
 
@@ -60,8 +60,8 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 
 **Stories**
 - As P3, I drag a CSV onto the app and can ask questions about it immediately.
-- As P1, I point Lakelet at a folder of Parquet files and they become tables without an import step.
-- As P1, I point Lakelet at a Parquet prefix in my own bucket and it becomes an Iceberg table without copying a byte (brief D25).
+- As P1, I point QuerySolo at a folder of Parquet files and they become tables without an import step.
+- As P1, I point QuerySolo at a Parquet prefix in my own bucket and it becomes an Iceberg table without copying a byte (brief D25).
 
 **FR**
 1. MUST accept drag-and-drop and file-picker input for `.csv`, `.tsv`, `.parquet`, `.json`/`.jsonl`, `.xlsx`.
@@ -74,7 +74,7 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 
 **AC**
 - 200 MB CSV: table queryable in ≤ 10 s on a 2023 MacBook Pro. 2 GB CSV: ≤ 90 s, no crash, no swap thrash.
-- Resulting table is readable by `pyiceberg` and by a second DuckDB process via `lakelet catalog serve`.
+- Resulting table is readable by `pyiceberg` and by a second DuckDB process via `querysolo catalog serve`.
 - Type inference: dates, timestamps, integers, decimals, booleans detected on the standard DuckDB sniffer test set; overrides persist.
 
 **UX**
@@ -94,7 +94,7 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 **Stories**
 - As P3, I type "revenue by month this year for the top five customers" and get a chart, and can see the SQL that made it.
 - As P1, I type SQL and it just runs; I never see English-mode UI.
-- As P3, when the SQL fails, Lakelet tries once to fix it and tells me what it changed.
+- As P3, when the SQL fails, QuerySolo tries once to fix it and tells me what it changed.
 
 **FR**
 1. One input. MUST auto-detect mode: input beginning with `select`, `with`, `create`, `insert`, `merge`, `explain`, `pragma`, `describe`, `show` (case-insensitive) is SQL; anything else is English. A visible toggle MUST allow override.
@@ -135,12 +135,12 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 1. MUST compute within 150 ms of a 300 ms keystroke pause, for both SQL and generated SQL.
 2. Inputs (architecture doc §4.1): `EXPLAIN (FORMAT JSON)`; Iceberg manifest stats with predicate and partition pruning; data locality and measured bandwidth (5-second probe at first use, cached 1 h, re-measured opportunistically); machine profile (RAM, `memory_limit`, cores, free disk, on battery); local history.
 3. Outputs: bytes scanned, peak memory, wall time (local), wall time (burst), burst cost, verdict.
-4. Verdict thresholds (initial, tunable in `lakelet.toml`):
+4. Verdict thresholds (initial, tunable in `querysolo.toml`):
    - Green: peak memory < 60% of `memory_limit` AND local wall < 60 s.
    - Yellow: spill expected OR 60 s ≤ local wall < 10 min.
    - Red: local wall ≥ 10 min OR remote scan > bandwidth × 10 min OR peak memory > free RAM + free disk.
 5. MUST render one reasoning sentence naming the dominant factor (bandwidth, memory, or CPU) and the numbers behind it.
-6. MUST record `(fingerprint, machine profile hash, estimate, actual)` for every execution in `.lakelet/history.db` with the schema in the brief §3.4, including the SQL text, which is stored locally and never shared (brief D7). The per-machine, per-operator-class correction after 20 recorded runs ships in session 10; trained models on shared data are Day 1 (brief M7).
+6. MUST record `(fingerprint, machine profile hash, estimate, actual)` for every execution in `.querysolo/history.db` with the schema in the brief §3.4, including the SQL text, which is stored locally and never shared (brief D7). The per-machine, per-operator-class correction after 20 recorded runs ships in session 10; trained models on shared data are Day 1 (brief M7).
 7. MUST expose the history: a Gauge page listing recent runs with estimate vs actual and a scatter plot.
 8. On battery, SHOULD add a note when local wall > 2 min ("~6 min on battery; plug in or burst").
 9. Calibration sharing: first-run toggle, default on for the desktop app, default off for CLI; shares fingerprint hash, operator-class counts, estimate, actual, machine profile buckets. MUST NOT share SQL, table names, column names, or values.
@@ -185,13 +185,13 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 - As P1, I can prove to my CFO that a burst cannot exceed the number I clicked.
 
 **FR**
-1. Prerequisites the app MUST walk through once: sign in (`lakelet login`), choose a burst region (defaults to the bucket's), connect a bucket (paste an S3 URI; Lakelet shows the IAM policy to attach, scoped to that prefix).
+1. Prerequisites the app MUST walk through once: sign in (`querysolo login`), choose a burst region (defaults to the bucket's), connect a bucket (paste an S3 URI; QuerySolo shows the IAM policy to attach, scoped to that prefix).
 2. Tables involved MUST be in a bucket; local-only tables MUST trigger "Publish first: orders is local-only (12 GB), ~9 min at your upload speed. Publish and burst?" with one click to do both.
 3. Cap: MUST equal `ceil(estimated cost × 2)` to the next $0.10 below $1 and next $1 above; MUST be editable before the click; MUST be shown on the button ("Burst · ≤ $0.41").
 4. Control plane MUST convert the cap to a wall-clock budget for the chosen worker size; the worker MUST kill DuckDB at the budget and return a partial-progress error with elapsed time, bytes read and cost so far.
 5. Worker sizing: peak-memory estimate × 1.5 snapped to the Fargate ladder; MUST launch in the bucket's region.
 6. Catalog lease (local-catalog users): the CLI/app MUST push involved table metadata to the control plane, which serves it to the worker; the worker commits back; the app replays the commit into the local catalog; the local catalog MUST refuse writes to leased tables for the lease duration and MUST show them as "leased" in the Tables panel.
-7. Results: ≤ 50 MB MUST stream back as Arrow over HTTPS; larger MUST be written to `s3://<bucket>/_lakelet/results/<job_id>/` and registered as a temporary table; writes (`CREATE TABLE AS`, `INSERT`, `MERGE`, dbt) MUST commit directly to the target Iceberg tables.
+7. Results: ≤ 50 MB MUST stream back as Arrow over HTTPS; larger MUST be written to `s3://<bucket>/_querysolo/results/<job_id>/` and registered as a temporary table; writes (`CREATE TABLE AS`, `INSERT`, `MERGE`, dbt) MUST commit directly to the target Iceberg tables.
 8. Live status MUST show: state (starting / running / writing / done), elapsed time, running cost, bytes read so far.
 9. Actual cost MUST be shown at completion and logged with the estimate.
 10. Cancel MUST be available at all times and MUST stop billing within 10 s.
@@ -200,7 +200,7 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 **AC**
 - Ten consecutive burst runs on a partner dataset complete under their caps; one deliberately over-cap query is killed by the worker within 5 s of the budget and returns a partial-progress error.
 - Cold start to first byte read ≤ 75 s (p90) on Fargate; app shows a timer the whole time.
-- Bill reconciliation: Lakelet's logged actual cost matches AWS Cost Explorer for the account within 10% over the Day 0 period.
+- Bill reconciliation: QuerySolo's logged actual cost matches AWS Cost Explorer for the account within 10% over the Day 0 period.
 - Security review: token and credential scoping verified by attempting cross-table and post-expiry reads from a worker and confirming failure.
 
 **UX**
@@ -219,16 +219,16 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 ### F0.6 — CLI
 
 **FR**
-1. Commands: `lakelet init [dir]`, `lakelet sql "<q>" | -f file.sql`, `lakelet estimate "<q>"`, `lakelet run [dbt selectors] [--burst auto|never|all]`, `lakelet publish <table> --to s3://bucket/prefix`, `lakelet catalog serve [--port 8181]`, `lakelet catalog attach <rest-url>`, `lakelet login`, `lakelet burst status|cancel <job>`, `lakelet cost [--month]`, `lakelet gauge history`. Sequencing per the brief: core v0 ships `init import tables sql estimate catalog question gauge audit serve`; `lakelet ask` arrives in session 7 (M11); `run` in session 9; `publish`, `login`, `burst` and `cost` in session 8; `catalog attach` is Day 1 (D11).
-2. `lakelet sql` MUST print the gauge line to stderr, then results to stdout as a table (TTY) or CSV/JSON (`--format`), so it pipes.
-3. `lakelet run` MUST use dbt-duckdb, compile the project, estimate each model, print the DAG with verdicts, and honour `--burst auto` under `max_cost_per_run_usd` from `lakelet.toml` without prompting (for CI).
+1. Commands: `querysolo init [dir]`, `querysolo sql "<q>" | -f file.sql`, `querysolo estimate "<q>"`, `querysolo run [dbt selectors] [--burst auto|never|all]`, `querysolo publish <table> --to s3://bucket/prefix`, `querysolo catalog serve [--port 8181]`, `querysolo catalog attach <rest-url>`, `querysolo login`, `querysolo burst status|cancel <job>`, `querysolo cost [--month]`, `querysolo gauge history`. Sequencing per the brief: core v0 ships `init import tables sql estimate catalog question gauge audit serve`; `querysolo ask` arrives in session 7 (M11); `run` in session 9; `publish`, `login`, `burst` and `cost` in session 8; `catalog attach` is Day 1 (D11).
+2. `querysolo sql` MUST print the gauge line to stderr, then results to stdout as a table (TTY) or CSV/JSON (`--format`), so it pipes.
+3. `querysolo run` MUST use dbt-duckdb, compile the project, estimate each model, print the DAG with verdicts, and honour `--burst auto` under `max_cost_per_run_usd` from `querysolo.toml` without prompting (for CI).
 4. Exit codes: 0 success; 2 Red verdict refused (no burst permitted); 3 cap exceeded; 4 catalog conflict after retries. Core v0 ships 0, 1, 2 and 4; 3 arrives with burst (brief D23).
-5. `lakelet.toml` per architecture doc §7.3, renamed.
-6. `lakelet init` MUST write `.gitignore` (`warehouse/`, `.lakelet/`, `.DS_Store`) and a minimal `dbt_project.yml` when none exists (brief D14, D30).
+5. `querysolo.toml` per architecture doc §7.3, renamed.
+6. `querysolo init` MUST write `.gitignore` (`warehouse/`, `.querysolo/`, `.DS_Store`) and a minimal `dbt_project.yml` when none exists (brief D14, D30).
 
 **AC**
 - All commands documented with `--help`; a 20-minute quickstart from `init` to a burst works on a clean macOS and Ubuntu machine.
-- A GitHub Actions example runs `lakelet run --burst auto` with a $5 project cap.
+- A GitHub Actions example runs `querysolo run --burst auto` with a $5 project cap.
 
 ---
 
@@ -236,12 +236,12 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 
 **FR**
 1. MUST implement the Iceberg REST spec subset DuckDB requires: config, list/create/drop namespaces, list/create/load/drop/rename tables, commit with requirements (optimistic concurrency), and credential vending stubs (local mode returns none).
-2. MUST run embedded (in-process) by default and as a server via `lakelet catalog serve`. Embedded means a loopback HTTP server, uvicorn in a thread, in every process that opens a project; DuckDB's iceberg extension attaches to it over REST (brief D4).
-3. Backed by SQLite in `./.lakelet/catalog.db`; the same code MUST run on Postgres (validated in a test, not shipped) so Day 2's team catalog is a config change.
-4. `lakelet catalog attach` MUST work against Apache Polaris, Lakekeeper and Amazon S3 Tables REST endpoints for read and write. Deferred to Day 1 (brief D11, decision R2 of September 8, 2026).
+2. MUST run embedded (in-process) by default and as a server via `querysolo catalog serve`. Embedded means a loopback HTTP server, uvicorn in a thread, in every process that opens a project; DuckDB's iceberg extension attaches to it over REST (brief D4).
+3. Backed by SQLite in `./.querysolo/catalog.db`; the same code MUST run on Postgres (validated in a test, not shipped) so Day 2's team catalog is a config change.
+4. `querysolo catalog attach` MUST work against Apache Polaris, Lakekeeper and Amazon S3 Tables REST endpoints for read and write. Deferred to Day 1 (brief D11, decision R2 of September 8, 2026).
 
 **AC**
-- Spark 3.5 and Trino read and write a Lakelet-created table through `lakelet catalog serve` in a documented smoke test.
+- Spark 3.5 and Trino read and write a QuerySolo-created table through `querysolo catalog serve` in a documented smoke test.
 - Concurrent commits from two processes to the same table: one succeeds, the other retries and succeeds, no lost updates (test with 100 iterations).
 
 ---
@@ -251,7 +251,7 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 **FR**
 1. Tauri 2 shell; Python core as a sidecar; localhost HTTP + Arrow IPC.
 2. Launch to usable ≤ 1.5 s; sidecar readiness shown as a small status dot, not a splash screen.
-3. Projects: open a folder; `lakelet.toml` created if missing; recent projects list.
+3. Projects: open a folder; `querysolo.toml` created if missing; recent projects list.
 4. Settings: model provider and key, bucket and region, calibration sharing toggle, `memory_limit`, threads.
 5. Signed macOS DMG (notarised) and Linux AppImage; auto-update MAY be deferred to Day 1.
 6. Keyboard: Cmd/Ctrl+Enter runs; Cmd/Ctrl+K focuses the ask box; Esc cancels a running query.
@@ -262,21 +262,21 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 
 ---
 
-### F0.9 — `lakelet mcp`: the agent surface
+### F0.9 — `querysolo mcp`: the agent surface
 
 **Stories**
 - As a developer using Claude Code, Cursor or Codex, I add one line of config and my agent can list my tables, estimate a query, run it, and burst with a cap I set.
 - As a founder, I let an agent explore a CSV I dropped, and I can see afterwards exactly what it ran and what it cost.
 
 **FR**
-1. `lakelet mcp [--project <dir>]` MUST start a stdio MCP server over the same core as the CLI and app.
-2. Tools: `list_tables`, `describe(table)`, `sample(table, n≤5)`, `estimate(sql)`, `query(sql)`, `burst(sql, cap_usd)`, `import_file(path)`, `save_question(title, sql)`, `lineage(table)`, `publish(table, uri)`. In Day 0 `lineage` is table level, from the dbt manifest and Iceberg snapshot history (brief D32); column level is Day 3. *Met September 16, 2026 at table level: `lakelet lineage`, `GET /api/lineage/{name}` and the app's lines (`versions-plan.md` step 4); the MCP tool is session 5's.*
-3. Read tools MUST be enabled by default. `burst`, `import_file`, `save_question`, `publish` MUST be off until enabled per project in `lakelet.toml` (`[agents] allow = [...]`).
-4. `burst` MUST require `cap_usd`; the control plane MUST refuse a burst without one. `LAKELET_AGENT_CAP_USD` MUST set a per-agent, per-day ceiling; calls past it MUST return a refusal with the remaining budget, not an error.
-5. Every call MUST be logged locally with agent/client name, tool, verdict, cost, duration and outcome; `lakelet agents log` MUST print it.
+1. `querysolo mcp [--project <dir>]` MUST start a stdio MCP server over the same core as the CLI and app.
+2. Tools: `list_tables`, `describe(table)`, `sample(table, n≤5)`, `estimate(sql)`, `query(sql)`, `burst(sql, cap_usd)`, `import_file(path)`, `save_question(title, sql)`, `lineage(table)`, `publish(table, uri)`. In Day 0 `lineage` is table level, from the dbt manifest and Iceberg snapshot history (brief D32); column level is Day 3. *Met September 16, 2026 at table level: `querysolo lineage`, `GET /api/lineage/{name}` and the app's lines (`versions-plan.md` step 4); the MCP tool is session 5's.*
+3. Read tools MUST be enabled by default. `burst`, `import_file`, `save_question`, `publish` MUST be off until enabled per project in `querysolo.toml` (`[agents] allow = [...]`).
+4. `burst` MUST require `cap_usd`; the control plane MUST refuse a burst without one. `QUERYSOLO_AGENT_CAP_USD` MUST set a per-agent, per-day ceiling; calls past it MUST return a refusal with the remaining budget, not an error.
+5. Every call MUST be logged locally with agent/client name, tool, verdict, cost, duration and outcome; `querysolo agents log` MUST print it.
 6. `save_question` from an agent MUST commit with a message naming the agent (`agent:claude · save question: …`).
-7. `lakelet init` MUST write an `AGENTS.md` describing the project's tables, the gauge, the cap and conventions.
-8. An agent MUST NOT be able to modify `lakelet.toml` or `AGENTS.md` through any tool.
+7. `querysolo init` MUST write an `AGENTS.md` describing the project's tables, the gauge, the cap and conventions.
+8. An agent MUST NOT be able to modify `querysolo.toml` or `AGENTS.md` through any tool.
 9. Sample rows returned to a model MUST be truncated to 80 characters per value and MUST never be executed as SQL.
 
 **AC**
@@ -304,14 +304,14 @@ Each feature has: user stories, functional requirements (FR), acceptance criteri
 | Burst cold start to first read | ≤ 75 s p90 |
 
 ### C2. Privacy and security
-- No customer data at rest on Lakelet systems. Control plane stores job specs, metrics, and (during a job) leased table metadata.
+- No customer data at rest on QuerySolo systems. Control plane stores job specs, metrics, and (during a job) leased table metadata.
 - Keys in OS keychain. Calibration sharing opt-in per F0.3.9. A `PRIVACY.md` in the app describes every byte that leaves the machine. The local API requires a per-launch bearer token; the catalog endpoints are open on loopback in local mode (brief D22).
 
 ### C3. Accessibility and platforms
 - macOS 13+ and Ubuntu 22.04+ desktop; Windows CLI only. Keyboard-navigable; visible focus; no colour-only meaning (verdict word always accompanies the dot).
 
 ### C4. Instrumentation for the fundraise
-Tracked from the first partner install: weekly active partners, queries per partner per week, Green/Yellow/Red mix, estimate-vs-actual distribution, burst runs and caps, cap hits, publish events, ask-box success rate. A one-page "Lakelet numbers" export updates the investor memo monthly.
+Tracked from the first partner install: weekly active partners, queries per partner per week, Green/Yellow/Red mix, estimate-vs-actual distribution, burst runs and caps, cap hits, publish events, ask-box success rate. A one-page "QuerySolo numbers" export updates the investor memo monthly.
 
 ---
 
@@ -326,17 +326,17 @@ Tracked from the first partner install: weekly active partners, queries per part
 | 4 | F0.3 gauge v1 with history; F0.4 grid + chart | BE / FE |
 | 5 | F0.2 ask box with Anthropic/OpenAI/Ollama; F0.8 settings | FE / BE |
 | 6 | F0.5 control plane + Fargate worker + cap; `publish` | Founder / BE |
-| 7 | Catalog lease; results back; `run` with dbt DAG verdicts; F0.9 `lakelet mcp` | BE / FE |
+| 7 | Catalog lease; results back; `run` with dbt DAG verdicts; F0.9 `querysolo mcp` | BE / FE |
 | 8 | Signed installers; docs; partner onboarding; instrumentation export | All |
 | 9–12 | Partner program: weekly calibration review, fixes, recorded P3 sessions, deck evidence | All |
 
 ### D2. The four-minute demo (scripted)
-1. Open Lakelet in an empty folder. Drop `orders.csv` (400 MB). Table appears; schema confirmed. *(30 s)*
+1. Open QuerySolo in an empty folder. Drop `orders.csv` (400 MB). Table appears; schema confirmed. *(30 s)*
 2. Ask: "monthly revenue this year, top five customers." SQL streams in. Gauge: Green, 0.4 GB, ~2 s. Run. Chart. *(45 s)*
-3. Point at the demo bucket, Lakelet-owned and prepared with `tables attach` the way a partner's would be (brief D27, decision R5). Tables panel shows `events` (48 GB). Ask: "daily active users by country, last 90 days." Gauge: Red, one sentence, "Burst ~1.5 min, ≤ $0.41." *(30 s)*
+3. Point at the demo bucket, QuerySolo-owned and prepared with `tables attach` the way a partner's would be (brief D27, decision R5). Tables panel shows `events` (48 GB). Ask: "daily active users by country, last 90 days." Gauge: Red, one sentence, "Burst ~1.5 min, ≤ $0.41." *(30 s)*
 4. Click. Confirm. Timer and running cost. Result streams back. Actual: $0.19. *(1.5 min)*
 5. Gauge page: estimate vs actual scatter for the partner's last 200 runs. *(30 s)*
-6. Terminal: `spark-sql` reads the same table through `lakelet catalog serve`. *(15 s)*
+6. Terminal: `spark-sql` reads the same table through `querysolo catalog serve`. *(15 s)*
 
 ### D3. Risks specific to Day 0
 
@@ -351,4 +351,4 @@ Tracked from the first partner install: weekly active partners, queries per part
 ### D4. Open decisions to close this week
 1. Default state of calibration sharing on first run (this doc: on, with the toggle visible).
 2. Whether Windows CLI is tested in Day 0 or deferred.
-3. Trademark search result for "Lakelet" before any partner sees the name in writing.
+3. Trademark search result for "QuerySolo" before any partner sees the name in writing.

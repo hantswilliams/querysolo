@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Real-data brief R7: the detail's reclaimable line, the snapshot marks, and the buttons
 // that are `tables sample`, `tables expire` and `tables refresh`.
@@ -43,8 +43,8 @@ describe('TableDetail', () => {
     expect(screen.getByTestId('snapshot-1').textContent).toContain('expirable');
     expect(screen.getByTestId('snapshot-2').textContent).toContain('delete');
     expect(screen.getAllByTestId('command').map((c) => c.textContent)).toEqual(expect.arrayContaining([
-      expect.stringContaining('lakelet tables describe orders'),
-      expect.stringContaining('lakelet tables expire orders'),
+      expect.stringContaining('querysolo tables describe orders'),
+      expect.stringContaining('querysolo tables expire orders'),
     ]));
     fireEvent.click(screen.getByTestId('expire'));
     expect(onExpire).toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe('TableDetail', () => {
     expect(screen.queryByTestId('expire')).toBeNull();
     fireEvent.click(screen.getByTestId('refresh'));
     expect(onRefresh).toHaveBeenCalled();
-    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('lakelet tables refresh place'))).toBe(true);
+    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('querysolo tables refresh place'))).toBe(true);
   });
 
   it('says when the attached files were verified, and a changed file turns Refresh into Register again (T2)', () => {
@@ -77,14 +77,14 @@ describe('TableDetail', () => {
     expect(screen.queryByTestId('refresh')).toBeNull();
     fireEvent.click(screen.getByTestId('reattach'));
     expect(onReattach).toHaveBeenCalled();
-    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('lakelet tables attach place --anonymous --replace s3://b/release/type=place/'))).toBe(true);
+    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('querysolo tables attach place --anonymous --replace s3://b/release/type=place/'))).toBe(true);
   });
 
   it('renders the sample when it has been read, with its line', () => {
     render(<TableDetail table={local} sample={[{ id: 1, customer: 'c1', amt: null }]} onSample={noop} onExpire={noop} onRefresh={noop} onClose={noop} />);
     expect(screen.getByTestId('sample').textContent).toContain('c1');
     expect(screen.getByTestId('sample').textContent).toContain('∅');
-    expect(screen.getByTestId('sample').textContent).toContain('lakelet tables sample orders');
+    expect(screen.getByTestId('sample').textContent).toContain('querysolo tables sample orders');
   });
 
   it('a view has its own shape: the query, its version, the model it came from, no snapshots, no expire', () => {
@@ -102,7 +102,7 @@ describe('TableDetail', () => {
       expirable_snapshots: 0,
       reclaimable_bytes: 0,
       last_commit: { operation: 'view version 2', timestamp: new Date().toISOString() },
-      properties: { 'lakelet.dbt-model': 'model.demo.big_orders' },
+      properties: { 'querysolo.dbt-model': 'model.demo.big_orders' },
     };
     render(<TableDetail table={view} onSample={noop} onExpire={noop} onRefresh={noop} onClose={noop} />);
     const detail = screen.getByTestId('detail');
@@ -110,7 +110,7 @@ describe('TableDetail', () => {
     expect(screen.getByTestId('view-sql').textContent).toBe('select * from "main"."orders" where amount > 100');
     expect(screen.getByTestId('view-version').textContent).toBe('2 versions · this one just now');
     expect(screen.getByTestId('view-model').textContent).toContain('model.demo.big_orders');
-    expect(screen.getByTestId('view-model').textContent).toContain('lakelet run big_orders');
+    expect(screen.getByTestId('view-model').textContent).toContain('querysolo run big_orders');
     expect(screen.queryByTestId('snapshots')).toBeNull();
     expect(screen.queryByTestId('expire')).toBeNull();
     expect(screen.queryByTestId('refresh')).toBeNull();
@@ -118,8 +118,8 @@ describe('TableDetail', () => {
     expect(screen.getByTestId('no-snapshots').textContent).toContain('nothing to expire');
     expect(detail.textContent).not.toContain('0 rows');
     expect(screen.getAllByTestId('command').map((c) => c.textContent)).toEqual(expect.arrayContaining([
-      expect.stringContaining('lakelet tables describe big_orders'),
-      expect.stringContaining('lakelet run big_orders'),
+      expect.stringContaining('querysolo tables describe big_orders'),
+      expect.stringContaining('querysolo run big_orders'),
     ]));
     // Simple mode says question and Refresh
     cleanup();
@@ -130,7 +130,7 @@ describe('TableDetail', () => {
     cleanup();
     render(<TableDetail table={{ ...view, properties: {} }} onSample={noop} onExpire={noop} onRefresh={noop} onClose={noop} />);
     expect(screen.getByTestId('view-model').textContent).toContain('not a dbt model');
-    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('lakelet run'))).toBe(false);
+    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('querysolo run'))).toBe(false);
   });
 
   it('a snapshot names the models it made out of date, as links, with Run what changed (L3)', () => {
@@ -149,7 +149,7 @@ describe('TableDetail', () => {
     fireEvent.click(screen.getByTestId('affects-by_customer'));
     expect(onOpen).toHaveBeenCalledWith('by_customer', 'model');
     expect(screen.getByTestId('affected').textContent).toContain('2 models are out of date because of these commits.');
-    expect(screen.getByTestId('affected').textContent).toContain('lakelet run --stale');
+    expect(screen.getByTestId('affected').textContent).toContain('querysolo run --stale');
     fireEvent.click(screen.getByTestId('run-stale'));
     expect(onRunStale).toHaveBeenCalled();
     cleanup();
@@ -173,11 +173,11 @@ describe('TableDetail', () => {
     expect(go.disabled).toBe(true);
     fireEvent.change(screen.getByTestId('publish-prefix'), { target: { value: 's3://b/lake' } });
     expect(go.disabled).toBe(false);
-    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('lakelet tables publish orders s3://b/lake --dry-run'))).toBe(true);
+    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('querysolo tables publish orders s3://b/lake --dry-run'))).toBe(true);
     fireEvent.click(screen.getByTestId('publish-weigh'));
     expect(onPublish).toHaveBeenCalledWith('s3://b/lake', true, false);
     expect((await screen.findByTestId('publish-weighed')).textContent).toBe('4 files, 12 KB to copy to s3://b/lake/main/orders, about 2 s at the measured bandwidth.');
-    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('lakelet tables publish orders s3://b/lake') && !c.textContent.includes('--dry-run'))).toBe(true);
+    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes('querysolo tables publish orders s3://b/lake') && !c.textContent.includes('--dry-run'))).toBe(true);
     fireEvent.click(go);
     expect((await screen.findByTestId('publish-error')).textContent).toContain('over the cap');
     fireEvent.click(screen.getByTestId('publish-anyway'));

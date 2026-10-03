@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decisions L1: the Lineage screen draws every node and edge from GET /lineage, colours a
 // model by its state, and a click opens the detail — a model on the Models screen, a
@@ -48,7 +48,7 @@ describe('the Lineage screen', () => {
     expect(onOpenModel).toHaveBeenCalledWith('by_customer');
     fireEvent.click(screen.getByTestId('node-orders'));
     expect(onOpenTable).toHaveBeenCalledWith('orders');
-    expect(screen.getAllByTestId('command').map((c) => c.textContent)).toEqual(expect.arrayContaining([expect.stringContaining('lakelet lineage --all')]));
+    expect(screen.getAllByTestId('command').map((c) => c.textContent)).toEqual(expect.arrayContaining([expect.stringContaining('querysolo lineage --all')]));
   });
 
   it("Simple mode's captions, and an empty project", async () => {

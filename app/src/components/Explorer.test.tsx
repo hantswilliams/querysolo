@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decisions U2: the explorer lists every table with its rows, where its data is and the
 // freshness dot; a row opens the detail; an attached table has Refresh; the empty state

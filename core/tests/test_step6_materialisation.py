@@ -1,8 +1,8 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 6 amendment (brief §7, September 9; decisions-for-review_090926.md, all three
 accepted): dbt builds a table model through the Iceberg catalog with the materialisation
-``init`` writes into ``macros/lakelet.sql``, which overrides dbt's built-in ``table`` for
+``init`` writes into ``macros/querysolo.sql``, which overrides dbt's built-in ``table`` for
 the project. dbt-duckdb's own ``table`` swaps a temp table into place by renames inside one
 transaction, which DuckDB-Iceberg refuses, as it refuses ``CREATE OR REPLACE`` and a
 drop-then-create in one transaction (confirmed in the extension's source and on the official
@@ -13,8 +13,8 @@ from pathlib import Path
 
 import yaml
 
-from lakelet import Project
-from lakelet.project import LAKELET_MACROS
+from querysolo import Project
+from querysolo.project import QUERYSOLO_MACROS
 from tests.test_step2_dbt_spike import dbt_main, profiles_yml
 
 
@@ -29,17 +29,17 @@ def _dbt(root: Path, verb: str) -> dict[str, str]:
 def test_init_writes_the_materialisation_and_leaves_an_existing_one_alone(tmp_path) -> None:
     root = tmp_path / "proj"
     report = Project.init(root, probe_mb=0)
-    assert "macros/lakelet.sql" in report.created
-    assert (root / "macros" / "lakelet.sql").read_text() == LAKELET_MACROS
-    assert 'materialization table, adapter="duckdb"' in LAKELET_MACROS
-    assert "macros/lakelet.sql" in (root / "AGENTS.md").read_text()
+    assert "macros/querysolo.sql" in report.created
+    assert (root / "macros" / "querysolo.sql").read_text() == QUERYSOLO_MACROS
+    assert 'materialization table, adapter="duckdb"' in QUERYSOLO_MACROS
+    assert "macros/querysolo.sql" in (root / "AGENTS.md").read_text()
 
     other = tmp_path / "other"
     (other / "macros").mkdir(parents=True)
-    (other / "macros" / "lakelet.sql").write_text("-- mine\n")
+    (other / "macros" / "querysolo.sql").write_text("-- mine\n")
     report = Project.init(other, probe_mb=0)
-    assert "macros/lakelet.sql" not in report.created
-    assert (other / "macros" / "lakelet.sql").read_text() == "-- mine\n"
+    assert "macros/querysolo.sql" not in report.created
+    assert (other / "macros" / "querysolo.sql").read_text() == "-- mine\n"
 
 
 def test_dbt_builds_a_saved_question_and_rebuilds_it_in_place(tmp_path) -> None:
@@ -52,12 +52,12 @@ def test_dbt_builds_a_saved_question_and_rebuilds_it_in_place(tmp_path) -> None:
     with Project.open(root) as p:
         (root / "profiles.yml").write_text(profiles_yml(p.catalog_url))
         p.engine.execute(
-            "CREATE TABLE lakelet.main.src AS "
+            "CREATE TABLE querysolo.main.src AS "
             "SELECT range AS id, 'c' || (range % 3) AS c FROM range(90)"
         )
         q = p.questions.save("Count by c", "select c, count(*) as n from src group by 1")
         entry = yaml.safe_load((root / "models/questions/schema.yml").read_text())["models"][0]
-        assert entry["config"] == {"materialized": "table"}  # nothing Lakelet-specific
+        assert entry["config"] == {"materialized": "table"}  # nothing QuerySolo-specific
 
         assert _dbt(root, "run") == {q.slug: "success"}  # first build: create table as
         assert p.engine.execute(f"select sum(n) from {q.slug}").fetchone()[0] == 90

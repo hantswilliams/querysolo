@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """One writer process for the concurrency test: its own embedded catalog on the shared
 SQLite file (brief D3), N appends through pyiceberg, retry on a 409 by reloading."""
@@ -9,13 +9,13 @@ import pyarrow as pa
 from pyiceberg.catalog.rest import RestCatalog
 from pyiceberg.exceptions import CommitFailedException
 
-from lakelet.catalog import EmbeddedCatalog, Store, create_app
+from querysolo.catalog import EmbeddedCatalog, Store, create_app
 
 
 def main(store_url: str, warehouse: str, writer: int, commits: int) -> None:
     server = EmbeddedCatalog(create_app(Store(store_url), warehouse=warehouse))
     url = server.start()
-    cat = RestCatalog("lakelet", uri=url)
+    cat = RestCatalog("querysolo", uri=url)
     retries = 0
     for i in range(commits):
         while True:

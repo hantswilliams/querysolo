@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The auto-chart's one rule (app brief A5): a result of exactly two columns, one
 // categorical and one numeric, is a bar chart; a date or timestamp and a numeric is a line;

@@ -1,19 +1,19 @@
 ---
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 import Base from '../layouts/Base.astro';
 import PageIntro from '../components/PageIntro.astro';
 import NextStep from '../components/NextStep.astro';
 import { url } from '../lib/url';
 ---
-<Base title="For agents" description="Connect tools to Lakelet through the existing CLI and local API. Understand what is available today and what the planned MCP surface will add.">
-  <PageIntro label="04 / For agents" title="Useful context." accent="Explicit actions." description="Lakelet gives tools a local command line, a token-protected API, and project context they can read. The dedicated MCP server is planned."><a class="button" href={url('/docs/api')}>Explore the local API ↗</a><a class="text-link" href={url('/docs/cli')}>Read the CLI reference ↗</a></PageIntro>
+<Base title="For agents" description="Connect tools to QuerySolo through the existing CLI and local API. Understand what is available today and what the planned MCP surface will add.">
+  <PageIntro label="04 / For agents" title="Useful context." accent="Explicit actions." description="QuerySolo gives tools a local command line, a token-protected API, and project context they can read. The dedicated MCP server is planned."><a class="button" href={url('/docs/api')}>Explore the local API ↗</a><a class="text-link" href={url('/docs/cli')}>Read the CLI reference ↗</a></PageIntro>
   <section class="section-frame agent-surface"><div class="code-window"><div>AVAILABLE TODAY / LOCAL HTTP API</div><pre><code>{`# Start the local service
-lakelet serve
+querysolo serve
 
 # The service writes its local port and token
-# to .lakelet/serve.json.
+# to .querysolo/serve.json.
 # Send the bearer token with API requests.`}</code></pre><a href={url('/docs/api')}>Routes, request shapes, and authentication ↗</a></div><div class="agent-explainer"><p class="eyebrow">The same core, another interface</p><h2>Let the tool<br /><span class="accent">see the work.</span></h2><p>Inspect tables, estimate SQL, and execute through the documented API. A Red refusal is explicit; an override must be explicit too.</p><p>Choose the permissions of any external tool carefully. The dedicated per-tool permissions and daily agent budget are part of the planned MCP surface.</p></div></section>
-  <section class="web-section section-frame"><div class="feature-columns"><article><span class="index">01 / PROJECT CONTEXT</span><h3>A file to read.</h3><p>Lakelet maintains table context in the project’s AGENTS.md. A coding tool can use it alongside your SQL and models.</p><a class="text-link" href={url('/docs/config')}>Project layout ↗</a></article><article><span class="index">02 / COMMAND LINE</span><h3>A command to inspect.</h3><p>Use the same CLI a person uses to import, estimate, query, and run models. Commands and their exit codes are documented.</p><a class="text-link" href={url('/docs/cli')}>CLI reference ↗</a></article><article><span class="index">03 / LOCAL API</span><h3>A service on loopback.</h3><p>The API binds locally, uses a bearer token, and streams query results as Arrow. It connects to the same project.</p><a class="text-link" href={url('/docs/api')}>API reference ↗</a></article></div></section>
+  <section class="web-section section-frame"><div class="feature-columns"><article><span class="index">01 / PROJECT CONTEXT</span><h3>A file to read.</h3><p>QuerySolo maintains table context in the project’s AGENTS.md. A coding tool can use it alongside your SQL and models.</p><a class="text-link" href={url('/docs/config')}>Project layout ↗</a></article><article><span class="index">02 / COMMAND LINE</span><h3>A command to inspect.</h3><p>Use the same CLI a person uses to import, estimate, query, and run models. Commands and their exit codes are documented.</p><a class="text-link" href={url('/docs/cli')}>CLI reference ↗</a></article><article><span class="index">03 / LOCAL API</span><h3>A service on loopback.</h3><p>The API binds locally, uses a bearer token, and streams query results as Arrow. It connects to the same project.</p><a class="text-link" href={url('/docs/api')}>API reference ↗</a></article></div></section>
   <section class="notice-band section-frame"><p class="eyebrow">MCP / Planned, not available yet</p><h3>A dedicated agent surface is coming later.</h3><p>The plan includes named MCP tools, per-tool permissions, an audit trail, and a per-agent daily cap. These controls and cloud workers are not available in the current developer preview.</p><a class="text-link" href={url('/docs')}>Check what exists today ↗</a></section><NextStep title="Build on the interfaces that exist." />
 </Base>

@@ -1,6 +1,6 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
-// Start real sidecars for the tests: `lakelet init` on a temp folder, then `lakelet serve`
+// Start real sidecars for the tests: `querysolo init` on a temp folder, then `querysolo serve`
 // with the dev origin allowed; the session comes from serve.json exactly as the shell reads
 // it, and spawn-to-ready is measured the way the shell measures it. Four are started: the
 // second with half the first's memory limit, as the shell gives a second window (A8); the
@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const STATE_FILE = join(tmpdir(), 'lakelet-app-e2e.json');
+export const STATE_FILE = join(tmpdir(), 'querysolo-app-e2e.json');
 
 export interface Started {
   project: string; port: number; token: string; pid: number; readyMs: number; memoryLimit: string;
@@ -29,7 +29,7 @@ export interface SidecarSpec { memoryLimit: string; big?: boolean; red?: boolean
 
 // Each spec file owns what it imports into a sidecar; the files run in parallel outside CI.
 // step 0 → the first; step 2 → the second (and counts its tables); steps 3 and 4 → the
-// third (big) and the fourth (Red); step 4's settings → the second's lakelet.toml only;
+// third (big) and the fourth (Red); step 4's settings → the second's querysolo.toml only;
 // the real-data round's attach test → the fifth (s3); its table-detail test → the sixth;
 // its models test → the seventh (dbt); the versions round's save-as-question and Versions
 // section → the eighth (dbt with a question already saved twice). A spec that writes a model
@@ -62,13 +62,13 @@ export const SEEDED_QUESTION = {
 /** The seventh sidecar's dbt project: `stg` (a view over orders), `by_customer` (a table
  *  over `stg`), and two tests on `stg` in schema.yml. */
 export const DBT_MODELS = {
-  'stg.sql': "select id, customer, amt from {{ source('lakelet', 'orders') }} where amt > 0\n",
+  'stg.sql': "select id, customer, amt from {{ source('querysolo', 'orders') }} where amt > 0\n",
   'by_customer.sql': "{{ config(materialized='table') }}\nselect customer, sum(amt) as total from {{ ref('stg') }} group by 1\n",
   'schema.yml': [
     'version: 2',
     'sources:',
-    '  - name: lakelet',
-    '    database: lakelet',
+    '  - name: querysolo',
+    '    database: querysolo',
     '    schema: main',
     '    tables: [{ name: orders }]',
     'models:',
@@ -86,8 +86,8 @@ export const BIG_ROWS = 20_000_000;
 /** The venv's python beside the sidecar, for generating fixtures with DuckDB. */
 export function venvPython(): string {
   // beside the sidecar in a venv; a frozen sidecar (ship brief S1) has no python beside it,
-  // so the fixtures' DuckDB comes from the core's venv, or `LAKELET_PYTHON` names one
-  if (process.env.LAKELET_PYTHON) return process.env.LAKELET_PYTHON;
+  // so the fixtures' DuckDB comes from the core's venv, or `QUERYSOLO_PYTHON` names one
+  if (process.env.QUERYSOLO_PYTHON) return process.env.QUERYSOLO_PYTHON;
   const beside = join(dirname(sidecarExecutable()), 'python');
   if (existsSync(beside)) return beside;
   const here = dirname(fileURLToPath(import.meta.url));
@@ -96,10 +96,10 @@ export function venvPython(): string {
 }
 
 export function sidecarExecutable(): string {
-  if (process.env.LAKELET_SIDECAR) return process.env.LAKELET_SIDECAR;
+  if (process.env.QUERYSOLO_SIDECAR) return process.env.QUERYSOLO_SIDECAR;
   const here = dirname(fileURLToPath(import.meta.url)); // an ES module: no __dirname
-  const venv = resolve(here, '..', '..', 'core', '.venv', 'bin', 'lakelet');
-  return existsSync(venv) ? venv : 'lakelet';
+  const venv = resolve(here, '..', '..', 'core', '.venv', 'bin', 'querysolo');
+  return existsSync(venv) ? venv : 'querysolo';
 }
 
 /** The stand-in bucket: `tests/moto_fixture.py` on the venv's python, ready when it prints its endpoint. */
@@ -116,24 +116,26 @@ async function startMoto(project: string): Promise<{ endpoint: string; child: Ch
     });
     child.stderr!.on('data', (d) => { out += d; });
     child.on('exit', (code) => fail(new Error(`moto exited (${code}) before serving:\n${out}`)));
-    setTimeout(() => fail(new Error(`moto not ready in 30 s:\n${out}`)), 30_000);
+    // 120 s: a cold macOS runner compiles boto3, botocore and Moto on first import, which took
+    // more than 30 s on CI (2026-09-30) while Ubuntu and a laptop take a few.
+    setTimeout(() => fail(new Error(`moto not ready in 120 s:\n${out}`)), 120_000);
   });
   return { endpoint, child, flag };
 }
 
 export async function startSidecar({ memoryLimit, big, red, s3, detail, dbt, questions, moved, bucket }: SidecarSpec): Promise<{ started: Started; child: ChildProcess; extra?: ChildProcess }> {
   const exe = sidecarExecutable();
-  let project = mkdtempSync(join(tmpdir(), 'lakelet-e2e-'));
+  let project = mkdtempSync(join(tmpdir(), 'querysolo-e2e-'));
   let moto: { endpoint: string; child: ChildProcess; flag: string } | undefined;
-  const env: NodeJS.ProcessEnv = { ...process.env, LAKELET_DEV_ORIGIN: 'http://localhost:5173' };
+  const env: NodeJS.ProcessEnv = { ...process.env, QUERYSOLO_DEV_ORIGIN: 'http://localhost:5173' };
   if (s3 || bucket) {
     moto = await startMoto(project);
     Object.assign(env, { AWS_ENDPOINT_URL: moto.endpoint, AWS_ACCESS_KEY_ID: 'test', AWS_SECRET_ACCESS_KEY: 'test', AWS_REGION: 'us-east-1' });
     delete env.AWS_PROFILE;
   }
-  const initArgs = ['init', project, '--probe-mb', '0', ...(bucket ? ['--warehouse', 's3://lakelet-test/warehouse'] : [])];
+  const initArgs = ['init', project, '--probe-mb', '0', ...(bucket ? ['--warehouse', 's3://querysolo-test/warehouse'] : [])];
   const init = spawnSync(exe, initArgs, { encoding: 'utf8', env });
-  if (init.status !== 0) throw new Error(`lakelet init failed:\n${init.stdout}\n${init.stderr}`);
+  if (init.status !== 0) throw new Error(`querysolo init failed:\n${init.stdout}\n${init.stderr}`);
   if (bucket) {
     // the table's data and metadata go to the bucket from the first import (decisions W1)
     writeFileSync(join(project, 'orders.csv'), 'id,customer,amt\n1,c1,1.5\n2,c2,3.0\n3,c1,4.5\n');
@@ -145,13 +147,13 @@ export async function startSidecar({ memoryLimit, big, red, s3, detail, dbt, que
     writeFileSync(join(project, 'orders.csv'), 'id,customer,amt\n1,c1,1.5\n2,c2,3.0\n3,c1,4.5\n');
     const imported = spawnSync(exe, ['-C', project, 'import', join(project, 'orders.csv')], { encoding: 'utf8' });
     if (imported.status !== 0) throw new Error(`import failed:\n${imported.stdout}\n${imported.stderr}`);
-    const elsewhere = join(mkdtempSync(join(tmpdir(), 'lakelet-e2e-moved-')), 'acme');
+    const elsewhere = join(mkdtempSync(join(tmpdir(), 'querysolo-e2e-moved-')), 'acme');
     renameSync(project, elsewhere);
     project = elsewhere;
   }
   if (red) {
     // the thresholds the core's own Red test uses: everything is Red here
-    const toml = join(project, 'lakelet.toml');
+    const toml = join(project, 'querysolo.toml');
     writeFileSync(toml, readFileSync(toml, 'utf8')
       .replace('green_max_seconds = 60', 'green_max_seconds = 0.0000001')
       .replace('yellow_max_seconds = 600', 'yellow_max_seconds = 0.0000002'));
@@ -161,7 +163,7 @@ export async function startSidecar({ memoryLimit, big, red, s3, detail, dbt, que
   }
   if (detail) {
     // the retention at zero days, so every snapshot but the current one is expirable now
-    const toml = join(project, 'lakelet.toml');
+    const toml = join(project, 'querysolo.toml');
     writeFileSync(toml, readFileSync(toml, 'utf8').replace('keep_snapshots_days = 7', 'keep_snapshots_days = 0'));
     writeFileSync(join(project, 'orders.csv'), 'id,customer,amt\n1,c1,1.5\n2,c2,3.0\n3,c1,4.5\n');
     const imported = spawnSync(exe, ['-C', project, 'import', join(project, 'orders.csv')], { encoding: 'utf8' });
@@ -175,7 +177,7 @@ export async function startSidecar({ memoryLimit, big, red, s3, detail, dbt, que
   }
   if (questions) {
     // Saved twice through the CLI, so the question has two versions (and a diff between them)
-    // before any page opens. Each save is a commit; `lakelet versions` would list them.
+    // before any page opens. Each save is a commit; `querysolo versions` would list them.
     for (const sql of [SEEDED_QUESTION.first, SEEDED_QUESTION.second]) {
       const saved = spawnSync(exe, ['-C', project, 'question', 'save', SEEDED_QUESTION.title, '--sql', sql], { encoding: 'utf8' });
       if (saved.status !== 0) throw new Error(`question save failed:\n${saved.stdout}\n${saved.stderr}`);
@@ -205,9 +207,9 @@ export async function startSidecar({ memoryLimit, big, red, s3, detail, dbt, que
     child.on('exit', (code) => fail(new Error(`sidecar exited (${code}) before serving:\n${out}`)));
     setTimeout(() => fail(new Error(`sidecar not ready in 30 s:\n${out}`)), 30_000);
   });
-  const serve = JSON.parse(readFileSync(join(project, '.lakelet', 'serve.json'), 'utf8'));
+  const serve = JSON.parse(readFileSync(join(project, '.querysolo', 'serve.json'), 'utf8'));
   const started: Started = { project, port: serve.port, token: serve.token, pid: child.pid!, readyMs: Date.now() - t0, memoryLimit };
-  if (moto) started.s3 = { endpoint: moto.endpoint, pid: moto.child.pid!, flag: moto.flag, prefix: 's3://lakelet-test/raw/events/' };
+  if (moto) started.s3 = { endpoint: moto.endpoint, pid: moto.child.pid!, flag: moto.flag, prefix: 's3://querysolo-test/raw/events/' };
   return { started, child, extra: moto?.child };
 }
 

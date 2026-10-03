@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The explorer (decisions U2), the sidebar's lower half: every table and view in the
 // catalog from /api/tables — name, rows, where its data is (local, a bucket, an attached
@@ -29,7 +29,7 @@ export interface ExplorerProps {
 function Where({ t }: { t: TableInfo }) {
   if (t.kind === 'view') return <span title={t.view_sql ?? ''} data-testid={`where-${t.name}`}>view</span>;
   if (!t.source && t.location.startsWith('s3://')) {
-    // a bucket warehouse (decisions W1): Lakelet's own table, its files in the bucket
+    // a bucket warehouse (decisions W1): QuerySolo's own table, its files in the bucket
     return <span title={t.location} className="where" data-testid={`where-${t.name}`}>bucket <span className="mono muted">{t.location.replace(/^s3:\/\//, '').split('/')[0]}/…</span></span>;
   }
   if (!t.source) return <span>local</span>;
@@ -56,21 +56,21 @@ export function Explorer({ tables, busy, native, over, aws, onPaths, onChoose, o
       <DropZone native={native} over={over} busy={busy} aws={aws} onPaths={onPaths} onChoose={onChoose} />
       <h2>Tables{tables.length > 0 && <span className="muted"> · {tables.length}</span>}</h2>
       {tables.length === 0 ? (
-        <p className="muted">No tables yet. Drop a CSV, Parquet, Excel or JSON file above, or run <code>lakelet import &lt;file&gt;</code>.</p>
+        <p className="muted">No tables yet. Drop a CSV, Parquet, Excel or JSON file above, or run <code>querysolo import &lt;file&gt;</code>.</p>
       ) : (
         <ul className="entries">
           {tables.map((t) => (
             <li key={t.name} data-testid={`table-${t.name}`}>
-              <button type="button" className={`entry${open === t.name ? ' on' : ''}`} onClick={() => onOpen(t.name)} aria-current={open === t.name ? 'true' : undefined} title={`lakelet tables describe ${t.name}`}>
+              <button type="button" className={`entry${open === t.name ? ' on' : ''}`} onClick={() => onOpen(t.name)} aria-current={open === t.name ? 'true' : undefined} title={`querysolo tables describe ${t.name}`}>
                 <span className="name mono">{t.name}</span>
                 <span className="facts">
                   <span className="rows">{t.kind === 'view' || t.needs_relocate ? '—' : `${t.rows.toLocaleString()} rows`}</span>
-                  {t.needs_relocate ? <span className="failed" data-testid={`moved-${t.name}`}>needs relocate</span> : t.interrupted_replace_of ? <span className="failed">a replace of {t.interrupted_replace_of} was interrupted: lakelet tables rename</span> : <Where t={t} />}
+                  {t.needs_relocate ? <span className="failed" data-testid={`moved-${t.name}`}>needs relocate</span> : t.interrupted_replace_of ? <span className="failed">a replace of {t.interrupted_replace_of} was interrupted: querysolo tables rename</span> : <Where t={t} />}
                 </span>
                 <i className={`dot ${freshnessClass(t.freshness)}`} title={t.freshness ? `updated ${ago(t.freshness)}` : 'never written'} data-testid={`fresh-${t.name}`} />
               </button>
               {t.source && (
-                <button type="button" className="quiet small" onClick={() => onRefresh(t.name)} disabled={!!busy} data-testid={`refresh-${t.name}`} title={`lakelet tables refresh ${t.name}`}>Refresh</button>
+                <button type="button" className="quiet small" onClick={() => onRefresh(t.name)} disabled={!!busy} data-testid={`refresh-${t.name}`} title={`querysolo tables refresh ${t.name}`}>Refresh</button>
               )}
             </li>
           ))}

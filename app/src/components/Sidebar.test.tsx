@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decisions U2: the five entries in the mode's words, the one that is on, the keys, the
 // explorer under them, and the collapse to icons that is remembered.

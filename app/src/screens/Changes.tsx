@@ -1,9 +1,9 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The Changes screen (decisions L2): everything that happened to the project, newest
 // first — every table's snapshots, every run of each model and question, the versions git
 // holds for the models — one sentence each in the mode's words, each a link to its detail.
-// `lakelet changes` is the same list as text; a name typed in the filter is its argument.
+// `querysolo changes` is the same list as text; a name typed in the filter is its argument.
 
 import { useEffect, useState } from 'react';
 import { Api, ago, type Change } from '../lib/api';

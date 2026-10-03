@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Render marketing/guidebook.md to marketing/warehouse-for-one-guidebook.pptx.
 

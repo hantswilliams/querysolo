@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decision D1: which of the three themes is in force, what is remembered, and what is
 // written where CSS can see it. The palette itself is CSS and is not tested here; what is
@@ -47,7 +47,7 @@ describe('the three choices', () => {
   it('remembers a choice and reads it back, and ignores a value it does not know', () => {
     saveTheme('dark');
     expect(loadTheme()).toBe('dark');
-    localStorage.setItem('lakelet.theme', 'sepia');
+    localStorage.setItem('querysolo.theme', 'sepia');
     expect(loadTheme()).toBe('system');
   });
 
@@ -129,6 +129,6 @@ describe('the switch', () => {
     expect(screen.getByTestId('theme-system').getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(screen.getByTestId('theme-dark'));
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
-    expect(localStorage.getItem('lakelet.theme')).toBe('dark');
+    expect(localStorage.getItem('querysolo.theme')).toBe('dark');
   });
 });

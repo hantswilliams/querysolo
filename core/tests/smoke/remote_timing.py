@@ -1,10 +1,10 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Where the time goes in an estimate over a bucket table (real-data brief, step 0).
 
-Run from ``core/`` with the same environment as the S3 tests (``LAKELET_TEST_S3_BUCKET``,
+Run from ``core/`` with the same environment as the S3 tests (``QUERYSOLO_TEST_S3_BUCKET``,
 the AWS keys, ``AWS_REGION``); against Moto without them. It writes three small Parquet
-files under ``lakelet-tests/<run>/timing/``, attaches them with the metadata in the bucket,
+files under ``querysolo-tests/<run>/timing/``, attaches them with the metadata in the bucket,
 then times each phase of three consecutive estimates and prints a table, and removes what
 it wrote. Nothing here is a test; it is the instrument for the 150 ms budget."""
 
@@ -17,8 +17,8 @@ from pathlib import Path
 
 import duckdb
 
-from lakelet import Project
-from lakelet.gauge import inputs
+from querysolo import Project
+from querysolo.gauge import inputs
 from tests.s3_helpers import open_store
 
 
@@ -95,7 +95,7 @@ def main() -> None:
         print(f"{'phase':<60} {'ms':>8}")
         for label, ms in rows:
             print(f"{label:<60} {ms:>8.0f}")
-        print(f"\n{len(cached)} objects cached under .lakelet/cache/objects/:")
+        print(f"\n{len(cached)} objects cached under .querysolo/cache/objects/:")
         for c in cached:
             print("  " + c)
     finally:

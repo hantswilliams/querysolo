@@ -1,9 +1,9 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """The frozen program's entry point (ship brief S1, S2). One job before the CLI runs: name
 the bundled DuckDB extensions, which the freeze lays out beside this executable as
 ``extensions/v<version>/<platform>/<name>.duckdb_extension``, so every connection reads
-them from there and the installed app never downloads. A `LAKELET_EXTENSION_DIR` already
+them from there and the installed app never downloads. A `QUERYSOLO_EXTENSION_DIR` already
 in the environment wins, which is how a test points the binary elsewhere."""
 
 from __future__ import annotations
@@ -14,12 +14,12 @@ import sys
 
 
 def main() -> None:
-    if getattr(sys, "frozen", False) and "LAKELET_EXTENSION_DIR" not in os.environ:
+    if getattr(sys, "frozen", False) and "QUERYSOLO_EXTENSION_DIR" not in os.environ:
         here = os.path.dirname(os.path.abspath(sys.executable))
         bundled = os.path.join(here, "extensions")
         if os.path.isdir(bundled):
-            os.environ["LAKELET_EXTENSION_DIR"] = bundled
-    from lakelet.cli import run
+            os.environ["QUERYSOLO_EXTENSION_DIR"] = bundled
+    from querysolo.cli import run
 
     run()
 

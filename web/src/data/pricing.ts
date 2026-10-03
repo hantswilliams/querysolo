@@ -30,7 +30,7 @@ export const plans = [
       ['Hard cap', 'shown before you click; the worker is killed at the cap'],
       ['', 'Billed per second of actual run time; nothing between runs'],
       ['', 'On-demand in the beta; spot follows'],
-      ['', "Runs on Lakelet's account in the beta; bring your own account later"],
+      ['', "Runs on QuerySolo's account in the beta; bring your own account later"],
       ['', 'Every run reports estimate vs. actual, which makes the next estimate better'],
     ] },
 ] as const;
@@ -68,12 +68,12 @@ export const vendors: Vendor[] = [
   { id: 'bigquery', name: 'BigQuery', total: 289,
     why: 'On-demand, $6.25 per TiB scanned, first TiB free. There is no warehouse to leave on, which is why BigQuery is the closest competitor at this size. The bill scales with bytes scanned, so it climbs with every dashboard refresh and every un-partitioned model.',
     lines: [['1,240 runs scanning ~38 GB each ≈ 47 TB, minus 1 TiB free', '$288'], ['Storage, 38 GB at $0.02/GB', '$1'], ['Month', '$289']] },
-  { id: 'lakelet', name: 'Lakelet', total: 124, us: true,
+  { id: 'querysolo', name: 'QuerySolo', total: 124, us: true,
     why: '1,231 of the 1,240 runs get a green verdict and run on laptops. Nine get a red one and burst to a 64 GB worker for about twenty minutes each. Five Team seats for the shared catalog. Storage is your own S3 bill.',
     lines: [['1,231 runs on laptops', '$0.00'], ['9 burst runs, L worker (16 vCPU / 64 GB), on-demand, ~20 min each', '$3.17'], ['Team catalog, 5 × $24', '$120.00'], ['Your S3 bucket, 38 GB × $0.023', '$0.87'], ['Month', '$124.04']] },
 ];
 
-export const soloVendor: Vendor = { id: 'solo', name: 'Solo, on Lakelet', total: 4,
+export const soloVendor: Vendor = { id: 'solo', name: 'Solo, on QuerySolo', total: 4,
   why: "One person doesn't need a shared catalog. The same workload on the Local tier is the S3 bill plus whatever you burst.",
   lines: [['All local runs', '$0.00'], ['9 burst runs', '$3.17'], ['Your S3 bucket', '$0.87'], ['Month', '$4.04']] };
 

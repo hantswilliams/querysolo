@@ -1,7 +1,7 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Simple and Technical mode (screens 7 and 8 of the mockups, real-data step 6): the same
-// project in two vocabularies. Technical says model, test, view, verdict, `lakelet run`;
+// project in two vocabularies. Technical says model, test, view, verdict, `querysolo run`;
 // Simple says question, check, "answered live", a sentence about the wait, Refresh. The
 // mapping lives here so a test can pin it and every screen says the same words.
 
@@ -29,7 +29,7 @@ export interface Words {
   running: string;
   /** The model panel's history section (versions brief G6): "Versions", or "History". */
   versions: string;
-  /** `lakelet run --stale` (V3): the button beside Run all. */
+  /** `querysolo run --stale` (V3): the button beside Run all. */
   runStale: string;
   /** The rows (decisions Q1): the workspace with `select * from <name>` run. */
   answer: string;
@@ -82,7 +82,7 @@ export const words = (mode: Mode): Words => (mode === 'simple' ? SIMPLE : TECHNI
 /** The mode the window last used; Technical when nothing is remembered. */
 export function loadMode(): Mode {
   try {
-    return localStorage.getItem('lakelet.mode') === 'simple' ? 'simple' : 'technical';
+    return localStorage.getItem('querysolo.mode') === 'simple' ? 'simple' : 'technical';
   } catch {
     return 'technical';
   }
@@ -90,7 +90,7 @@ export function loadMode(): Mode {
 
 export function saveMode(mode: Mode): void {
   try {
-    localStorage.setItem('lakelet.mode', mode);
+    localStorage.setItem('querysolo.mode', mode);
   } catch {
     // a webview without storage: the mode lives for the window
   }
@@ -124,7 +124,7 @@ export function testLabel(t: ModelTest, mode: Mode): string {
 /** The gauge's verdict as a sentence. Technical is the gauge's own words; Simple says
  *  what it means for the wait, without the colour or the bytes. */
 export function verdictSentence(m: Pick<PlannedModel, 'verdict' | 'words' | 'reason' | 'error' | 'est_wall_local'>, mode: Mode): string {
-  if (m.error) return mode === 'technical' ? `not estimated: ${m.error}` : 'Lakelet could not size this one yet; refreshing will say.';
+  if (m.error) return mode === 'technical' ? `not estimated: ${m.error}` : 'QuerySolo could not size this one yet; refreshing will say.';
   if (mode === 'technical') return m.words ?? m.reason ?? m.verdict ?? '—';
   const wait = m.est_wall_local !== null && m.est_wall_local !== undefined ? humanSeconds(m.est_wall_local) : null;
   switch (m.verdict) {

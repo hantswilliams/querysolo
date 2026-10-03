@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The result grid (app brief A4): rows as they arrive, virtualised so a hundred thousand
 // of them cost what a screenful does. Columns come from the first batch's schema.

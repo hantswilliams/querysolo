@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- QuerySolo's app icon (mac): the prompt mark (brand/querysolo-logos.html, direction C), off-white and lime on the deep green (logo-querysolo-plan.md L2). Regenerate the sizes per icons/README.md. -->
+  <rect x="100" y="100" width="824" height="824" rx="184" fill="#164f44"/>
+  <g transform="translate(189.12,176.00) scale(10.5)"><path d="M13 19 L27 32 L13 45" fill="none" stroke="#F0F2E8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="39" width="20" height="7" rx="2.5" fill="#D6EE83"/></g>
+</svg>

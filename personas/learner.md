@@ -1,6 +1,6 @@
 # The learner
 
-*Persona · written 2026-09-24 · Status: **assumed, not observed** · The PRD's P2 and the Day 1 launch audience; not a Day 0 design partner · Product name: Lakelet (working name; TBD\*).*
+*Persona · written 2026-09-24 · Status: **assumed, not observed** · The PRD's P2 and the Day 1 launch audience; not a Day 0 design partner · Product name: QuerySolo.*
 
 The person the DataExpert article was written for: "DuckDB just put a $400K/year skill on your laptop." They want the real stack, Iceberg and dbt and a catalog, because the job postings say so, and they cannot pay for it. The honest competition is not a warehouse. It is a Medium post and `pip install duckdb`, and a BigQuery sandbox that is free and real. The product's answer to that is not the tables; it is the verdict and the record, and the one lesson nobody else's tutorial can teach.
 
@@ -48,7 +48,7 @@ Hasan's experiment as a lab. Append two hundred times and watch `describe`'s fil
 
 ### 3. The portfolio project a recruiter can run
 
-Today a README with screenshots. With the product the repository is the project: the models as SQL, the sample generator or a small CSV, `lakelet run` to rebuild it, lineage and the Changes feed as the documentation that writes itself. The recruiter installs the product, copies the folder, runs one command.
+Today a README with screenshots. With the product the repository is the project: the models as SQL, the sample generator or a small CSV, `querysolo run` to rebuild it, lineage and the Changes feed as the documentation that writes itself. The recruiter installs the product, copies the folder, runs one command.
 
 *Built today* except the recruiter's install, which is the ship brief; data files stay out of git by rule, so the project commits its generator.
 
@@ -77,7 +77,7 @@ Thirty laptops, no reliable network, a two-hour session. Today: half the room st
 - **No tutorial.** The product without a lesson is another Medium post's stack.
 - **The sandbox comparison.** The BigQuery sandbox is free, real and needs no install. The honest answer is the open format, nothing uploaded, and the verdict; the site should make that comparison rather than avoid it.
 - **No compact,** so the best lesson stops halfway.
-- **The name collision.** A search for the working name finds another lakehouse engine on GitHub first.
+- **The name collision.** A search for the working name finds another lakehouse engine on GitHub first. *(Resolved 2026-09-30: that was the old name, Lakelet; QuerySolo is clear on GitHub and the registries.)*
 
 ## What this suggests for the order
 

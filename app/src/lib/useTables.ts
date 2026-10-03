@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The tables' state and verbs (app brief screen 1, real-data R4 and R7, trust T2 and T5,
 // W2, L3), held by the window rather than a screen since decisions U1 and U2: the explorer
@@ -155,7 +155,7 @@ export function useTables({ session, tables, mode, onChanged, onRelocated, onSho
     }
   }
 
-  /** `lakelet run --stale` from a table's detail (L3): its commits made models out of date. */
+  /** `querysolo run --stale` from a table's detail (L3): its commits made models out of date. */
   async function runStale() {
     if (!detail || !api) return;
     const name = detail.table.name;
@@ -177,7 +177,7 @@ export function useTables({ session, tables, mode, onChanged, onRelocated, onSho
     }
   }
 
-  /** `lakelet tables publish` (W2): the detail's box; a dry run only reports, a real one
+  /** `querysolo tables publish` (W2): the detail's box; a dry run only reports, a real one
    *  refreshes the list and the detail and says what moved. */
   async function publish(name: string, prefix: string, dryRun: boolean, yes: boolean) {
     if (!api) throw new Error('the core is not running');
@@ -193,7 +193,7 @@ export function useTables({ session, tables, mode, onChanged, onRelocated, onSho
     return r;
   }
 
-  /** `lakelet relocate` (T5): the folder moved; the tables' locations are rewritten under it. */
+  /** `querysolo relocate` (T5): the folder moved; the tables' locations are rewritten under it. */
   async function relocate() {
     if (!api) return;
     setDropError(undefined);
@@ -213,7 +213,7 @@ export function useTables({ session, tables, mode, onChanged, onRelocated, onSho
     }
   }
 
-  /** `lakelet tables attach --replace <name> <prefix>` (T2): after the prefix's files changed. */
+  /** `querysolo tables attach --replace <name> <prefix>` (T2): after the prefix's files changed. */
   async function reattach(name: string, source: string, anonymous: boolean) {
     if (!api) return;
     setDropError(undefined);

@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Screen 2 of the app brief: SQL in, the verdict before the rows, the rows as they stream.
 // Cmd/Ctrl+Enter runs; Esc aborts the fetch, which closes the core's result and records the
@@ -178,7 +178,7 @@ export function Query({ session, tables, mode, onDone, onSaved, panel, notices, 
               {verdict && !running && (
                 <SaveQuestion api={api} sql={sql.trim()} mode={mode} firstColumn={columns[0]?.name} red={verdict.verdict === 'red'} onSaved={onSaved} />
               )}
-              <Command line={sql.trim() ? sqlCommand(sql.trim(), allowRed) : 'lakelet sql <sql>'} />
+              <Command line={sql.trim() ? sqlCommand(sql.trim(), allowRed) : 'querysolo sql <sql>'} />
             </div>
             <GaugeLine state={state} onRunAnyway={() => { setAllowRed(true); void run(sql, true); }} />
           </>

@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // "Open…" in the bar (app brief A10): the recent projects, the folder dialog, and New
 // project… (decisions P1). Each opens in a new window; the one this window shows is left out.

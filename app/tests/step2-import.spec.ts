@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 2 gate (app brief §4): a CSV is previewed with its columns and notes, imported on a
 // click, and the panel shows the table with rows and size; a folder lists its files and
@@ -41,7 +41,7 @@ test('a CSV is previewed, imported on a click, and lands in the panel with rows 
 
   // the command beside the drop zone follows the typed path
   await page.getByTestId('path').fill(csv);
-  await expect(page.getByTestId('drop-zone').getByTestId('command')).toContainText(`lakelet import ${csv}`);
+  await expect(page.getByTestId('drop-zone').getByTestId('command')).toContainText(`querysolo import ${csv}`);
 
   await previewPath(page, csv);
   const preview = page.getByTestId('preview-orders');
@@ -54,9 +54,9 @@ test('a CSV is previewed, imported on a click, and lands in the panel with rows 
 
   // the command is the exact CLI line, and copy puts it on the clipboard
   const command = page.getByTestId('preview').getByTestId('command');
-  await expect(command.locator('code')).toHaveText(`lakelet import ${csv}`);
+  await expect(command.locator('code')).toHaveText(`querysolo import ${csv}`);
   await command.getByRole('button').click();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(`lakelet import ${csv}`);
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(`querysolo import ${csv}`);
 
   await page.getByTestId('import').click();
   await expect(page.getByTestId('imported')).toContainText('Imported orders (3 rows)');
@@ -81,7 +81,7 @@ test('a table that exists offers replace or append, and the line says which', as
   await expect(page.getByTestId('exists')).toContainText('orders');
   await page.getByTestId('append').click();
   await expect(page.getByTestId('imported')).toContainText('Imported orders (6 rows)');
-  await expect(page.getByTestId('imported').getByTestId('command').locator('code')).toHaveText(`lakelet import ${csv} --append`);
+  await expect(page.getByTestId('imported').getByTestId('command').locator('code')).toHaveText(`querysolo import ${csv} --append`);
   await expect(page.getByTestId('table-orders')).toContainText('6');
 });
 
@@ -102,7 +102,7 @@ test('a folder drop lists three files with their notes and imports one table eac
   await expect(preview.getByTestId('preview-regions')).toBeVisible();
   await expect(preview.getByTestId('preview-tiny')).toContainText('unsigned widened');
   await expect(preview).not.toContainText('notes.txt');
-  await expect(preview.getByTestId('command').locator('code')).toHaveText(`lakelet import ${folder}`);
+  await expect(preview.getByTestId('command').locator('code')).toHaveText(`querysolo import ${folder}`);
   await page.getByTestId('import').click();
   await expect(page.getByTestId('imported')).toContainText('customers (2 rows)');
   await expect(page.getByTestId('table-regions')).toContainText('4');
@@ -113,8 +113,8 @@ test('a folder drop lists three files with their notes and imports one table eac
 test('a path that is not data says so without leaving the screen', async ({ page }) => {
   const s = sidecar();
   await openReady(page);
-  await page.getByTestId('path').fill(join(s.project, 'lakelet.toml'));
+  await page.getByTestId('path').fill(join(s.project, 'querysolo.toml'));
   await page.getByTestId('preview-path').click();
-  await expect(page.getByTestId('drop-error')).toContainText('Lakelet imports');
+  await expect(page.getByTestId('drop-error')).toContainText('QuerySolo imports');
   await expect(page.getByTestId('drop-zone')).toBeVisible();
 });

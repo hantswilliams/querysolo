@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Smoke test only: serve the catalog on 0.0.0.0 inside the compose network so Spark and
 Trino can reach it. The product binds loopback only (brief D22); this script is test
@@ -9,13 +9,13 @@ import os
 import boto3
 import uvicorn
 
-from lakelet.catalog import Store, create_app
+from querysolo.catalog import Store, create_app
 
 
 def main() -> None:
-    endpoint = os.environ["LAKELET_SMOKE_S3_ENDPOINT"]
+    endpoint = os.environ["QUERYSOLO_SMOKE_S3_ENDPOINT"]
     key, secret = os.environ["AWS_ACCESS_KEY_ID"], os.environ["AWS_SECRET_ACCESS_KEY"]
-    bucket = os.environ.get("LAKELET_SMOKE_BUCKET", "lakelet-test")
+    bucket = os.environ.get("QUERYSOLO_SMOKE_BUCKET", "querysolo-test")
     s3 = boto3.client(
         "s3",
         endpoint_url=endpoint,

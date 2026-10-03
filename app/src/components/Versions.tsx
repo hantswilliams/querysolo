@@ -1,8 +1,8 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Screen 9 of the mockups on the model's own panel (versions brief G6): one model's history
-// as `lakelet versions <name>` lists it, the selected version's diff, "Gauge then / now",
-// and Restore this version, which is `lakelet restore <name> <id>` — a new version, never a
+// as `querysolo versions <name>` lists it, the selected version's diff, "Gauge then / now",
+// and Restore this version, which is `querysolo restore <name> <id>` — a new version, never a
 // rewrite. Technical shows the log with ids and the diff; Simple shows the same versions as
 // sentences and the one button, with no git word on the screen.
 

@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 4 gate, the auto-chart's one rule (A5): categorical + numeric is a bar chart, date +
 // numeric is a line, anything else is no chart; the first 5,000 rows; one series, one hue.

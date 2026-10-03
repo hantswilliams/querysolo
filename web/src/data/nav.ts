@@ -8,12 +8,12 @@ export const nav = [
 ] as const;
 
 export const site = {
-  name: 'Lakelet',
+  name: 'QuerySolo',
   tagline: 'A warehouse for one',
-  github: 'https://github.com/hantswilliams/lakelet',
-  cta: { label: 'Try Lakelet', href: '/docs/install' },
+  github: 'https://github.com/hantswilliams/querysolo',
+  cta: { label: 'Try QuerySolo', href: '/docs/install' },
   footer: {
-    left: 'Lakelet · Open source under Apache 2.0 · Developer preview, macOS and Linux',
+    left: 'QuerySolo · Open source under Apache 2.0 · Developer preview, macOS and Linux',
     right: 'Built on DuckDB, Apache Iceberg and dbt Core',
   },
   stackOptions: ['Snowflake', 'BigQuery', 'Databricks', 'MotherDuck', 'DuckDB on my laptop', 'Postgres', 'Other'],

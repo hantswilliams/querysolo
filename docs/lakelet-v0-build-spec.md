@@ -1,4 +1,4 @@
-# Lakelet — v0 build spec
+# QuerySolo — v0 build spec
 
 *Draft v0.1 · September 7, 2026 · Companion to lakelet-architecture.md and the pitch deck · Amended September 8, 2026 by `build-sessions/core-v0.5-plan.md` §8; where the two differ, the brief wins*
 
@@ -21,7 +21,7 @@ This is closer to "Cursor for data" than "ChatGPT for data": the conversation is
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│ ● Lakelet           acme-analytics ▾            [Team: not set up] │
+│ ● QuerySolo           acme-analytics ▾            [Team: not set up] │
 ├───────────────┬──────────────────────────────────────────────────┤
 │ Tables        │  Ask or write SQL                                 │
 │  orders  38GB │  ┌──────────────────────────────────────────────┐ │
@@ -44,12 +44,12 @@ What's in v0:
 
 | Feature | Dev | Non-dev | Notes |
 |---|---|---|---|
-| Drag a CSV / Parquet / Excel onto the window → Iceberg table | ✓ | ✓ | This is the non-developer's `lakelet init`. Zero setup. |
+| Drag a CSV / Parquet / Excel onto the window → Iceberg table | ✓ | ✓ | This is the non-developer's `querysolo init`. Zero setup. |
 | Ask box: English → SQL (shown, editable) or raw SQL | ✓ | ✓ | LLM sees the catalog schema, sample rows, and the gauge's verdict; user's own API key or a local model. |
 | The gauge, inline, on every run | ✓ | ✓ | One line: verdict, bytes, time, burst cost if Red. |
 | Results grid + auto chart | ✓ | ✓ | DuckDB → Arrow → grid; chart picked by column types. |
 | Saved questions | ✓ | ✓ | A saved question is a SQL file with a title. That is the whole "dashboard" story in v0. |
-| dbt project view with DAG coloured by verdict | ✓ | – | Uses the project's existing dbt files; Lakelet does not invent a new modelling layer. |
+| dbt project view with DAG coloured by verdict | ✓ | – | Uses the project's existing dbt files; QuerySolo does not invent a new modelling layer. |
 | CLI: `init / sql / estimate / run / publish` | ✓ | – | Same core, no GUI. |
 | Burst (Red → one click → cloud worker → result back) | ✓ | ✓ | Cost cap shown before the click, enforced by the worker. |
 
@@ -65,14 +65,14 @@ What's deliberately **not** in v0: connectors (Postgres, Stripe, etc.), scheduli
 | Desktop shell | **Tauri 2** (Rust shell, web frontend) with the Python core as a sidecar | A small shell, but the Python sidecar ships pyarrow, so the installer lands under 200 MB rather than 10–20; measured in session 10. Native feel; sidecar support is first-class. | Nothing; add auto-update. |
 | Frontend | **React + TypeScript**, TanStack Table for the grid, Vega-Lite for charts, Monaco for the SQL editor | All three are proven, all free, none need design work to look good. | Nothing. |
 | Frontend ↔ core | HTTP + Arrow IPC on localhost | Same API the future web app and team catalog will use; one frontend codebase for desktop and browser. | Nothing. |
-| dbt | **dbt-core + dbt-duckdb (Python)** | Works today; Lakelet wraps `compile` and `run`, injects the gauge per model. | dbt Core v2 Rust runtime when its Python interop settles. |
-| English → SQL | **BYO API key** (Anthropic / OpenAI) or **Ollama** local; prompts and schema-context assembly are Lakelet's | Nobody wants another AI subscription; privacy-sensitive users want local. Lakelet's value is the context it assembles, not the model. | Hosted option in the Team tier. |
+| dbt | **dbt-core + dbt-duckdb (Python)** | Works today; QuerySolo wraps `compile` and `run`, injects the gauge per model. | dbt Core v2 Rust runtime when its Python interop settles. |
+| English → SQL | **BYO API key** (Anthropic / OpenAI) or **Ollama** local; prompts and schema-context assembly are QuerySolo's | Nobody wants another AI subscription; privacy-sensitive users want local. QuerySolo's value is the context it assembles, not the model. | Hosted option in the Team tier. |
 | Burst backend | **AWS Fargate**, us-east-1, one container image (DuckDB + extensions + 200-line agent) | Simplest thing that works; matches the architecture doc's economics. | Lambda for sub-10 GB jobs (sub-second start), warm pool for Team tier, Cloud Run / Fly for GCP and R2. |
 | Control plane | **One FastAPI service + Postgres** on Fly.io or Railway | Jobs, auth, metering, cap → budget conversion. Tiny at v0. | Stays; grows a queue and a billing integration. |
 | Auth / billing | Clerk or WorkOS + Stripe | Don't build these. | Nothing. |
-| Distribution | `brew install lakelet`, `pipx install lakelet`, signed DMG / MSI | Three install paths, one core. | Nothing. |
+| Distribution | `brew install querysolo`, `pipx install querysolo`, signed DMG / MSI | Three install paths, one core. | Nothing. |
 
-**The "one binary" claim in the deck** survives: the user gets one installer and one `lakelet` command. Internally it is a Tauri shell plus a Python sidecar until the Rust port. Nobody buying the product cares about that; the deck does not need to change.
+**The "one binary" claim in the deck** survives: the user gets one installer and one `querysolo` command. Internally it is a Tauri shell plus a Python sidecar until the Rust port. Nobody buying the product cares about that; the deck does not need to change.
 
 ## 4. Speed of the product: what "instant" requires
 
@@ -105,17 +105,17 @@ Deferred on purpose: team catalog on Postgres (needs paying users to design agai
 
 ## 6. Defensibility: what is actually ours
 
-Be blunt about it: DuckDB, Iceberg and dbt are open, and any competent team can assemble them. If Lakelet's value were the assembly, it would have none. The defensible parts are the things that accumulate or that others cannot easily copy:
+Be blunt about it: DuckDB, Iceberg and dbt are open, and any competent team can assemble them. If QuerySolo's value were the assembly, it would have none. The defensible parts are the things that accumulate or that others cannot easily copy:
 
-1. **The calibration data.** Every run records `(query fingerprint, machine profile, estimate, actual)`. After a few thousand users that dataset makes Lakelet's gauge more accurate than anything a newcomer can ship, and it improves with every run. This is the compounding asset; it is also the reason to keep the gauge free, because free is how the data arrives. Keep the raw dataset and the trained correction models closed; keep the estimator code open.
-2. **The catalog.** The Iceberg REST spec is open and Lakelet's implementation of it should be too (see §7), but the *hosted* catalog is where teams' tables, permissions, lineage and credential vending live. Once a team's tables are registered there, moving is possible (that is the pitch) but tedious. Standard switching cost, honestly earned.
+1. **The calibration data.** Every run records `(query fingerprint, machine profile, estimate, actual)`. After a few thousand users that dataset makes QuerySolo's gauge more accurate than anything a newcomer can ship, and it improves with every run. This is the compounding asset; it is also the reason to keep the gauge free, because free is how the data arrives. Keep the raw dataset and the trained correction models closed; keep the estimator code open.
+2. **The catalog.** The Iceberg REST spec is open and QuerySolo's implementation of it should be too (see §7), but the *hosted* catalog is where teams' tables, permissions, lineage and credential vending live. Once a team's tables are registered there, moving is possible (that is the pitch) but tedious. Standard switching cost, honestly earned.
 3. **The burst protocol.** The catalog lease, the cap → wall-clock budget conversion, worker sizing from the estimate, partial-progress errors. Not patent-worthy individually; hard to copy as a working whole because it depends on (1).
 4. **The ask-box context.** The prompt assembly (schema, sample rows, gauge verdict, saved questions, prior SQL) is the difference between an LLM that writes plausible SQL and one that writes SQL that runs on your tables in your budget. Model-agnostic on purpose; the context is the IP, not the model.
 5. **Brand and community.** "The tool the article told me to learn on" is a position nobody else holds yet. It is also the one that decays fastest if v0 is late.
 
 What is **not** defensible and should not be pretended to be: the UI pattern (chat + editor is now standard), the stack, "local-first" as an idea (MotherDuck says the same words).
 
-**Against AWS specifically:** they employ the DuckDB roadmap and will ship a server-mode DuckDB on S3 Tables. Lakelet's answer is (1) above plus multi-cloud plus a catalog that speaks to GCS and R2, which AWS will not build. If they ship, Lakelet makes them a burst backend and competes on the experience.
+**Against AWS specifically:** they employ the DuckDB roadmap and will ship a server-mode DuckDB on S3 Tables. QuerySolo's answer is (1) above plus multi-cloud plus a catalog that speaks to GCS and R2, which AWS will not build. If they ship, QuerySolo makes them a burst backend and competes on the experience.
 
 ## 7. IP and licensing decisions for v0
 
@@ -125,7 +125,7 @@ What is **not** defensible and should not be pretended to be: the UI pattern (ch
 | Hosted control plane, multi-tenant catalog service, billing, credential vending, calibration models | **Proprietary** (not published) | The Supabase pattern: every component open, the platform closed. Avoids the BSL/SSPL backlash HashiCorp and Elastic took, because nothing that was open ever becomes closed. |
 | Calibration dataset | **Proprietary; opt-in telemetry with a visible toggle**, anonymised fingerprints only, never SQL text | Trust is the product. Default on for the desktop app with a one-line explanation; default off in CI. |
 | Prompts and context assembly for the ask box | **Proprietary**, shipped obfuscated in the binary | It will leak; the point is that it keeps improving faster than a copy. |
-| Name and mark | **Register "Lakelet" as a trademark in software/SaaS classes now** (US + EU, ~$2–4K) and buy the domain before the launch post | "Lakelet" is a common word with existing marks in other classes (furniture, games). A conflict search before the landing page goes live is cheap; a rename after is not. |
+| Name and mark | **Register "QuerySolo" as a trademark in software/SaaS classes now** (US + EU, ~$2–4K) and buy the domain before the launch post | "QuerySolo" is a common word with existing marks in other classes (furniture, games). A conflict search before the landing page goes live is cheap; a rename after is not. |
 | Patents | **One US provisional** on the pre-flight verdict + hard-capped burst dispatch method, filed before public launch (~$3–5K) | Twelve months of optionality for a few thousand dollars. Defensive value only; do not let it slow anything down. |
 | Contributor agreements | **DCO (sign-off), not a CLA** | CLAs deter contributors; DCO is enough under Apache 2.0 and is what the Linux kernel uses. |
 | Third-party licences | DuckDB MIT, Iceberg Apache, dbt Apache, Tauri MIT/Apache, pyiceberg Apache | Clean. No copyleft anywhere in the shipped binary. |
@@ -135,6 +135,6 @@ What is **not** defensible and should not be pretended to be: the UI pattern (ch
 Closes: language for v0 (Python core + TS frontend), shell (Tauri), catalog (own Iceberg REST, SQLite), licence (Apache 2.0 for everything local), burst backend (Fargate first).
 
 Opens for the founder:
-1. Which LLM provider is the default in the ask box when the user has no key (none, or a Lakelet-hosted trial with a daily cap)?
-2. Trademark search result for "Lakelet" — go/no-go on the name before the landing page ships.
+1. Which LLM provider is the default in the ask box when the user has no key (none, or a QuerySolo-hosted trial with a daily cap)?
+2. Trademark search result for "QuerySolo" — go/no-go on the name before the landing page ships.
 3. Whether opt-in calibration telemetry is default-on in the desktop app (this doc says yes, with the toggle visible on first run).

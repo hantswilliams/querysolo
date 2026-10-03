@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decisions L1: the Lineage screen's layout is pinned — a chain is three layers, a diamond
 // puts its two middle nodes in one layer, an imported table is layer 0, rows follow what a

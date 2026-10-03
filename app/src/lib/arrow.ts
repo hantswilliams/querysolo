@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The query path (app brief §3.3): POST /api/query, the verdict from the headers before any
 // row, then Arrow record batches as the core produces them, each handed to the caller as it
@@ -145,9 +145,9 @@ export async function runQuery(api: Api, sql: string, allowRed: boolean, signal:
     throw new ApiError(r.status, body.error ?? 'http', body.message ?? `${r.status}`);
   }
   events.onVerdict({
-    verdict: (header(r, 'X-Lakelet-Verdict') || 'green') as Verdict,
-    words: header(r, 'X-Lakelet-Words'),
-    reason: header(r, 'X-Lakelet-Reason'),
+    verdict: (header(r, 'X-QuerySolo-Verdict') || 'green') as Verdict,
+    words: header(r, 'X-QuerySolo-Words'),
+    reason: header(r, 'X-QuerySolo-Reason'),
   });
   if (!r.body) throw new Error('no response body');
   const reader = await RecordBatchReader.from(r.body);
@@ -172,7 +172,7 @@ export async function runQuery(api: Api, sql: string, allowRed: boolean, signal:
   return { rows, complete: true };
 }
 
-/** `lakelet estimate`: the gauge without running. */
+/** `querysolo estimate`: the gauge without running. */
 export async function estimate(api: Api, sql: string): Promise<Estimate> {
   return api.post<Estimate>('/estimate', { sql });
 }

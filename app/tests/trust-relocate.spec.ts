@@ -1,8 +1,8 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Trust round T5: a project whose folder was moved opens with the sentence and the Relocate
 // button on the Tables screen; the table is listed, marked, never invisible; Relocate is
-// `lakelet relocate`, after which the table has its rows again. Against the ninth sidecar.
+// `querysolo relocate`, after which the table has its rows again. Against the ninth sidecar.
 
 import { test, expect } from '@playwright/test';
 import { pageUrl, readStates } from './sidecar';
@@ -17,7 +17,7 @@ test('a moved project says where it was, and Relocate makes its tables resolve a
   await expect(moved).toBeVisible();
   await expect(moved).toContainText('This project was moved from');
   await expect(moved).toContainText('1 table points at the old folder');
-  await expect(moved.getByTestId('command')).toContainText('lakelet relocate');
+  await expect(moved.getByTestId('command')).toContainText('querysolo relocate');
   await expect(page.getByTestId('moved-orders')).toHaveText('needs relocate');
   await expect(page.getByTestId('table-orders')).toContainText('—');
 

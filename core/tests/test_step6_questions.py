@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 6 gate (brief §4, D30, D16): a saved question is a dbt model with two default checks;
 ``dbt parse`` accepts the generated project with a stub profile; a run goes through the
@@ -8,9 +8,9 @@ run through dbt against the catalog to prove they are real."""
 import pytest
 import yaml
 
-from lakelet import Project
-from lakelet.query import RedRefused
-from lakelet.questions import NoSuchQuestion
+from querysolo import Project
+from querysolo.query import RedRefused
+from querysolo.questions import NoSuchQuestion
 from tests.test_step2_dbt_spike import dbt_main, profiles_yml
 
 SQL = "select customer, sum(amt) as revenue from orders group by 1 order by 2 desc"
@@ -22,7 +22,7 @@ def project(tmp_path):
     Project.init(root, probe_mb=8)
     p = Project.open(root)
     p.engine.execute(
-        "CREATE TABLE lakelet.main.orders AS SELECT range AS id, 'c' || (range % 5) AS customer, "
+        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, 'c' || (range % 5) AS customer, "
         "(range * 1.5)::DOUBLE AS amt FROM range(1000)"
     )
     yield p
@@ -79,7 +79,7 @@ def test_run_goes_through_the_gauge_records_last_run_and_touches_no_file(project
 
 def test_a_red_question_is_refused_and_leaves_last_run_alone(project) -> None:
     project.questions.save("Revenue by customer", SQL)
-    toml = project.root / "lakelet.toml"
+    toml = project.root / "querysolo.toml"
     toml.write_text(
         toml.read_text()
         .replace("green_max_seconds = 60", "green_max_seconds = 0.0000001")
@@ -101,7 +101,7 @@ def test_a_red_question_is_refused_and_leaves_last_run_alone(project) -> None:
 def test_dbt_parse_accepts_the_generated_project(project) -> None:
     project.questions.save("Revenue by customer", SQL)
     (project.root / "profiles.yml").write_text(
-        "lakelet:\n  target: dev\n  outputs:\n    dev:\n"
+        "querysolo:\n  target: dev\n  outputs:\n    dev:\n"
         "      type: duckdb\n      path: ':memory:'\n"
     )
     result = dbt_main.dbtRunner().invoke(

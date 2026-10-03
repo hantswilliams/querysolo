@@ -1,11 +1,11 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The core's /api (docs: the local HTTP API), called directly from the webview.
 
 import type { BucketCheck, Session } from './session';
 
 export interface Health {
-  lakelet: string;
+  querysolo: string;
   duckdb: string;
   project: string;
   root: string;
@@ -29,7 +29,7 @@ export interface TableInfo {
   snapshot_id: number | null;
   /** When the current snapshot was committed, ISO 8601. */
   freshness: string | null;
-  /** The prefix an attached table was registered from; null for a table Lakelet wrote. */
+  /** The prefix an attached table was registered from; null for a table QuerySolo wrote. */
   source?: string | null;
   /** Read without credentials (a public bucket). */
   public?: boolean;
@@ -53,7 +53,7 @@ export interface LineageEdge {
   depth: number;
 }
 
-/** `lakelet lineage <name>`: what it reads and what reads it, and who built it. */
+/** `querysolo lineage <name>`: what it reads and what reads it, and who built it. */
 export interface Lineage {
   name: string;
   kind: 'table' | 'view' | 'model';
@@ -79,7 +79,7 @@ export interface LineageNode {
   freshness: string | null;
 }
 
-/** `lakelet changes` (decisions L2): one entry of the feed. `kind` says the source — a
+/** `querysolo changes` (decisions L2): one entry of the feed. `kind` says the source — a
  *  table's `snapshot`, a model's or question's last `run`, a git `version` — and `target`
  *  what `name` is, for the link; a version names everything it touched in `names`. */
 export interface Change {
@@ -106,14 +106,14 @@ export interface Change {
 
 export interface ChangesQuery { since?: string; last?: number; name?: string }
 
-/** `lakelet lineage --all`: the whole project as the Lineage screen draws it. */
+/** `querysolo lineage --all`: the whole project as the Lineage screen draws it. */
 export interface LineageGraph {
   nodes: LineageNode[];
   edges: { from: string; to: string; via: LineageEdge['via'] }[];
   compiled: boolean;
 }
 
-/** `POST /tables/{name}/publish` (`lakelet tables publish`, decisions W2): a table moved into a bucket. */
+/** `POST /tables/{name}/publish` (`querysolo tables publish`, decisions W2): a table moved into a bucket. */
 export interface PublishReport {
   name: string;
   source: string;
@@ -129,7 +129,7 @@ export interface PublishReport {
   dry_run: boolean;
 }
 
-/** `POST /relocate` (`lakelet relocate`, trust round T5). */
+/** `POST /relocate` (`querysolo relocate`, trust round T5). */
 export interface RelocateReport {
   old_root: string | null;
   new_root: string;
@@ -154,7 +154,7 @@ export interface Snapshot {
   affects?: string[];
 }
 
-/** `lakelet tables describe`: the list's fields plus partitioning, the snapshots, and what `expire` would take. */
+/** `querysolo tables describe`: the list's fields plus partitioning, the snapshots, and what `expire` would take. */
 export interface TableDescription extends TableInfo {
   partitioning: string;
   expirable_snapshots: number;
@@ -164,7 +164,7 @@ export interface TableDescription extends TableInfo {
   snapshots: number;
   format_version: number;
   snapshot_list: Snapshot[];
-  /** A view's properties (`lakelet.dbt-model` names the dbt model it came from); empty for a table. */
+  /** A view's properties (`querysolo.dbt-model` names the dbt model it came from); empty for a table. */
   properties?: Record<string, string>;
   /** An attached table (trust round T2): when its files were last verified against the
    *  prefix, the ones changed under the same path since as `[uri, why]`, or why the
@@ -217,7 +217,7 @@ export interface ModelTest {
   unique_id: string;
 }
 
-/** A model's last `lakelet run`, from history. */
+/** A model's last `querysolo run`, from history. */
 export interface LastRun {
   ts: string;
   ok: boolean;
@@ -233,7 +233,7 @@ export interface LastRun {
  *  it reads changed, or a model it reads is not fresh), `never` (no successful run). */
 export type ModelState = 'fresh' | 'edited' | 'upstream' | 'never';
 
-/** One model of `lakelet run --plan` (`GET /api/run/plan`): compiled, estimated, in dependency order. */
+/** One model of `querysolo run --plan` (`GET /api/run/plan`): compiled, estimated, in dependency order. */
 export interface PlannedModel {
   name: string;
   unique_id: string;
@@ -280,7 +280,7 @@ export interface ModelResult {
   message: string | null;
 }
 
-/** `POST /api/run`: what `lakelet run` did. */
+/** `POST /api/run`: what `querysolo run` did. */
 export interface RunReport {
   models: PlannedModel[];
   results: ModelResult[];
@@ -348,7 +348,7 @@ export interface GitStatus {
   origin: string | null;
 }
 
-/** `POST /estimate` (`lakelet estimate`), the fields the Versions section reads for "Gauge then". */
+/** `POST /estimate` (`querysolo estimate`), the fields the Versions section reads for "Gauge then". */
 export interface Estimate {
   verdict: string;
   words: string;
@@ -430,7 +430,7 @@ export class Api {
     return Array.isArray(p) ? p : [p];
   }
 
-  /** `lakelet tables attach <name> [--anonymous] <prefix>`: registered in place, nothing
+  /** `querysolo tables attach <name> [--anonymous] <prefix>`: registered in place, nothing
    *  copied; `replace` registers the prefix again over an existing table (T2). */
   attach(name: string, source: string, anonymous = false, replace = false): Promise<TableInfo> {
     return this.post<TableInfo>('/tables/attach', { name, source, anonymous, replace });
@@ -444,17 +444,17 @@ export class Api {
     return this.get<GaugeSummary>('/gauge/summary');
   }
 
-  /** `lakelet gauge export`: written into the project, nothing sent. */
+  /** `querysolo gauge export`: written into the project, nothing sent. */
   gaugeExport(): Promise<{ path: string; runs: number }> {
     return this.post('/gauge/export', {});
   }
 
-  /** `lakelet gauge reset --yes`. */
+  /** `querysolo gauge reset --yes`. */
   gaugeReset(): Promise<{ removed: number }> {
     return this.post('/gauge/reset', {});
   }
 
-  /** `lakelet gauge probe`: measure the disk again. */
+  /** `querysolo gauge probe`: measure the disk again. */
   gaugeProbe(): Promise<{ mbps: number; method: string; size_bytes: number }> {
     return this.post('/gauge/probe', {});
   }
@@ -463,29 +463,29 @@ export class Api {
     return this.get<TableDescription>(`/tables/${encodeURIComponent(name)}`);
   }
 
-  /** `lakelet tables sample <name> -n 5`: the first rows, as objects keyed by column. */
+  /** `querysolo tables sample <name> -n 5`: the first rows, as objects keyed by column. */
   sample(name: string, n = 5): Promise<Record<string, unknown>[]> {
     return this.get<Record<string, unknown>[]>(`/tables/${encodeURIComponent(name)}/sample?n=${n}&truncate=80`);
   }
 
-  /** `lakelet tables expire <name>`: snapshots past the retention and the files only they used. */
+  /** `querysolo tables expire <name>`: snapshots past the retention and the files only they used. */
   expire(name: string): Promise<ExpireReport> {
     return this.post<ExpireReport>(`/tables/${encodeURIComponent(name)}/expire`, {});
   }
 
-  /** `lakelet tables refresh <name>`: the files new under the prefix since the attach. */
+  /** `querysolo tables refresh <name>`: the files new under the prefix since the attach. */
   refresh(name: string): Promise<{ name: string; added: number; files: number; rows: number }> {
     return this.post(`/tables/${encodeURIComponent(name)}/refresh`, {});
   }
 
-  /** `lakelet run --plan [select]...`: the DAG through the gauge, nothing built. */
+  /** `querysolo run --plan [select]...`: the DAG through the gauge, nothing built. */
   runPlan(select: string[] = []): Promise<PlannedModel[]> {
     return this.get<PlannedModel[]>(select.length ? `/run/plan?select=${encodeURIComponent(select.join(','))}` : '/run/plan');
   }
 
-  /** `lakelet run [select]... [--run-anyway]`: build the DAG here; a Red model refuses
+  /** `querysolo run [select]... [--run-anyway]`: build the DAG here; a Red model refuses
    *  (409 `red_refused`) until `run_anyway`. */
-  /** `lakelet run [<models>] [--run-anyway] [--stale]`; `stale` (V3) builds only what is not fresh. */
+  /** `querysolo run [<models>] [--run-anyway] [--stale]`; `stale` (V3) builds only what is not fresh. */
   run(select: string[] = [], runAnyway = false, stale = false): Promise<RunReport> {
     return this.post<RunReport>('/run', { select, burst: 'never', run_anyway: runAnyway, stale });
   }
@@ -494,7 +494,7 @@ export class Api {
     return this.get<Settings>('/settings');
   }
 
-  /** `lakelet config set <key> <value>`: one line of lakelet.toml rewritten in place. */
+  /** `querysolo config set <key> <value>`: one line of querysolo.toml rewritten in place. */
   async setSetting(key: SettingKey, value: string): Promise<Settings> {
     const r = await fetch(`${this.base}/settings`, {
       method: 'PUT',
@@ -508,14 +508,14 @@ export class Api {
     return this.post<TableInfo[]>('/import', name ? { path, name, mode } : { path, mode });
   }
 
-  /** `lakelet question save '<title>' --sql '<sql>'`: the question becomes a dbt model with
+  /** `querysolo question save '<title>' --sql '<sql>'`: the question becomes a dbt model with
    *  two checks, and the save is a version. A title already saved is 409 `question_exists`
    *  until `replace`, the way an import onto an existing table is (versions brief G7). */
   saveQuestion(title: string, sql: string, replace = false): Promise<Question> {
     return this.post<Question>('/questions', { title, sql, replace });
   }
 
-  /** `lakelet versions <name>`: the model's history, newest first, with the diffs (G5). */
+  /** `querysolo versions <name>`: the model's history, newest first, with the diffs (G5). */
   versions(name: string): Promise<Version[]> {
     return this.get<Version[]>(`/versions/${encodeURIComponent(name)}`);
   }
@@ -525,7 +525,7 @@ export class Api {
     return this.get(`/versions/${encodeURIComponent(name)}/${encodeURIComponent(id)}`);
   }
 
-  /** `lakelet restore <name> <id>`: that version written back and committed as a new one;
+  /** `querysolo restore <name> <id>`: that version written back and committed as a new one;
    *  `commit` null when the file already held it. */
   restore(name: string, id: string): Promise<{ name: string; commit: string | null; git: string | null }> {
     return this.post(`/versions/${encodeURIComponent(name)}/restore`, { id });
@@ -535,12 +535,12 @@ export class Api {
     return this.get<GitStatus>('/git');
   }
 
-  /** `lakelet lineage --all`: the whole graph (L1). */
+  /** `querysolo lineage --all`: the whole graph (L1). */
   lineageAll(): Promise<LineageGraph> {
     return this.get<LineageGraph>('/lineage');
   }
 
-  /** `lakelet changes [name] [--since] [--last]`: the feed (L2). */
+  /** `querysolo changes [name] [--since] [--last]`: the feed (L2). */
   changes(q: ChangesQuery = {}): Promise<Change[]> {
     const params = new URLSearchParams();
     if (q.since) params.set('since', q.since);
@@ -550,27 +550,27 @@ export class Api {
     return this.get<Change[]>(`/changes${qs ? `?${qs}` : ''}`);
   }
 
-  /** `lakelet lineage <name> --depth N`: reads from and feeds, one level by default (G8). */
+  /** `querysolo lineage <name> --depth N`: reads from and feeds, one level by default (G8). */
   lineage(name: string, depth = 1): Promise<Lineage> {
     return this.get<Lineage>(`/lineage/${encodeURIComponent(name)}?depth=${depth}`);
   }
 
-  /** `lakelet tables publish <name> <prefix> [--dry-run] [--yes]` (W2). 409 `not_publishable` with the reason. */
+  /** `querysolo tables publish <name> <prefix> [--dry-run] [--yes]` (W2). 409 `not_publishable` with the reason. */
   publish(name: string, prefix: string, dryRun = false, yes = false): Promise<PublishReport> {
     return this.post<PublishReport>(`/tables/${encodeURIComponent(name)}/publish`, { prefix, dry_run: dryRun, yes });
   }
 
-  /** `lakelet bucket check` (decisions P1) through this core, for the New project dialog. */
+  /** `querysolo bucket check` (decisions P1) through this core, for the New project dialog. */
   checkBucket(prefix: string): Promise<BucketCheck> {
     return this.post<BucketCheck>('/bucket/check', { prefix });
   }
 
-  /** `lakelet relocate`: after the folder moved, the tables' locations rewritten under it. */
+  /** `querysolo relocate`: after the folder moved, the tables' locations rewritten under it. */
   relocate(): Promise<RelocateReport> {
     return this.post<RelocateReport>('/relocate', {});
   }
 
-  /** `lakelet estimate '<sql>'`: the gauge's verdict for a statement, nothing run. */
+  /** `querysolo estimate '<sql>'`: the gauge's verdict for a statement, nothing run. */
   estimate(sql: string): Promise<Estimate> {
     return this.post<Estimate>('/estimate', { sql });
   }

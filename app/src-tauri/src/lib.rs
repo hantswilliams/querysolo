@@ -1,8 +1,8 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
-//! The Lakelet desktop shell (app brief `build-sessions/app-v0-plan.md`). Step 1: one window
+//! The QuerySolo desktop shell (app brief `build-sessions/app-v0-plan.md`). Step 1: one window
 //! per project, one sidecar per window with its memory share (A8), a folder dialog and
-//! `lakelet init` for a folder that is not a project yet, the recent list (A10), the session
+//! `querysolo init` for a folder that is not a project yet, the recent list (A10), the session
 //! handed to each webview, sidecar events forwarded, the sidecar stopped when its window
 //! closes. The logic is in `projects` and `supervisor`, tested without Tauri; this file is
 //! the wiring.
@@ -30,10 +30,10 @@ pub struct Shell {
     windows_made: AtomicUsize,
 }
 
-/// The project the first window opens: `LAKELET_PROJECT`, else the first argument, else the
+/// The project the first window opens: `QUERYSOLO_PROJECT`, else the first argument, else the
 /// most recent project that still exists; none of those means the welcome screen.
 pub fn first_project(recent: &RecentProjects) -> Option<PathBuf> {
-    if let Some(p) = std::env::var_os("LAKELET_PROJECT") {
+    if let Some(p) = std::env::var_os("QUERYSOLO_PROJECT") {
         return Some(PathBuf::from(p));
     }
     if let Some(p) = std::env::args().nth(1).filter(|a| !a.starts_with('-')) {
@@ -50,8 +50,8 @@ fn total_ram() -> u64 {
 
 fn window_title(project: Option<&PathBuf>) -> String {
     match project {
-        Some(p) => format!("Lakelet — {}", projects::project_name(p)),
-        None => "Lakelet".to_string(),
+        Some(p) => format!("QuerySolo — {}", projects::project_name(p)),
+        None => "QuerySolo".to_string(),
     }
 }
 
@@ -68,7 +68,7 @@ fn new_window(app: &AppHandle, shell: &Shell, project: Option<&PathBuf>) -> Resu
     Ok(label)
 }
 
-/// Give the window its project and, on a thread, `lakelet init` when the folder needs it
+/// Give the window its project and, on a thread, `querysolo init` when the folder needs it
 /// and then the sidecar; the webview's `get_session` waits, and the ready (or down) event
 /// reaches the window either way.
 fn start_in_window(app: AppHandle, shell: Arc<Shell>, label: String, folder: PathBuf, warehouse: Option<String>) {
@@ -100,7 +100,7 @@ fn start_in_window(app: AppHandle, shell: Arc<Shell>, label: String, folder: Pat
 
 /// Open a folder: in this window when it has no project yet, in a new window otherwise;
 /// when a window already shows it, bring that one forward. `warehouse` is for a folder
-/// that is not a project yet (decisions W1): `lakelet init --warehouse s3://…`.
+/// that is not a project yet (decisions W1): `querysolo init --warehouse s3://…`.
 fn open_folder(app: &AppHandle, shell: &Arc<Shell>, from_label: &str, folder: PathBuf, warehouse: Option<String>) -> Result<(), String> {
     let project = canonical(&folder)?;
     if let Some(existing) = shell.open.window_for(&project) {
@@ -143,7 +143,7 @@ fn recent_projects(shell: State<'_, Arc<Shell>>) -> Vec<RecentProject> {
 /// A10: the native folder dialog. `None` when the user cancels.
 #[tauri::command]
 async fn pick_folder(app: AppHandle) -> Option<String> {
-    let picked = app.dialog().file().set_title("Open a folder as a Lakelet project").blocking_pick_folder();
+    let picked = app.dialog().file().set_title("Open a folder as a QuerySolo project").blocking_pick_folder();
     picked.and_then(|p| p.into_path().ok()).map(|p| p.display().to_string())
 }
 
@@ -174,7 +174,7 @@ fn restart_sidecar(app: AppHandle, window: tauri::Window, shell: State<'_, Arc<S
 }
 
 /// Decisions P1: the New project dialog's check of a bucket before the folder is made,
-/// `lakelet bucket check <prefix> --json` on the shell's executable (a window without a
+/// `querysolo bucket check <prefix> --json` on the shell's executable (a window without a
 /// project has no core to ask), with the profile the project would use (C1).
 #[tauri::command]
 async fn check_bucket(shell: State<'_, Arc<Shell>>, prefix: String, profile: Option<String>) -> Result<BucketCheck, String> {
@@ -185,8 +185,8 @@ async fn check_bucket(shell: State<'_, Arc<Shell>>, prefix: String, profile: Opt
         .map_err(|e| e.to_string())?
 }
 
-/// What the About row says (ship brief S8): the app's version and where its `lakelet`
-/// came from — the bundled one, `LAKELET_SIDECAR`, or `PATH` — so a bug report names both.
+/// What the About row says (ship brief S8): the app's version and where its `querysolo`
+/// came from — the bundled one, `QUERYSOLO_SIDECAR`, or `PATH` — so a bug report names both.
 #[derive(serde::Serialize)]
 struct About {
     version: String,
@@ -198,7 +198,7 @@ struct About {
 #[tauri::command]
 fn about(app: AppHandle, shell: State<'_, Arc<Shell>>) -> About {
     let sidecar = shell.open.executable.to_string_lossy().to_string();
-    let source = if std::env::var_os("LAKELET_SIDECAR").is_some() {
+    let source = if std::env::var_os("QUERYSOLO_SIDECAR").is_some() {
         "environment"
     } else if app.path().resource_dir().map(|d| Path::new(&sidecar).starts_with(d)).unwrap_or(false) {
         "bundled"
@@ -245,7 +245,7 @@ fn default_parent(app: AppHandle) -> Option<String> {
 }
 
 /// Decisions P1: a new project — `parent/name` made (or an empty folder of that name
-/// taken), then opened, which runs `lakelet init` there, with `--warehouse` for a bucket.
+/// taken), then opened, which runs `querysolo init` there, with `--warehouse` for a bucket.
 #[tauri::command]
 async fn new_project(app: AppHandle, window: tauri::Window, shell: State<'_, Arc<Shell>>, parent: String, name: String, warehouse: Option<String>, profile: Option<String>) -> Result<String, String> {
     let shell = shell.inner().clone();
@@ -266,7 +266,7 @@ async fn new_project(app: AppHandle, window: tauri::Window, shell: State<'_, Arc
     .map_err(|e| e.to_string())?
 }
 
-/// A10: open a folder as a project, running `lakelet init` first when it needs it.
+/// A10: open a folder as a project, running `querysolo init` first when it needs it.
 #[tauri::command]
 async fn open_project(app: AppHandle, window: tauri::Window, shell: State<'_, Arc<Shell>>, path: String, warehouse: Option<String>) -> Result<(), String> {
     let shell = shell.inner().clone();
@@ -290,7 +290,8 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            let data_dir = app.path().app_data_dir().unwrap_or_else(|_| std::env::temp_dir().join("lakelet-app"));
+            let data_dir = app.path().app_data_dir().unwrap_or_else(|_| std::env::temp_dir().join("querysolo-app"));
+            projects::adopt_legacy_data(&data_dir);
             let recent = RecentProjects::at(data_dir.join("recent.json"));
             let settings = ProjectSettings::at(data_dir.join("projects.json"));
             let dev_origin = if cfg!(debug_assertions) { Some(DEV_ORIGIN.to_string()) } else { None };
@@ -328,7 +329,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![get_session, window_project, recent_projects, pick_folder, pick_files, open_project, restart_sidecar, check_bucket, default_parent, new_project, aws_profiles, project_profile, set_project_profile, about])
         .build(tauri::generate_context!())
-        .expect("error while building the Lakelet shell")
+        .expect("error while building the QuerySolo shell")
         .run(|app, event| {
             if let tauri::RunEvent::Exit = event {
                 if let Some(shell) = app.try_state::<Arc<Shell>>() {

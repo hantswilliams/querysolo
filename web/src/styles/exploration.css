@@ -1,4 +1,4 @@
-/* Copyright 2026 Lakelet contributors
+/* Copyright 2026 QuerySolo contributors
  * SPDX-License-Identifier: Apache-2.0 */
 /* Styles belong to the exploration layout only; the existing site uses Base.astro. */
 :root{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--paper);font-synthesis:none;--serif:Georgia,'Times New Roman',serif;--mono:'SFMono-Regular',Consolas,monospace}

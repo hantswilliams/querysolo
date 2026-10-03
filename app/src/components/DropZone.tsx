@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The drop zone (app brief A9), at the top of the sidebar's explorer since decisions U2:
 // drop a file or a folder, or Import… one, or type a path; the terminal command sits under
@@ -41,7 +41,7 @@ export function DropZone({ native, over, busy, aws, onPaths, onChoose }: DropZon
   }
 
   const line = !path.trim()
-    ? 'lakelet import <file>'
+    ? 'querysolo import <file>'
     : remote
       ? discoverCommand(path.trim(), anonymous)
       : importCommand(path.trim());

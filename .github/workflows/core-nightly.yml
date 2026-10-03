@@ -1,5 +1,5 @@
 # The core's accuracy gate on a schedule (trust round T3). `tests/test_step5_tpch.py` asserts
-# the gauge's timing accuracy against TPC-H SF1 only under LAKELET_TPCH=1, because it is slow
+# the gauge's timing accuracy against TPC-H SF1 only under QUERYSOLO_TPCH=1, because it is slow
 # and was tuned on one machine; ordinary CI never sets it. This job does, nightly, on the
 # Ubuntu runner, so the assertion the brief's definition of done counts on is exercised
 # somewhere on a schedule rather than only when someone remembers.
@@ -32,4 +32,4 @@ jobs:
       - run: uv run python -c "import duckdb; duckdb.connect().execute('INSTALL iceberg; INSTALL httpfs; INSTALL excel; INSTALL aws; INSTALL tpch')"
       - run: uv run pytest tests/test_step5_tpch.py tests/test_step5_gauge.py -q
         env:
-          LAKELET_TPCH: '1'
+          QUERYSOLO_TPCH: '1'

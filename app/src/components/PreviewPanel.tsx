@@ -1,10 +1,10 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The preview before an import (app brief A9): the columns with their DuckDB and Iceberg
 // types and any note about the coercion, the first rows, the table name, and the import
 // button with the CLI line it stands for. A folder is one of these per file. A remote
 // prefix (real-data brief R4) shows one footer's columns, the files and bytes it would
-// register in place, and "Attach" with `lakelet tables attach` as its line.
+// register in place, and "Attach" with `querysolo tables attach` as its line.
 
 import { humanBytes, type ImportMode, type Preview } from '../lib/api';
 import { attachCommand, importCommand } from '../lib/command';

@@ -1,10 +1,10 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // A table's detail (real-data brief R7): `describe` as a panel, with the columns, where the
 // data is, partitioning, the snapshot list, what `expire` would reclaim at the project's
 // retention, and three buttons that are three CLI verbs: sample, expire, refresh. A view
 // (real-data R6, step 6) has its own shape: its query, its columns, its version, the dbt
-// model it came from and that `lakelet run` rebuilds it; no snapshots, nothing to expire.
+// model it came from and that `querysolo run` rebuilds it; no snapshots, nothing to expire.
 
 import { useState } from 'react';
 import { ago, humanBytes, type LineageEdge, type PublishReport, type TableDescription } from '../lib/api';
@@ -25,16 +25,16 @@ export interface TableDetailProps {
   onSample: () => void;
   onExpire: () => void;
   onRefresh: () => void;
-  /** `lakelet tables attach --replace`: register the prefix again after its files changed (T2). */
+  /** `querysolo tables attach --replace`: register the prefix again after its files changed (T2). */
   onReattach?: () => void;
   onClose: () => void;
   /** The lineage lines (G8) are read through the API when a session is given; a name
    *  clicked opens that detail (a table or view here, a model on the Models screen). */
   session?: Session;
   onOpen?: (name: string, kind: LineageEdge['kind']) => void;
-  /** `lakelet run --stale` from here (L3): a snapshot made models out of date. */
+  /** `querysolo run --stale` from here (L3): a snapshot made models out of date. */
   onRunStale?: () => void;
-  /** `lakelet tables publish` (W2): weigh (a dry run) and move a local table into a bucket;
+  /** `querysolo tables publish` (W2): weigh (a dry run) and move a local table into a bucket;
    *  each resolves to the report or rejects with the core's sentence. */
   onPublish?: (prefix: string, dryRun: boolean, yes: boolean) => Promise<PublishReport>;
   /** The Recent strip's link (L2): the Changes screen, filtered to this name. */
@@ -104,7 +104,7 @@ function Where({ t }: { t: TableDescription }) {
   return <span>{t.public ? 'public bucket, read without credentials' : 'attached'}: <span className="mono">{t.source}</span></span>;
 }
 
-const DBT_MODEL = 'lakelet.dbt-model';
+const DBT_MODEL = 'querysolo.dbt-model';
 
 function SampleBlock({ t, sample }: { t: TableDescription; sample: Record<string, unknown>[] }) {
   return (
@@ -144,7 +144,7 @@ function ViewDetail({ table: t, sample, mode, busy, error, onSample, onClose, se
         <dd data-testid="view-model">
           {modelName ? (
             <span>
-              {mode === 'simple' ? `the question ${modelName}` : <span className="mono">{modelId}</span>}; {mode === 'simple' ? 'refreshing it on the Questions screen' : <code>lakelet run {modelName}</code>} rewrites this view
+              {mode === 'simple' ? `the question ${modelName}` : <span className="mono">{modelId}</span>}; {mode === 'simple' ? 'refreshing it on the Questions screen' : <code>querysolo run {modelName}</code>} rewrites this view
             </span>
           ) : (
             <span className="muted">{mode === 'simple' ? 'not a saved question: a view put in the catalog directly' : 'not a dbt model: put in the catalog directly (the REST catalog, or the Python API)'}</span>
@@ -262,7 +262,7 @@ export function TableDetail(props: TableDetailProps) {
       ) : null}
       <p className="muted" data-testid="reclaimable">
         {t.source
-          ? 'An attached table is never expired: its files are not Lakelet\'s to delete.'
+          ? 'An attached table is never expired: its files are not QuerySolo\'s to delete.'
           : reclaimable
             ? `${t.expirable_snapshots} ${t.expirable_snapshots === 1 ? 'snapshot' : 'snapshots'} older than ${t.keep_days} days, ${humanBytes(t.reclaimable_bytes)} reclaimable.`
             : `Nothing to expire at the project's retention of ${t.keep_days} days.`}

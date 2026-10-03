@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Versions step 2 (G7): Save as question on the query screen, against the eighth sidecar.
 // Its own, not the seventh's: saving writes a model, and the seventh's models test counts
@@ -38,7 +38,7 @@ test('a question is saved from the query screen and appears on the Models screen
   await expect(box).toContainText('models/questions/total_by_customer.sql');
   await expect(box).toContainText('returns at least one row');
   await expect(box).toContainText('`customer` is never empty');
-  await expect(box.getByTestId('command')).toContainText("lakelet question save 'Total by customer'");
+  await expect(box.getByTestId('command')).toContainText("querysolo question save 'Total by customer'");
 
   await page.getByTestId('question-save').click();
   const saved = page.getByTestId('saved-question');
@@ -67,11 +67,11 @@ test('a question is saved from the query screen and appears on the Models screen
   await expect(screen.getByTestId('model-detail')).toContainText('Total by customer');
   await expect(screen.getByTestId('model-detail')).toContainText('models/questions/total_by_customer.sql');
 
-  // V3: never built; Run what changed is `lakelet run --stale` and builds it
+  // V3: never built; Run what changed is `querysolo run --stale` and builds it
   await expect(row.getByTestId('state')).toHaveText('never');
   await expect(screen.getByTestId('model-detail').getByTestId('state-sentence')).toHaveText('never · never built');
   await expect(screen.getByTestId('run-stale')).toHaveText(/^Run what changed \(\d+\)$/);
-  await expect(screen.getByTestId('command').filter({ hasText: 'lakelet run --stale' })).toHaveCount(1);
+  await expect(screen.getByTestId('command').filter({ hasText: 'querysolo run --stale' })).toHaveCount(1);
   // Q1: never built, the detail's button says so and does the run first
   await expect(screen.getByTestId('answer-total_by_customer')).toHaveText('Run, then rows');
   await screen.getByTestId('run-stale').click();
@@ -86,13 +86,15 @@ test('a question is saved from the query screen and appears on the Models screen
   await expect(page.getByTestId('gauge')).toHaveAttribute('data-verdict', /green|yellow/, { timeout: 30_000 });
   await expect(page.getByTestId('query')).toHaveAttribute('data-done-ms', /\d+/);
   await expect(page.getByTestId('grid')).toContainText('c1');
-  await expect(page.getByTestId('query').getByTestId('command').locator('code')).toHaveText("lakelet sql 'select * from total_by_customer'");
+  await expect(page.getByTestId('query').getByTestId('command').locator('code')).toHaveText("querysolo sql 'select * from total_by_customer'");
 
   // an edit through Save (the same title, Replace it) makes it edited; refreshing what
   // changed makes it fresh again
   await page.getByTestId('screen-tables').click();
   await editor.click();
-  await page.keyboard.press('Control+a');
+  // select-all is ⌘A on a Mac and Ctrl+A elsewhere; Ctrl+A on a Mac moves to the line's start,
+  // which prepends the new SQL to the old and fails the query (macOS CI, 2026-10-01)
+  await page.keyboard.press('ControlOrMeta+a');
   await page.keyboard.insertText('select customer, sum(amt) as total, count(*) as orders from orders group by 1');
   await page.keyboard.press('Escape');
   await page.getByTestId('run').click();

@@ -1,6 +1,6 @@
 # The coding agent
 
-*Persona · written 2026-09-24 · Status: **assumed, not observed** — a recorded session here is an agent given a project and a question, watched, not a person · From `docs/lakelet-agent-first-strategy.md`, which makes the agent a customer that acts on a person's behalf · Product name: Lakelet (working name; TBD\*).*
+*Persona · written 2026-09-24 · Status: **assumed, not observed** — a recorded session here is an agent given a project and a question, watched, not a person · From `docs/lakelet-agent-first-strategy.md`, which makes the agent a customer that acts on a person's behalf · Product name: QuerySolo.*
 
 Not a person, but a user: Claude Code, Cursor, Codex or Windsurf, running in one of the other personas' projects with their credentials and their laptop. Everything the strategy note says about why this matters holds, and the gauge-first business model puts agent identities second among the things that are sold. What this file adds is the agent's day: what it reaches for, what it cannot see, and where the product refuses or fails to.
 
@@ -12,13 +12,13 @@ An agent in an editor or a terminal, driven by a person who asked a question, wa
 
 | Task | What the agent uses today | What it sees |
 |---|---|---|
-| Learn the project | `AGENTS.md`, `CLAUDE.md`, the folder listing, `lakelet.toml` | the tables, the gauge, the conventions, written by `init` |
-| Find the tables | `lakelet tables list`, `describe` | names, columns, types, snapshots, freshness |
-| Look at data | `lakelet sql "select * ... limit 20"` | rows on stdout, the verdict line on stderr |
-| Know the cost | `lakelet estimate` | bytes, seconds, the verdict, as a line to parse |
-| Run | `lakelet sql`, the HTTP API with the bearer token | rows or an Arrow stream; Red as a refusal with an exit code |
-| Save | `lakelet question save`, editing files under `models/` | a model with two checks and a commit |
-| Change the project | `lakelet import`, `tables attach`, `run` | tables appearing; a run with a verdict per model |
+| Learn the project | `AGENTS.md`, `CLAUDE.md`, the folder listing, `querysolo.toml` | the tables, the gauge, the conventions, written by `init` |
+| Find the tables | `querysolo tables list`, `describe` | names, columns, types, snapshots, freshness |
+| Look at data | `querysolo sql "select * ... limit 20"` | rows on stdout, the verdict line on stderr |
+| Know the cost | `querysolo estimate` | bytes, seconds, the verdict, as a line to parse |
+| Run | `querysolo sql`, the HTTP API with the bearer token | rows or an Arrow stream; Red as a refusal with an exit code |
+| Save | `querysolo question save`, editing files under `models/` | a model with two checks and a commit |
+| Change the project | `querysolo import`, `tables attach`, `run` | tables appearing; a run with a verdict per model |
 | Credentials | the AWS profile the project names, in the environment | never a key in the folder |
 
 ## What hurts, for an agent
@@ -61,9 +61,9 @@ The agent keeps the query as a question. It becomes a model with two checks and 
 
 ### 5. The data it must not obey
 
-A CSV somebody sent has a cell that reads like an instruction. The agent samples the table and reads it. With the product sample rows sent anywhere are truncated and never executed, the agent cannot change `lakelet.toml` through its tools, credentials are an AWS profile in the environment and never in the folder, and the API is loopback with a token. Prompt injection through table contents is treated as a threat in the strategy note, and the rules are where it is stopped.
+A CSV somebody sent has a cell that reads like an instruction. The agent samples the table and reads it. With the product sample rows sent anywhere are truncated and never executed, the agent cannot change `querysolo.toml` through its tools, credentials are an AWS profile in the environment and never in the folder, and the API is loopback with a token. Prompt injection through table contents is treated as a threat in the strategy note, and the rules are where it is stopped.
 
-*Built today.* The profile per project, the loopback API, the token, the network audit. *Planned:* the truncation rule and the `lakelet.toml` guard as MCP policy; today `sql` prints what it finds.
+*Built today.* The profile per project, the loopback API, the token, the network audit. *Planned:* the truncation rule and the `querysolo.toml` guard as MCP policy; today `sql` prints what it finds.
 
 ### 6. Provisioning for the person
 
@@ -76,7 +76,7 @@ An app builder or a coding tool creates the lakehouse for its user: `init`, a bu
 - **No budget.** Scenario 3 is the sellable one and nothing bounds a loop.
 - **No MCP.** The agent parses stderr and stdout; the verdict is a line, not a value.
 - **Structured output is partial.** `lineage --json` and `gauge export` exist; `estimate` and `sql` are text. The API is the structured path and needs the token.
-- **Large results.** What `lakelet sql` prints for a million rows, and whether the agent's context survives it, is to check.
+- **Large results.** What `querysolo sql` prints for a million rows, and whether the agent's context survives it, is to check.
 - **The author.** A commit an agent made says the person made it.
 - **Write tools are not opt-in,** because there are no tools; the CLI does what it is told.
 

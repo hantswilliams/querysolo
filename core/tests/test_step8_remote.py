@@ -1,11 +1,11 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 8 gate (brief §4, D25, D26, D27, D36, M3): a Parquet prefix attaches in place without
 copying, DuckDB and pyiceberg both read it, refresh adds a new file and refuses a missing
 one, metadata local or in the bucket, register by metadata location, discover, the
 bandwidth probe, the Red bandwidth sentence, and the second estimate under 150 ms with the
-manifests cached. Runs against Moto in the default suite; LAKELET_TEST_S3_BUCKET (a real
-bucket) or LAKELET_TEST_S3_ENDPOINT (a self-hosted store) points it at a real one, see
+manifests cached. Runs against Moto in the default suite; QUERYSOLO_TEST_S3_BUCKET (a real
+bucket) or QUERYSOLO_TEST_S3_ENDPOINT (a self-hosted store) points it at a real one, see
 tests/s3_helpers.py. The schema-drift and hive fixtures are here; ten thousand files is gated."""
 
 import os
@@ -17,10 +17,10 @@ import httpx
 import pytest
 from pyiceberg.catalog.rest import RestCatalog
 
-from lakelet import Project
-from lakelet.gauge import inputs
-from lakelet.register import MissingFiles, NotRegistrable, SchemaDrift
-from lakelet.tables import TableExists
+from querysolo import Project
+from querysolo.gauge import inputs
+from querysolo.register import MissingFiles, NotRegistrable, SchemaDrift
+from querysolo.tables import TableExists
 from tests.s3_helpers import open_store
 
 
@@ -89,7 +89,7 @@ def test_attach_registers_in_place_and_both_engines_read_it(project, events, env
 
     assert project.engine.execute("select count(*) from events").fetchone()[0] == 3000
     assert project.engine.execute("select max(id) from events where id < 1000").fetchone()[0] == 999
-    table = RestCatalog("lakelet", uri=project.catalog_url, **project.io_properties).load_table(
+    table = RestCatalog("querysolo", uri=project.catalog_url, **project.io_properties).load_table(
         "main.events"
     )
     assert table.scan().to_arrow().num_rows == 3000
@@ -105,8 +105,8 @@ def test_attach_registers_in_place_and_both_engines_read_it(project, events, env
 
 def test_metadata_in_the_bucket_and_register_by_metadata_location(project, events, env) -> None:
     info = project.tables.attach("events_b", events.prefix, metadata_in_bucket=True)
-    assert info.location == env.uri("_lakelet/events_b")
-    assert any(k.endswith(".metadata.json") for k in object_keys(env, "_lakelet/events_b/"))
+    assert info.location == env.uri("_querysolo/events_b")
+    assert any(k.endswith(".metadata.json") for k in object_keys(env, "_querysolo/events_b/"))
     assert project.engine.execute("select count(*) from events_b").fetchone()[0] == 3000
 
     location = project.store.get_table("main", "events_b")
@@ -181,6 +181,17 @@ def test_discover_lists_candidate_prefixes(project, events, env) -> None:
     assert found[events.prefix].bytes > 0
 
 
+def test_discover_skips_both_metadata_folders_the_old_name_included(project, events, env) -> None:
+    """Buckets written before the rename hold `_lakelet/` (rename plan R4); neither it nor
+    `_querysolo/` is a dataset to offer."""
+    root = events.key.rsplit("/", 1)[0]
+    for folder in ("_" + "lake" + "let", "_querysolo"):
+        write_part(env, f"{root}/{folder}/orders/part-0.parquet", 0, 10)
+    found = {d.prefix for d in project.tables.discover(env.uri(root) + "/")}
+    assert events.prefix in found
+    assert not any("/_querysolo" in f or "/_lake" + "let" in f for f in found), found
+
+
 def test_bandwidth_probe_red_sentence_and_the_cached_second_estimate(project, events) -> None:
     project.tables.attach("events", events.prefix, metadata_in_bucket=True)
     cache = inputs.load_machine_cache(project.cache_dir)
@@ -192,7 +203,7 @@ def test_bandwidth_probe_red_sentence_and_the_cached_second_estimate(project, ev
     # A slow link and the thresholds of a tiny fixture: 60 KB at 0.5 Mbps must read as Red.
     cache["bandwidth_mbps"] = 0.5
     inputs.save_machine_cache(project.cache_dir, cache)
-    toml = project.root / "lakelet.toml"
+    toml = project.root / "querysolo.toml"
     toml.write_text(
         toml.read_text()
         .replace("green_max_seconds = 60", "green_max_seconds = 0.01")
@@ -243,7 +254,7 @@ def test_bandwidth_probe_red_sentence_and_the_cached_second_estimate(project, ev
 def test_cli_attach_refresh_discover(project, events, env) -> None:
     from typer.testing import CliRunner
 
-    from lakelet.cli import app
+    from querysolo.cli import app
 
     project.close()
     runner = CliRunner()
@@ -266,7 +277,7 @@ def test_a_public_bucket_is_read_without_credentials(events, env, monkeypatch, t
     """Real-data brief R3: `--anonymous` lists, registers, reads and refreshes a prefix with
     no AWS keys anywhere, the engine reading through a secret scoped to the bucket, and the
     bucket remembered so a re-opened project reads the table too."""
-    from lakelet.remote import load_public_buckets
+    from querysolo.remote import load_public_buckets
 
     if env.real:
         pytest.skip("a private bucket is not made public by a test; the Open Data run is by hand")
@@ -321,7 +332,7 @@ def test_a_public_bucket_is_read_without_credentials(events, env, monkeypatch, t
         assert info.rows == 3000 and info.public and info.source == events.prefix
         assert info.location.startswith(p.warehouse_url), "metadata stays local"
         assert p.engine.execute("select count(*) from events").fetchone()[0] == 3000
-        assert list(load_public_buckets(p.lakelet_dir)) == [env.bucket]
+        assert list(load_public_buckets(p.querysolo_dir)) == [env.bucket]
         write_part(events.s3, f"{events.key}/part-3.parquet", 3000, 500)
         env.client.put_object_acl(
             Bucket=env.bucket, Key=f"{events.key}/part-3.parquet", ACL="public-read"
@@ -338,7 +349,7 @@ def test_a_public_bucket_is_read_without_credentials(events, env, monkeypatch, t
         again.close()
 
 
-@pytest.mark.skipif(os.environ.get("LAKELET_PERF") != "1", reason="set LAKELET_PERF=1")
+@pytest.mark.skipif(os.environ.get("QUERYSOLO_PERF") != "1", reason="set QUERYSOLO_PERF=1")
 def test_ten_thousand_small_files(project, env, tmp_path) -> None:
     key = env.key(f"many-{tmp_path.name}/t")
     started = time.perf_counter()
@@ -353,7 +364,7 @@ def test_ten_thousand_small_files(project, env, tmp_path) -> None:
 
 
 def test_a_table_name_from_a_prefix() -> None:
-    from lakelet.register import remote_name
+    from querysolo.register import remote_name
 
     assert remote_name("s3://b/release/2026-08-19.0/theme=places/type=place/") == "place"
     assert remote_name("s3://b/exports/events/") == "events"
@@ -364,7 +375,7 @@ def test_nested_iceberg_types_read_without_field_ids() -> None:
     import pyarrow as pa
     from pyiceberg.catalog import Catalog
 
-    from lakelet.register import iceberg_type_text
+    from querysolo.register import iceberg_type_text
 
     arrow = pa.schema(
         [

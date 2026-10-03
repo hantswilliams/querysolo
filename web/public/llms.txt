@@ -1,4 +1,4 @@
-# Lakelet
+# QuerySolo
 
 > An open-source warehouse for one machine, for SQL and dbt, available from source on macOS and Linux. DuckDB executes SQL, Apache Iceberg describes Parquet tables, and the gauge estimates supported catalog queries before execution. Scans without statistics are labeled Not estimated. CLI, desktop app, dbt runner, versions, S3 warehouse writes and table publishing, Lineage, Changes, and recovery guidance are available. Installers, cloud bursts, Team services, the ask box, and MCP are planned, not available.
 
@@ -19,11 +19,11 @@
 - [Saved questions](/docs/questions): dbt models with two checks
 - [Transactions and the catalog](/docs/transactions): what DuckDB-Iceberg refuses inside one transaction (CREATE OR REPLACE, drop-then-create, create-then-rename), why, and what it means for dbt
 - [CLI reference](/docs/cli): every verb, generated from --help
-- [lakelet.toml and the project folder](/docs/config): every setting, what init writes
-- [The local HTTP API](/docs/api): lakelet serve, bearer token, routes, Arrow streaming
-- [Developing Lakelet](/docs/develop): the suite, opt-in Docker checks, contributing
+- [querysolo.toml and the project folder](/docs/config): every setting, what init writes
+- [The local HTTP API](/docs/api): querysolo serve, bearer token, routes, Arrow streaming
+- [Developing QuerySolo](/docs/develop): the suite, opt-in Docker checks, contributing
 - [The desktop app](/docs/app): running it from source, projects and windows, the Tables, Models and Gauge screens, Simple and Technical mode, the chart, settings, keys, how it talks to the core, nothing hidden
-- [dbt and views](/docs/dbt): lakelet run, the DAG with verdicts, view models as Iceberg views in the catalog, what the plugin does
-- [A real bucket](/docs/remote): what Lakelet needs from AWS, credentials, the IAM policies, running the S3 tests against a real bucket, what they write and remove
+- [dbt and views](/docs/dbt): querysolo run, the DAG with verdicts, view models as Iceberg views in the catalog, what the plugin does
+- [A real bucket](/docs/remote): what QuerySolo needs from AWS, credentials, the IAM policies, running the S3 tests against a real bucket, what they write and remove
 
 - [Recovery](/docs/recovery): backups, interrupted writes, upgrades, and moving a project

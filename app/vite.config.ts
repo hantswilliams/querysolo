@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Tauri's dev server: fixed port so tauri.conf.json's devUrl and LAKELET_DEV_ORIGIN agree.
+// Tauri's dev server: fixed port so tauri.conf.json's devUrl and QUERYSOLO_DEV_ORIGIN agree.
 export default defineConfig({
   plugins: [react()],
   clearScreen: false,

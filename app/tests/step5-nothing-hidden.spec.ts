@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 5 gate, the "nothing hidden" line of the definition of done (app brief §6): across
 // screens 1 and 2, a chart and the settings panel, the window makes no request to any host

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Write a small, made-up dataset to try Lakelet on: a folder of four CSV files that
+"""Write a small, made-up dataset to try QuerySolo on: a folder of four CSV files that
 exercise the app's screens (a folder drop, a group-by bar chart, a date line chart, a
 join). Standard library only, seeded, so every run writes the same bytes; nothing here is
 real. The repo keeps no data files (CLAUDE.md), so this script is what is committed.
 
-    python3 examples/sample-data/make_sample.py            # ~/lakelet-demo/sample
+    python3 examples/sample-data/make_sample.py            # ~/querysolo-demo/sample
     python3 examples/sample-data/make_sample.py ~/somewhere --orders 20000
 """
 
@@ -20,7 +20,7 @@ from pathlib import Path
 
 REGIONS = ["north", "south", "east", "west", "central"]
 PRODUCTS = [
-    ("Lakelet Mug", "goods", 14.00),
+    ("QuerySolo Mug", "goods", 14.00),
     ("Field Notebook", "goods", 9.50),
     ("Trail Map", "goods", 6.00),
     ("Canoe Rental (day)", "services", 48.00),
@@ -51,7 +51,7 @@ def write(path: Path, header: list[str], rows) -> int:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("folder", nargs="?", default=str(Path.home() / "lakelet-demo" / "sample"))
+    ap.add_argument("folder", nargs="?", default=str(Path.home() / "querysolo-demo" / "sample"))
     ap.add_argument("--orders", type=int, default=5000, help="rows in orders.csv (5,000 is about 500 KB)")
     ap.add_argument("--customers", type=int, default=200)
     ap.add_argument("--seed", type=int, default=2026)

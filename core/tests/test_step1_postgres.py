@@ -1,7 +1,7 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 1 gate, second dialect: the same store schema and the same round trip on Postgres,
-when LAKELET_TEST_PG_URL points at one (brief D5)."""
+when QUERYSOLO_TEST_PG_URL points at one (brief D5)."""
 
 import os
 import uuid
@@ -11,14 +11,14 @@ import sqlalchemy as sa
 
 from tests.catalog_helpers import pyiceberg_round_trip, serve
 
-PG_URL = os.environ.get("LAKELET_TEST_PG_URL")
+PG_URL = os.environ.get("QUERYSOLO_TEST_PG_URL")
 
-pytestmark = pytest.mark.skipif(not PG_URL, reason="LAKELET_TEST_PG_URL is not set")
+pytestmark = pytest.mark.skipif(not PG_URL, reason="QUERYSOLO_TEST_PG_URL is not set")
 
 
 @pytest.fixture
 def served(tmp_path):
-    schema = f"lakelet_test_{uuid.uuid4().hex[:8]}"
+    schema = f"querysolo_test_{uuid.uuid4().hex[:8]}"
     engine = sa.create_engine(PG_URL)
     with engine.begin() as c:
         c.execute(sa.text(f'CREATE SCHEMA "{schema}"'))

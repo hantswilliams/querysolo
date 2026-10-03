@@ -1,11 +1,11 @@
 # Sample data
 
-A small made-up dataset to try Lakelet on: a lakeside shop's orders. Nothing here is
+A small made-up dataset to try QuerySolo on: a lakeside shop's orders. Nothing here is
 real, and no data file is committed (the repo's rule); the script writes the files where
 you ask, the same bytes every time.
 
 ```bash
-python3 examples/sample-data/make_sample.py               # writes ~/lakelet-demo/sample
+python3 examples/sample-data/make_sample.py               # writes ~/querysolo-demo/sample
 python3 examples/sample-data/make_sample.py ~/elsewhere   # or anywhere
 ```
 
@@ -42,9 +42,9 @@ select product, count(*) as refunds from orders where status = 'refunded' group 
 The same from a terminal:
 
 ```bash
-cd ~/lakelet-demo
-lakelet import sample
-lakelet sql "select region, round(sum(amount)) as revenue from orders where status = 'paid' group by 1 order by 2 desc"
+cd ~/querysolo-demo
+querysolo import sample
+querysolo sql "select region, round(sum(amount)) as revenue from orders where status = 'paid' group by 1 order by 2 desc"
 ```
 
 Bigger: `--orders 200000` writes a 20 MB `orders.csv`; the gauge line stays Green on a

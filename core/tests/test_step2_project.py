@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 2 gate: ``init`` lays the project out (brief §3.2, D14, D30, D33), ``open`` runs
 the catalog and the engine in-process (D3), bare table names work (D9), the config carries
@@ -9,9 +9,9 @@ import tomllib
 import pytest
 import yaml
 
-from lakelet import Project
-from lakelet.config import Config
-from lakelet.project import TABLES_END, TABLES_START, ProjectExists, identifier
+from querysolo import Project
+from querysolo.config import Config
+from querysolo.project import TABLES_END, TABLES_START, ProjectExists, identifier
 
 
 @pytest.fixture
@@ -22,26 +22,26 @@ def root(tmp_path):
 def test_init_lays_out_the_project(root) -> None:
     report = Project.init(root)
     assert report.root == root.resolve()
-    for relative in ("lakelet.toml", "AGENTS.md", "dbt_project.yml", ".gitignore", "models"):
+    for relative in ("querysolo.toml", "AGENTS.md", "dbt_project.yml", ".gitignore", "models"):
         assert (root / relative).exists(), relative
-    assert (root / "warehouse").is_dir() and (root / ".lakelet/cache").is_dir()
-    assert (root / ".lakelet/catalog.db").exists()
+    assert (root / "warehouse").is_dir() and (root / ".querysolo/cache").is_dir()
+    assert (root / ".querysolo/catalog.db").exists()
 
-    config = tomllib.loads((root / "lakelet.toml").read_text())
+    config = tomllib.loads((root / "querysolo.toml").read_text())
     assert config["project"]["name"] == "acme analytics"
     assert set(config) == {"project", "catalog", "engine", "gauge", "git", "burst", "agents"}
     assert config["git"]["auto_commit"] is True  # versions brief G4
     assert (root / ".gitignore").read_text().splitlines() == [
         "warehouse/",
-        ".lakelet/",
+        ".querysolo/",
         ".DS_Store",
     ]
     assert yaml.safe_load((root / "dbt_project.yml").read_text()) == {
         "name": "acme_analytics",
         "version": "1.0.0",
-        "profile": "lakelet",
+        "profile": "querysolo",
         "model-paths": ["models"],
-        "models": {"+database": "lakelet"},
+        "models": {"+database": "querysolo"},
     }
     agents = (root / "AGENTS.md").read_text()
     assert TABLES_START in agents and TABLES_END in agents
@@ -59,7 +59,7 @@ def test_init_respects_an_existing_dbt_project_and_gitignore(root) -> None:
         "target/",
         ".DS_Store",
         "warehouse/",
-        ".lakelet/",
+        ".querysolo/",
     ]
 
 
@@ -76,7 +76,7 @@ def test_identifier_rule() -> None:
 
 
 def test_config_carries_unknown_keys_and_sections_through(tmp_path) -> None:
-    path = tmp_path / "lakelet.toml"
+    path = tmp_path / "querysolo.toml"
     path.write_text(
         '[project]\nname = "x"\nfuture_key = 1\n[engine]\nthreads = 2\n'
         '[burst]\ndefault = "auto"\n[newer]\nthing = true\n'
@@ -89,8 +89,8 @@ def test_config_carries_unknown_keys_and_sections_through(tmp_path) -> None:
 
 
 def test_a_setting_is_rewritten_in_place_with_the_comments_kept(root) -> None:
-    """`lakelet config set` and the app's settings panel: one line changes, nothing else."""
-    from lakelet.config import NotSettable, parse_setting, render_default, set_value
+    """`querysolo config set` and the app's settings panel: one line changes, nothing else."""
+    from querysolo.config import NotSettable, parse_setting, render_default, set_value
 
     before = render_default("acme")
     after = set_value(before, "engine.memory_limit", parse_setting("engine.memory_limit", "8GB"))
@@ -122,13 +122,13 @@ def test_gate_bare_names_and_the_profiler(root) -> None:
     Project.init(root)
     with Project.open(root) as p:
         assert p.catalog_url.startswith("http://127.0.0.1:")
-        p.engine.execute("CREATE TABLE lakelet.main.orders (id BIGINT, amt DOUBLE)")
+        p.engine.execute("CREATE TABLE querysolo.main.orders (id BIGINT, amt DOUBLE)")
         p.engine.execute("INSERT INTO orders VALUES (1, 1.0), (2, 2.0)")
         assert p.engine.execute("select * from orders order by id").fetchall() == [
             (1, 1.0),
             (2, 2.0),
         ]
-        assert p.engine.execute("select count(*) from lakelet.main.orders").fetchone()[0] == 2
+        assert p.engine.execute("select count(*) from querysolo.main.orders").fetchone()[0] == 2
         profile = p.engine.last_profile()
     assert profile is not None
     assert "system_peak_buffer_memory" in profile
@@ -148,7 +148,7 @@ def test_gate_bare_names_and_the_profiler(root) -> None:
 
 def test_engine_limits_come_from_the_config(root) -> None:
     Project.init(root)
-    toml = root / "lakelet.toml"
+    toml = root / "querysolo.toml"
     toml.write_text(toml.read_text().replace('threads = "auto"', "threads = 2"))
     with Project.open(root) as p:
         assert p.engine.execute("select current_setting('threads')").fetchone()[0] == 2
@@ -157,7 +157,7 @@ def test_engine_limits_come_from_the_config(root) -> None:
 def test_reopen_sees_the_same_table(root) -> None:
     Project.init(root)
     with Project.open(root) as p:
-        p.engine.execute("CREATE TABLE lakelet.main.t (id BIGINT)")
+        p.engine.execute("CREATE TABLE querysolo.main.t (id BIGINT)")
         p.engine.execute("INSERT INTO t VALUES (7)")
     with Project.open(root) as p:
         assert p.engine.execute("select * from t").fetchall() == [(7,)]
@@ -168,14 +168,14 @@ def test_a_create_table_leaves_no_stray_data_folder_in_the_cwd(root, tmp_path, m
     process's cwd on the first CREATE TABLE (the real files go under the warehouse); the
     engine removes it. A `data/` that holds something, or that is a table's own folder
     beside `metadata/`, is not touched."""
-    from lakelet.engine import remove_stray_data_dir
+    from querysolo.engine import remove_stray_data_dir
 
     elsewhere = tmp_path / "elsewhere"
     elsewhere.mkdir()
     monkeypatch.chdir(elsewhere)
     Project.init(root, probe_mb=0)
     with Project.open(root) as p:
-        p.engine.execute("CREATE TABLE lakelet.main.t AS SELECT 1 AS id")
+        p.engine.execute("CREATE TABLE querysolo.main.t AS SELECT 1 AS id")
         assert not (elsewhere / "data").exists(), "the extension's empty folder is gone"
         assert not (root / "data").exists()
         assert (root / "warehouse" / "main" / "t" / "data").is_dir(), "the table's own data/ stays"
@@ -199,7 +199,7 @@ def test_open_works_with_no_aws_credentials_anywhere(root, monkeypatch, tmp_path
     local work must not depend on the default chain resolving, and the first s3://
     operation says what to set. Found by the first CI run, where the chain resolved
     nothing and every test that opened a project failed."""
-    from lakelet.register import NotRegistrable
+    from querysolo.register import NotRegistrable
 
     for key in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE"):
         monkeypatch.delenv(key, raising=False)
@@ -208,7 +208,7 @@ def test_open_works_with_no_aws_credentials_anywhere(root, monkeypatch, tmp_path
     monkeypatch.setenv("AWS_EC2_METADATA_DISABLED", "true")
     Project.init(root)
     with Project.open(root) as p:
-        p.engine.execute("CREATE TABLE lakelet.main.t (id BIGINT)")
+        p.engine.execute("CREATE TABLE querysolo.main.t (id BIGINT)")
         p.engine.execute("INSERT INTO t VALUES (7)")
         assert p.engine.execute("select * from t").fetchall() == [(7,)]
         if p.engine.s3_error is None:
@@ -233,7 +233,7 @@ def test_open_and_close_release_their_file_descriptors(root) -> None:
     before = process.num_fds()
     for _ in range(20):
         with Project.open(root) as p:
-            p.engine.execute("CREATE TABLE IF NOT EXISTS lakelet.main.t (id BIGINT)")
+            p.engine.execute("CREATE TABLE IF NOT EXISTS querysolo.main.t (id BIGINT)")
             p.query("select * from t").close()
             p.history.recent(1)
     after = process.num_fds()

@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Real-data step 6 gate: Simple and Technical mode are one project in two vocabularies;
 // the mapping is pinned here so both screens say the same words.

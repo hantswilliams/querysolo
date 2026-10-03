@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 4 gate, crash recovery (A11) as the window sees it: a restarted sidecar shows "core
 // restarted" and the tables are fetched again from the new port; a sidecar that stopped
@@ -28,7 +28,7 @@ const calls: string[] = [];
 function fakeFetch(url: string): Promise<Response> {
   calls.push(url);
   const json = (body: unknown) => Promise.resolve(new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } }));
-  if (url.endsWith('/health')) return json({ lakelet: '0.1', duckdb: '1.5.5', project: 'acme', root: '/p/acme', machine: { memory_limit_text: '1 GiB' }, throughput_local_mbps: 100, bandwidth_mbps: null });
+  if (url.endsWith('/health')) return json({ querysolo: '0.1', duckdb: '1.5.5', project: 'acme', root: '/p/acme', machine: { memory_limit_text: '1 GiB' }, throughput_local_mbps: 100, bandwidth_mbps: null });
   if (url.endsWith('/tables')) return json([]);
   return json({});
 }

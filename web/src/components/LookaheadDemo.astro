@@ -1,5 +1,5 @@
 ---
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 import { questions, columns, stateFor, words } from '../data/lookahead';
 import { profile } from '../data/lookahead-estimates';
@@ -67,12 +67,12 @@ const initial = stateFor('summary', 'local');
       <dl class="estimate-metrics"><div><dt>Data to read</dt><dd id="estimate-bytes">{initial.bytes}</dd></div><div><dt>Peak memory</dt><dd id="estimate-memory">{initial.memory}</dd></div><div><dt>Estimated time</dt><dd id="estimate-time">{initial.time}</dd></div></dl>
       <div class="memory-picture"><div><span>12 GB query memory limit</span><span id="memory-state">Fits in memory</span></div><div class="memory-track" aria-hidden="true"><i id="memory-fill" style={`width:${initial.memoryPercent}%`}></i></div><p id="spill-note" hidden></p></div>
       <p id="estimate-reason" class="estimate-reason">{initial.reason}</p>
-      <p id="refusal-note" class="refusal-note" hidden>Lakelet would pause here. Revise the query or explicitly choose to run anyway.</p>
+      <p id="refusal-note" class="refusal-note" hidden>QuerySolo would pause here. Revise the query or explicitly choose to run anyway.</p>
       <p class="sr-only" id="estimate-announcement" aria-live="polite" aria-atomic="true">Sales by region, local files. {words[initial.verdict]}. {initial.bytes} to read, {initial.memory} peak memory, {initial.time} estimated.</p>
     </aside>
   </div>
   <footer class="lookahead-footnote">
-    <p><strong>Illustrative scenarios.</strong> Calculated with Lakelet’s estimator from example plans and table sizes; not a live query or a benchmark of your machine.</p>
+    <p><strong>Illustrative scenarios.</strong> Calculated with QuerySolo’s estimator from example plans and table sizes; not a live query or a benchmark of your machine.</p>
     <details><summary>Example setup &amp; assumptions <span>+</span></summary><div>
       <p><strong>The data:</strong> 80 million orders (24 GB, 12 columns) and 5 million customers (2 GB). The selected columns determine the bytes read; these examples do not prune files.</p>
       <p><strong>The laptop:</strong> {profile.ramGb} GB RAM, {profile.queryMemoryGb} GB query memory limit, {profile.threads} threads, {profile.freeDiskGb} GB free disk. Local reads use {profile.diskMBps.toLocaleString('en-US')} MB/s; S3 reads use {profile.s3Mbps} Mbps. Execution and temporary files stay on the laptop.</p>

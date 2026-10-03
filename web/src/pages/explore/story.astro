@@ -1,5 +1,5 @@
 ---
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 import Exploration from '../../layouts/Exploration.astro';
 import Wordmark from '../../components/exploration/Wordmark.astro';
@@ -10,11 +10,11 @@ import { url } from '../../lib/url';
 <Exploration title="Interactive data story" active="story" theme="story">
   <header class="site-nav section-frame"><Wordmark /><nav aria-label="Product navigation"><a href="#experiment">Try the experiment</a><a href={url('/docs/gauge')}>The gauge</a><a class="button small" href={url('/docs/install')}>Run it yourself ↗</a></nav></header>
   <main id="main">
-    <section class="story-hero section-frame"><p class="eyebrow"><span class="status-dot"></span> Local lakehouse / Open source / Developer preview</p><h1>A big table.<br /><span>A small question.</span></h1><div class="story-intro"><p>472 million rows doesn’t tell you<br />how much your query needs to read.</p><p>Lakelet looks at the work behind your SQL.<br />Let’s make that visible.</p></div><a href="#experiment" class="scroll-cue">CHANGE THE QUESTION. WATCH THE WORK. <span>↓</span></a></section>
+    <section class="story-hero section-frame"><p class="eyebrow"><span class="status-dot"></span> Local lakehouse / Open source / Developer preview</p><h1>A big table.<br /><span>A small question.</span></h1><div class="story-intro"><p>472 million rows doesn’t tell you<br />how much your query needs to read.</p><p>QuerySolo looks at the work behind your SQL.<br />Let’s make that visible.</p></div><a href="#experiment" class="scroll-cue">CHANGE THE QUESTION. WATCH THE WORK. <span>↓</span></a></section>
     <DataStory />
-    <section class="story-takeaway section-frame"><p class="eyebrow">02 / The useful part</p><h2>The question changes<br /><span>what’s possible.</span></h2><div><p>A table can be larger than the work you ask it to do. Selecting columns and filtering rows can change a slow transfer into a practical local query.</p><p>Lakelet brings that estimate into your workflow, before execution. You see the verdict and the reasoning behind it.</p></div></section>
+    <section class="story-takeaway section-frame"><p class="eyebrow">02 / The useful part</p><h2>The question changes<br /><span>what’s possible.</span></h2><div><p>A table can be larger than the work you ask it to do. Selecting columns and filtering rows can change a slow transfer into a practical local query.</p><p>QuerySolo brings that estimate into your workflow, before execution. You see the verdict and the reasoning behind it.</p></div></section>
     <section class="evidence-strip section-frame"><div><p class="eyebrow">A REPRODUCIBLE STARTING POINT</p><h3>Real scan sizes.<br />An experiment you can repeat.</h3></div><p>The scan sizes above come from the project’s September 11, 2026 Overture demo. The dataset was attached in place from a public S3 bucket, with no credentials.</p><a class="button" href={url('/docs/remote')}>See the commands ↗</a></section>
     <Availability />
-    <section class="closing section-frame"><p class="eyebrow">Your data. Your next question.</p><h2>Find out what fits.</h2><a class="button" href={url('/docs/install')}>Try Lakelet from source ↗</a></section>
+    <section class="closing section-frame"><p class="eyebrow">Your data. Your next question.</p><h2>Find out what fits.</h2><a class="button" href={url('/docs/install')}>Try QuerySolo from source ↗</a></section>
   </main>
 </Exploration>

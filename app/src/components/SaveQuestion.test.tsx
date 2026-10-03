@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Versions step 2 (G7): the save box. The title is the only thing asked, the slug is derived
 // the way the CLI derives it, a title already saved comes back as a 409 and becomes "Replace
@@ -59,7 +59,7 @@ describe('the save box', () => {
 
     expect(screen.getByTestId('save-question-box').textContent).toContain('models/questions/revenue_by_customer.sql');
     expect(screen.getByTestId('save-question-box').textContent).toContain('`customer` is never empty');
-    expect(screen.getByTestId('save-question-box').textContent).toContain("lakelet question save 'Revenue by customer'");
+    expect(screen.getByTestId('save-question-box').textContent).toContain("querysolo question save 'Revenue by customer'");
 
     fireEvent.click(screen.getByTestId('question-save'));
     await waitFor(() => expect(screen.getByTestId('saved-question')).toBeTruthy());

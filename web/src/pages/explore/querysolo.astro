@@ -1,5 +1,5 @@
 ---
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 import Exploration from '../../layouts/Exploration.astro';
 import Availability from '../../components/exploration/Availability.astro';
@@ -23,7 +23,6 @@ const prompt = (ink: string, accent: string, size: number) =>
 ---
 <Exploration title="04 / QuerySolo" theme="querysolo" active="querysolo">
   <main id="main" class="qs">
-    <p class="qs-draft section-frame">Design study · QuerySolo is a working name, pending a trademark search. The live site still says Lakelet, and so does the command.</p>
 
     <header class="qs-nav section-frame">
       <a class="qs-brand" href={url('/explore/querysolo')}><Fragment set:html={prompt('#F0F2E8', '#D6EE83', 30)} /><span>query<b>solo</b></span></a>
@@ -63,7 +62,7 @@ const prompt = (ink: string, accent: string, size: number) =>
         <div><b class="r">Needs more machine</b><p>Refused until you say run anyway.</p></div>
         <div><b class="m">Not estimated</b><p>It cannot attribute the scan, and says so instead of guessing.</p></div>
       </div>
-      <p class="qs-fine">Measured on the Overture Maps public bucket (472,797,160 rows, no AWS account), 11 Sep 2026: <a href={url('/docs/remote')}>the details</a>. BigQuery shows the bytes. This shows the minutes, and refuses. Commands are shown under the working name; today they start with <code>lakelet</code>.</p>
+      <p class="qs-fine">Measured on the Overture Maps public bucket (472,797,160 rows, no AWS account), 11 Sep 2026: <a href={url('/docs/remote')}>the details</a>. BigQuery shows the bytes. This shows the minutes, and refuses.</p>
     </section>
 
     <section id="changed" class="qs-section section-frame">
@@ -106,7 +105,6 @@ const prompt = (ink: string, accent: string, size: number) =>
   .querysolo .preview-label span{color:#A5B8B9}.querysolo .concept-tabs a:hover{background:#15292E}.querysolo .concept-tabs a[aria-current]{border-color:#D6EE83;background:#15292E}
   .querysolo .status-dot{background:#D6EE83}.querysolo .status-dot.planned{background:none}
   .qs .lime{color:#D6EE83}
-  .qs-draft{font:11px/1.6 var(--mono);color:#A5B8B9;padding:14px 0;border-bottom:1px dashed #304247}
   .qs-nav{display:flex;justify-content:space-between;align-items:center;min-height:96px;gap:24px}
   .qs-brand{display:flex;align-items:center;gap:10px;font-size:28px;font-weight:800;letter-spacing:-1.2px}
   .qs-brand b{color:#D6EE83;font-weight:800}

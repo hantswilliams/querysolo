@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Trust round T4: the recovery contract, one test per sentence of ``/docs/recovery``. If a
 sentence on that page has no test here, it does not belong on the page. Plus the schema
@@ -13,10 +13,10 @@ import pytest
 import sqlalchemy as sa
 from typer.testing import CliRunner
 
-from lakelet import Project, __version__
-from lakelet.catalog import store as catalog_store
-from lakelet.cli import app
-from lakelet.schema import SchemaTooNew
+from querysolo import Project, __version__
+from querysolo.catalog import store as catalog_store
+from querysolo.cli import app
+from querysolo.schema import SchemaTooNew
 
 
 @pytest.fixture
@@ -64,20 +64,20 @@ def test_a_copy_of_the_project_folder_restored_to_the_same_path_is_a_complete_ba
 def test_the_derived_folders_can_be_deleted_and_are_rebuilt(project) -> None:
     root = project.root
     project.close()
-    shutil.rmtree(root / ".lakelet" / "cache", ignore_errors=True)
-    shutil.rmtree(root / ".lakelet" / "dbt", ignore_errors=True)
+    shutil.rmtree(root / ".querysolo" / "cache", ignore_errors=True)
+    shutil.rmtree(root / ".querysolo" / "dbt", ignore_errors=True)
     p = Project.open(root)
     try:
         assert _rows(p) == 4
         est = p.estimate("select sum(amt) from orders")
         assert est.verdict == "green"  # the manifest cache is rebuilt on first use
-        assert (root / ".lakelet" / "cache").is_dir()
+        assert (root / ".querysolo" / "cache").is_dir()
     finally:
         p.close()
 
 
 def test_a_failure_mid_import_leaves_the_previous_snapshot_current(project, tmp_path) -> None:
-    from lakelet import tables
+    from querysolo import tables
 
     real = tables.run_with_retry
 
@@ -143,9 +143,9 @@ def _set_version(path, value: str) -> None:
 def test_a_newer_schema_is_refused_with_the_sentence_and_the_file_untouched(project) -> None:
     root = project.root
     project.close()
-    catalog = root / ".lakelet" / "catalog.db"
+    catalog = root / ".querysolo" / "catalog.db"
     _set_version(catalog, "2")
-    with pytest.raises(SchemaTooNew, match="newer Lakelet") as e:
+    with pytest.raises(SchemaTooNew, match="newer QuerySolo") as e:
         Project.open(root)
     assert f"this is {__version__}, which reads schema 1" in str(e.value)
     engine = sa.create_engine(f"sqlite:///{catalog}")
@@ -155,7 +155,7 @@ def test_a_newer_schema_is_refused_with_the_sentence_and_the_file_untouched(proj
         assert c.execute(sa.text("SELECT count(*) FROM tables")).scalar() == 1
     engine.dispose()
     r = CliRunner().invoke(app, ["-C", str(root), "tables", "list"])
-    assert r.exit_code == 1 and "newer Lakelet" in " ".join(r.output.split())
+    assert r.exit_code == 1 and "newer QuerySolo" in " ".join(r.output.split())
 
 
 def test_an_older_schema_runs_the_migration_once_and_records_the_version(
@@ -163,7 +163,7 @@ def test_an_older_schema_runs_the_migration_once_and_records_the_version(
 ) -> None:
     root = project.root
     project.close()
-    history = root / ".lakelet" / "history.db"
+    history = root / ".querysolo" / "history.db"
     _set_version(history, "0")
     ran: list[int] = []
 
@@ -171,7 +171,7 @@ def test_an_older_schema_runs_the_migration_once_and_records_the_version(
         ran.append(1)
         c.execute(sa.text("CREATE TABLE IF NOT EXISTS migrated_marker (x INTEGER)"))
 
-    from lakelet import history as history_module
+    from querysolo import history as history_module
 
     monkeypatch.setattr(history_module, "MIGRATIONS", [(1, migrate)])
     p = Project.open(root)
@@ -189,7 +189,7 @@ def test_an_older_schema_runs_the_migration_once_and_records_the_version(
 
 
 def test_the_current_schema_opens_silently_and_records_who_wrote_it(project) -> None:
-    from lakelet import history as history_module
+    from querysolo import history as history_module
 
     for engine, current in (
         (project.store.engine, catalog_store.SCHEMA_VERSION),

@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 1 gate: 100 commits from ten concurrent processes, each with its own embedded
 catalog on the same SQLite file, lose nothing (brief D3, D5)."""
@@ -25,7 +25,7 @@ def served(tmp_path):
 
 
 def test_hundred_commits_from_ten_processes_lose_nothing(served) -> None:
-    cat = RestCatalog("lakelet", uri=served.url)
+    cat = RestCatalog("querysolo", uri=served.url)
     cat.create_namespace("main")
     cat.create_table("main.t", schema=pa.schema([("writer", pa.int64()), ("i", pa.int64())]))
 

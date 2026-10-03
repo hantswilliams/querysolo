@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 1 gate (app brief §4): each window's sidecar reports the memory limit it was given,
 // the second half the first's (A8), and the time from spawn to ready is on the panel. The

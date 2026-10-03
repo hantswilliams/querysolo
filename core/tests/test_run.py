@@ -1,7 +1,7 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Real-data brief R5 and R6, step 5: `lakelet run` builds the dbt DAG through the gauge
-and the catalog; a `view` model is an Iceberg view in Lakelet's catalog that a second
+"""Real-data brief R5 and R6, step 5: `querysolo run` builds the dbt DAG through the gauge
+and the catalog; a `view` model is an Iceberg view in QuerySolo's catalog that a second
 process, the API and the engine all read; a replaced view gets a version, a removed model's
 view goes; the plugin gives a bare `dbt run` the catalog's views; `--burst auto` refuses;
 a Red model refuses the run until `--run-anyway`; every model is in history."""
@@ -15,10 +15,10 @@ import pytest
 import yaml
 from typer.testing import CliRunner
 
-from lakelet import Project
-from lakelet.cli import app
-from lakelet.dbt import runner
-from lakelet.views import BadView, NoSuchView
+from querysolo import Project
+from querysolo.cli import app
+from querysolo.dbt import runner
+from querysolo.views import BadView, NoSuchView
 
 pytest.importorskip("dbt.cli.main")
 
@@ -43,7 +43,7 @@ def project(tmp_path):
     _models(root)
     p = Project.open(root, serve=True)
     p.engine.execute(
-        "create table lakelet.main.src as "
+        "create table querysolo.main.src as "
         "select range as id, 'c' || (range % 3) as c, range * 1.5 as amt from range(300)"
     )
     yield p
@@ -89,18 +89,18 @@ def test_views_in_the_catalog(project) -> None:
     # the REST routes, as Spark would use them
     c = httpx.Client(base_url=p.catalog_url)
     assert [
-        i["name"] for i in c.get("/v1/lakelet/namespaces/main/views").json()["identifiers"]
+        i["name"] for i in c.get("/v1/querysolo/namespaces/main/views").json()["identifiers"]
     ] == [
         "by_c_view",
         "over",
     ]
-    md = c.get("/v1/lakelet/namespaces/main/views/over").json()["metadata"]
+    md = c.get("/v1/querysolo/namespaces/main/views/over").json()["metadata"]
     assert md["format-version"] == 1 and md["current-version-id"] == 1
     assert md["versions"][0]["representations"] == [
         {"type": "sql", "sql": "select n * 2 as m from by_c_view", "dialect": "duckdb"}
     ]
     created = c.post(
-        "/v1/lakelet/namespaces/main/views",
+        "/v1/querysolo/namespaces/main/views",
         json={
             "name": "theirs",
             "schema": {
@@ -120,7 +120,7 @@ def test_views_in_the_catalog(project) -> None:
     )
     assert created.status_code == 200
     replaced = c.post(
-        "/v1/lakelet/namespaces/main/views/theirs",
+        "/v1/querysolo/namespaces/main/views/theirs",
         json={
             "updates": [
                 {
@@ -140,15 +140,15 @@ def test_views_in_the_catalog(project) -> None:
         },
     )
     assert replaced.json()["metadata"]["current-version-id"] == 2
-    assert c.delete("/v1/lakelet/namespaces/main/views/theirs").status_code == 204
-    assert c.get("/v1/lakelet/namespaces/main/views/theirs").status_code == 404
+    assert c.delete("/v1/querysolo/namespaces/main/views/theirs").status_code == 204
+    assert c.get("/v1/querysolo/namespaces/main/views/theirs").status_code == 404
     p.views.drop("over")
     with pytest.raises(NoSuchView):
         p.views.get("over")
     assert "over" not in p.engine.views
 
 
-def test_lakelet_run_builds_the_dag_and_records_views(project) -> None:
+def test_querysolo_run_builds_the_dag_and_records_views(project) -> None:
     p = project
     report = runner.run(p)
     assert [m.name for m in report.models] == ["stg_orders", "by_c", "top"], "dependency order"
@@ -162,7 +162,7 @@ def test_lakelet_run_builds_the_dag_and_records_views(project) -> None:
     assert not (Path.cwd() / "data").exists() and not (p.root / "data").exists()
     top = p.views.get("top")
     assert top.sql == 'select c from "main"."by_c" order by total desc limit 1'
-    assert top.properties == {"lakelet.dbt-model": "model.proj.top"}
+    assert top.properties == {"querysolo.dbt-model": "model.proj.top"}
     # history has a run per model with the estimate and dbt's actual
     runs = {r.sql_text: r for r in p.history.recent(10)}
     assert any("sum(amt)" in sql and r.actual_wall for sql, r in runs.items())
@@ -174,7 +174,7 @@ def test_lakelet_run_builds_the_dag_and_records_views(project) -> None:
         assert q.engine.execute("select * from top").fetchone() == ("c2",)
     client = httpx.Client(base_url=p.catalog_url, headers={"Authorization": f"Bearer {p.token}"})
     response = client.post("/api/query", json={"sql": "select * from top"})
-    assert response.status_code == 200 and response.headers["x-lakelet-verdict"] == "green"
+    assert response.status_code == 200 and response.headers["x-querysolo-verdict"] == "green"
     described = client.get("/api/tables/top").json()
     assert described["kind"] == "view" and described["snapshots"] == 1
     assert described["view_sql"] == top.sql and described["snapshot_list"] == []
@@ -199,7 +199,7 @@ def test_burst_auto_refuses_and_red_refuses_until_run_anyway(project) -> None:
     p = project
     with pytest.raises(runner.NoBurstYet, match="session 8"):
         runner.run(p, burst="auto")
-    toml = p.root / "lakelet.toml"
+    toml = p.root / "querysolo.toml"
     toml.write_text(
         toml.read_text()
         .replace("green_max_seconds = 60", "green_max_seconds = 0.0000001")
@@ -218,8 +218,8 @@ def test_burst_auto_refuses_and_red_refuses_until_run_anyway(project) -> None:
 def test_a_bare_dbt_run_reads_catalog_views_and_warns_about_its_own(project) -> None:
     """The plugin gives every dbt connection the catalog's views, so a model may read a
     view that is not a dbt model. A bare `dbt run` builds a `view` model for its session
-    only and says so, one line per view; under `lakelet run` the line is not printed,
-    because the views are recorded afterwards (the docs' "build with lakelet run")."""
+    only and says so, one line per view; under `querysolo run` the line is not printed,
+    because the views are recorded afterwards (the docs' "build with querysolo run")."""
     import os
 
     from tests.test_step2_dbt_spike import dbt_main
@@ -231,7 +231,7 @@ def test_a_bare_dbt_run_reads_catalog_views_and_warns_about_its_own(project) -> 
     )
     (p.root / "models" / "bare_v.sql").write_text("select id from src where id > 290\n")
     (p.root / "profiles.yml").write_text(runner.profiles_yml(p.catalog_url))
-    os.environ.pop("LAKELET_RUN", None)
+    os.environ.pop("QUERYSOLO_RUN", None)
     result = dbt_main.dbtRunner().invoke(
         [
             "run",
@@ -252,18 +252,18 @@ def test_a_bare_dbt_run_reads_catalog_views_and_warns_about_its_own(project) -> 
     assert p.engine.execute("select n from from_v").fetchone()[0] == 10
     bare_log = (p.root / "bare-logs" / "dbt.log").read_text()
     assert "view bare_v is built for this dbt session only" in bare_log
-    assert "run `lakelet run` to record it" in bare_log
+    assert "run `querysolo run` to record it" in bare_log
     assert "bare_v" not in [v.name for v in p.views.list()], "a bare dbt run records nothing"
 
     runner.run(p, select=["bare_v"])
     assert "bare_v" in [v.name for v in p.views.list()]
-    lakelet_log = (p.root / ".lakelet" / "dbt" / "logs" / "dbt.log").read_text()
-    assert "built for this dbt session only" not in lakelet_log
+    querysolo_log = (p.root / ".querysolo" / "dbt" / "logs" / "dbt.log").read_text()
+    assert "built for this dbt session only" not in querysolo_log
 
 
 def test_dbt_is_told_not_to_send_usage_statistics(project) -> None:
     """Versions brief G11. dbt sends anonymous usage statistics to its own collector by
-    default, and `lakelet run` is the one verb that invokes dbt, so Lakelet turns it off
+    default, and `querysolo run` is the one verb that invokes dbt, so QuerySolo turns it off
     through dbt's own switch. Asserted on the effect rather than the environment variable:
     after a plan, dbt's flag is false and its tracker is inert."""
     import dbt.tracking
@@ -274,9 +274,9 @@ def test_dbt_is_told_not_to_send_usage_statistics(project) -> None:
     assert dbt.tracking.active_user is not None and dbt.tracking.active_user.do_not_track
 
 
-def test_the_profile_lakelet_writes_stops_a_dbt_run_by_hand_phoning_home(project) -> None:
-    """G11, the other path: `lakelet run` sets `DO_NOT_TRACK` for its own invocations, but a
-    user following /docs/dbt runs `dbt` themselves through the profile Lakelet wrote. Asserted
+def test_the_profile_querysolo_writes_stops_a_dbt_run_by_hand_phoning_home(project) -> None:
+    """G11, the other path: `querysolo run` sets `DO_NOT_TRACK` for its own invocations, but a
+    user following /docs/dbt runs `dbt` themselves through the profile QuerySolo wrote. Asserted
     on the effect: dbt invoked with that profile, and without the environment variable, comes
     out with its flag false."""
     import dbt.tracking
@@ -314,7 +314,7 @@ def test_the_cli_and_the_routes(project) -> None:
     assert plan.exit_code == 0, plan.output
     assert "stg_orders" in plan.output and "green" in plan.output
     # a selection compiles only that model, and dbt would echo its compiled SQL first:
-    # stdout is the DAG alone, so `lakelet run --plan | …` sees nothing else
+    # stdout is the DAG alone, so `querysolo run --plan | …` sees nothing else
     one = runner_cli.invoke(app, ["-C", root, "run", "by_c", "--plan"])
     assert one.exit_code == 0, one.output
     assert not one.output.lstrip().lower().startswith("select"), one.output
@@ -338,20 +338,20 @@ def test_the_cli_and_the_routes(project) -> None:
         assert done["ok"] and [r["name"] for r in done["results"]] == ["by_c"]
         refused = client.post("/api/run", json={"burst": "auto"})
         assert refused.status_code == 400 and refused.json()["error"] == "no_burst_yet"
-    # the profile lakelet run writes is a real one
-    profile = (Path(root) / ".lakelet" / "dbt" / "profiles.yml").read_text()
-    assert "module: lakelet.dbt.plugin" in profile
+    # the profile querysolo run writes is a real one
+    profile = (Path(root) / ".querysolo" / "dbt" / "profiles.yml").read_text()
+    assert "module: querysolo.dbt.plugin" in profile
     # G11: a `dbt run` by hand through this profile does not phone home either.
     assert yaml.safe_load(profile)["config"] == {"send_anonymous_usage_stats": False}
-    assert (Path(root) / ".lakelet" / "dbt" / "target" / "manifest.json").exists()
-    assert json.loads((Path(root) / ".lakelet" / "dbt" / "target" / "manifest.json").read_text())[
+    assert (Path(root) / ".querysolo" / "dbt" / "target" / "manifest.json").exists()
+    assert json.loads((Path(root) / ".querysolo" / "dbt" / "target" / "manifest.json").read_text())[
         "nodes"
     ]
 
 
 def test_the_plan_carries_tests_description_and_the_last_run(project) -> None:
     """Step 6 (the app's Models panel): a model's tests from `schema.yml`, its description,
-    its file, and its last `lakelet run` from history come with the plan."""
+    its file, and its last `querysolo run` from history come with the plan."""
     p = project
     (p.root / "models" / "schema.yml").write_text(
         "version: 2\n"
@@ -403,7 +403,7 @@ def test_the_plan_carries_tests_description_and_the_last_run(project) -> None:
     }
     assert over["by_c"]["last_run"]["ok"] is True
     assert client.get("/api/tables/top").json()["properties"] == {
-        "lakelet.dbt-model": "model.proj.top"
+        "querysolo.dbt-model": "model.proj.top"
     }
     assert client.post("/api/gauge/reset", json={}).json()["removed"] == 3
     assert all(m["last_run"] is None for m in client.get("/api/run/plan").json())

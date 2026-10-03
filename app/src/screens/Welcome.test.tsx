@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 1 gate, the welcome screen: the recent list opens on a click, the dialog button is
 // the app's, New project… opens the dialog (P1), and a browser is told what to do instead.
@@ -25,7 +25,7 @@ describe('Welcome', () => {
     fireEvent.click(screen.getByTestId('new-project-button'));
     expect(onNew).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('hint')).toBeNull();
-    expect(screen.getByText(/lakelet init/)).toBeTruthy();
+    expect(screen.getByText(/querysolo init/)).toBeTruthy();
     expect(isBucketPrefix('s3://b')).toBe(false);
     expect(isBucketPrefix('s3://b/p')).toBe(true);
   });
@@ -33,14 +33,14 @@ describe('Welcome', () => {
   it('in a browser the folder button is off and the hint names the way in', () => {
     render(<Welcome recent={[]} canPick={false} onNew={() => {}} onPick={() => {}} onOpen={() => {}} />);
     expect((screen.getByTestId('open-folder') as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByTestId('hint').textContent).toContain('LAKELET_SIDECAR');
+    expect(screen.getByTestId('hint').textContent).toContain('QUERYSOLO_SIDECAR');
     expect(screen.queryByTestId('recent')).toBeNull();
   });
 
   it('shows what went wrong and holds the buttons while busy', () => {
-    render(<Welcome recent={recent} canPick busy="opening acme…" error="lakelet init failed" onNew={() => {}} onPick={() => {}} onOpen={() => {}} />);
+    render(<Welcome recent={recent} canPick busy="opening acme…" error="querysolo init failed" onNew={() => {}} onPick={() => {}} onOpen={() => {}} />);
     expect(screen.getByTestId('busy').textContent).toBe('opening acme…');
-    expect(screen.getByTestId('open-error').textContent).toContain('lakelet init failed');
+    expect(screen.getByTestId('open-error').textContent).toContain('querysolo init failed');
     expect((screen.getByTestId('open-folder') as HTMLButtonElement).disabled).toBe(true);
     expect((screen.getByTestId('new-project-button') as HTMLButtonElement).disabled).toBe(true);
   });

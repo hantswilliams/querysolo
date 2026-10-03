@@ -1,8 +1,8 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decisions P1: the dialog takes a name under a parent, offers the two places for the
 // tables, checks a bucket before the folder is made and refuses to make it when the check
-// fails, and shows the `lakelet init` line it runs.
+// fails, and shows the `querysolo init` line it runs.
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -33,7 +33,7 @@ describe('NewProject', () => {
     fireEvent.change(screen.getByTestId('project-name'), { target: { value: ' acme ' } });
     expect(screen.queryByTestId('name-error')).toBeNull();
     expect(screen.getByTestId('project-folder').textContent).toBe('/home/h/Documents/acme');
-    expect(screen.getByTestId('command').textContent).toContain('lakelet init /home/h/Documents/acme');
+    expect(screen.getByTestId('command').textContent).toContain('querysolo init /home/h/Documents/acme');
     expect(screen.getByTestId('command').textContent).not.toContain('--warehouse');
     expect(create.disabled).toBe(false);
     expect(create.textContent).toBe('Create');
@@ -62,7 +62,7 @@ describe('NewProject', () => {
     expect(screen.getByTestId('warehouse-error')).toBeTruthy();
     fireEvent.change(screen.getByTestId('warehouse'), { target: { value: ' s3://denied-lake/analytics ' } });
     expect(screen.queryByTestId('warehouse-error')).toBeNull();
-    expect(screen.getAllByTestId('command').at(-1)?.textContent).toContain('lakelet init /home/h/Documents/acme --warehouse s3://denied-lake/analytics'); // the last line is the footer's; `aws configure` sits above it (C2)
+    expect(screen.getAllByTestId('command').at(-1)?.textContent).toContain('querysolo init /home/h/Documents/acme --warehouse s3://denied-lake/analytics'); // the last line is the footer's; `aws configure` sits above it (C2)
     expect(create.textContent).toBe('Check and create');
     fireEvent.click(create);
     await waitFor(() => expect(screen.getByTestId('check-result').dataset.ok).toBe('false'));
@@ -103,7 +103,7 @@ describe('NewProject', () => {
     fireEvent.change(picker, { target: { value: 'client-b' } });
     expect(screen.getByTestId('credentials-line').textContent).toBe('Using profile client-b.');
     fireEvent.change(screen.getByTestId('warehouse'), { target: { value: 's3://acme-lake/analytics' } });
-    expect(screen.getByText(/lakelet --profile client-b bucket check s3:\/\/acme-lake\/analytics/)).toBeTruthy();
+    expect(screen.getByText(/querysolo --profile client-b bucket check s3:\/\/acme-lake\/analytics/)).toBeTruthy();
     fireEvent.click(screen.getByTestId('check-bucket'));
     await waitFor(() => expect(screen.getByTestId('check-result').dataset.ok).toBe('true'));
     expect(check).toHaveBeenCalledWith('s3://acme-lake/analytics', 'client-b');
@@ -114,7 +114,7 @@ describe('NewProject', () => {
     fireEvent.click(screen.getByTestId('create-project'));
     await waitFor(() => expect(onCreate).toHaveBeenCalledWith('/home/h/Documents', 'acme', 's3://acme-lake/analytics', 'work'));
     expect(check).toHaveBeenLastCalledWith('s3://acme-lake/analytics', 'work');
-    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes("lakelet --profile work init /home/h/Documents/acme --warehouse s3://acme-lake/analytics"))).toBe(true);
+    expect(screen.getAllByTestId('command').some((c) => c.textContent?.includes("querysolo --profile work init /home/h/Documents/acme --warehouse s3://acme-lake/analytics"))).toBe(true);
   });
 
   it('C2: a machine with no AWS files gets the aws configure line to copy, and no picker in a browser', () => {
@@ -132,7 +132,7 @@ describe('NewProject', () => {
 
   it('a check that cannot run, and a create that fails, are lines in the dialog; Esc closes it', async () => {
     const onClose = vi.fn();
-    render(<NewProject {...base} onClose={onClose} check={async () => { throw new Error('could not run lakelet bucket check'); }} onCreate={async () => { throw new Error('lakelet init failed: no'); }} />);
+    render(<NewProject {...base} onClose={onClose} check={async () => { throw new Error('could not run querysolo bucket check'); }} onCreate={async () => { throw new Error('querysolo init failed: no'); }} />);
     fireEvent.change(screen.getByTestId('project-name'), { target: { value: 'acme' } });
     fireEvent.click(screen.getByTestId('where-bucket'));
     fireEvent.change(screen.getByTestId('warehouse'), { target: { value: 's3://acme-lake/analytics' } });
@@ -140,7 +140,7 @@ describe('NewProject', () => {
     await waitFor(() => expect(screen.getByTestId('new-project-error').textContent).toContain('could not run'));
     fireEvent.click(screen.getByTestId('where-folder'));
     fireEvent.click(screen.getByTestId('create-project'));
-    await waitFor(() => expect(screen.getByTestId('new-project-error').textContent).toContain('lakelet init failed'));
+    await waitFor(() => expect(screen.getByTestId('new-project-error').textContent).toContain('querysolo init failed'));
     expect((screen.getByTestId('create-project') as HTMLButtonElement).disabled).toBe(false); // try again
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(onClose).toHaveBeenCalled();

@@ -1,6 +1,6 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Step 1 gate, second client: pyiceberg's RestCatalog reads and writes through Lakelet's
+"""Step 1 gate, second client: pyiceberg's RestCatalog reads and writes through QuerySolo's
 catalog on SQLite and a file:// warehouse (brief D6). DuckDB, concurrency, s3:// and
 Postgres have their own files."""
 
@@ -25,13 +25,13 @@ def served(tmp_path):
 def test_pyiceberg_round_trip(served) -> None:
     pyiceberg_round_trip(served.url, served.warehouse)
     with pytest.raises(NoSuchTableError):
-        RestCatalog("lakelet", uri=served.url).load_table("main.orders2")
+        RestCatalog("querysolo", uri=served.url).load_table("main.orders2")
 
 
 def test_a_stale_commit_is_refused_then_pyiceberg_retries(served, caplog) -> None:
     """The server answers 409 to a stale commit (D5); pyiceberg refreshes and retries on its
     own, so both appends land. Recorded for D23: the client side of the 409 story."""
-    cat = RestCatalog("lakelet", uri=served.url)
+    cat = RestCatalog("querysolo", uri=served.url)
     cat.create_namespace("main")
     cat.create_table("main.t", schema=SCHEMA)
     one, two = cat.load_table("main.t"), cat.load_table("main.t")
@@ -46,6 +46,6 @@ def test_a_stale_commit_is_refused_then_pyiceberg_retries(served, caplog) -> Non
 
 
 def test_multi_level_namespaces_are_a_clean_400(served) -> None:
-    cat = RestCatalog("lakelet", uri=served.url)
+    cat = RestCatalog("querysolo", uri=served.url)
     with pytest.raises(Exception, match="single level"):
         cat.create_namespace(("a", "b"))

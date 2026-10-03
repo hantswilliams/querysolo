@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Versions brief G8, step 4: the lineage rows say what a table reads from and what it
 // feeds, each name a link that opens that detail; Technical says how each edge is known,

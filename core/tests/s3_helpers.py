@@ -1,16 +1,16 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """One object store for the S3 tests (brief D16; real-data brief R2).
 
 By default an in-process Moto server with a throwaway bucket. Two environment variables
 point the same tests at a real store instead:
 
-* ``LAKELET_TEST_S3_BUCKET`` names an existing bucket the suite may write to. It is never
-  created and never deleted; the suite writes under ``lakelet-tests/<run>/`` and under
-  ``_lakelet/`` (the metadata-in-bucket layout, brief D26) and removes both when the module
+* ``QUERYSOLO_TEST_S3_BUCKET`` names an existing bucket the suite may write to. It is never
+  created and never deleted; the suite writes under ``querysolo-tests/<run>/`` and under
+  ``_querysolo/`` (the metadata-in-bucket layout, brief D26) and removes both when the module
   ends. Use a bucket that is the suite's own.
-* ``LAKELET_TEST_S3_ENDPOINT`` (or ``AWS_ENDPOINT_URL``) points at a self-hosted store such
-  as the RustFS in ``compose.yaml``. Without a bucket name the bucket ``lakelet-test`` is
+* ``QUERYSOLO_TEST_S3_ENDPOINT`` (or ``AWS_ENDPOINT_URL``) points at a self-hosted store such
+  as the RustFS in ``compose.yaml``. Without a bucket name the bucket ``querysolo-test`` is
   created there if missing, as before.
 
 The credentials are ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY``, the region
@@ -30,8 +30,8 @@ from urllib.parse import urlsplit
 
 import boto3
 
-RUN_ROOT = "lakelet-tests"
-METADATA_ROOT = "_lakelet/"
+RUN_ROOT = "querysolo-tests"
+METADATA_ROOT = "_querysolo/"
 
 
 @dataclass
@@ -85,7 +85,7 @@ class S3Store:
         return "CREATE SECRET (" + ", ".join(parts) + ")"
 
     def environment(self) -> dict[str, str]:
-        """What a ``Project`` reads (``lakelet.remote.S3Settings``)."""
+        """What a ``Project`` reads (``querysolo.remote.S3Settings``)."""
         env = {
             "AWS_ACCESS_KEY_ID": self.key_id,
             "AWS_SECRET_ACCESS_KEY": self.secret,
@@ -127,8 +127,8 @@ class S3Store:
 
 
 def open_store() -> S3Store:
-    bucket = os.environ.get("LAKELET_TEST_S3_BUCKET")
-    endpoint = os.environ.get("LAKELET_TEST_S3_ENDPOINT") or os.environ.get("AWS_ENDPOINT_URL")
+    bucket = os.environ.get("QUERYSOLO_TEST_S3_BUCKET")
+    endpoint = os.environ.get("QUERYSOLO_TEST_S3_ENDPOINT") or os.environ.get("AWS_ENDPOINT_URL")
     region = os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "us-east-1"
     run = f"{RUN_ROOT}/{datetime.now(UTC):%Y%m%d-%H%M%S}-{secrets.token_hex(2)}"
     server = None
@@ -161,11 +161,11 @@ def open_store() -> S3Store:
             client.head_bucket(Bucket=bucket)
         except Exception as e:  # noqa: BLE001 - botocore's class depends on the store
             raise RuntimeError(
-                f"LAKELET_TEST_S3_BUCKET={bucket} is not reachable with these credentials "
+                f"QUERYSOLO_TEST_S3_BUCKET={bucket} is not reachable with these credentials "
                 f"({e}); the suite never creates a real bucket"
             ) from None
     else:
-        bucket = "lakelet-test"
+        bucket = "querysolo-test"
         if bucket not in {b["Name"] for b in client.list_buckets().get("Buckets", [])}:
             client.create_bucket(Bucket=bucket)
     store = S3Store(

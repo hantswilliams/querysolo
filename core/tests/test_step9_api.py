@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 9 gate (brief §4, D3, D17, D22): the API on the same loopback server as the catalog
 under `serve`; 401 without the token; /v1 open; health with versions, machine profile and
@@ -19,8 +19,8 @@ import pyarrow as pa
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project
-from lakelet.cli import app
+from querysolo import Project
+from querysolo.cli import app
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ def test_token_health_and_the_open_catalog(served) -> None:
     )
     assert health.status_code == 200, health.text
     data = health.json()
-    assert data["lakelet"] and data["duckdb"] == duckdb.__version__
+    assert data["querysolo"] and data["duckdb"] == duckdb.__version__
     assert {"ram", "cores", "memory_limit"} <= set(data["machine"])
     assert data["throughput_local_mbps"] and data["throughput_local_mbps"] > 0
     assert "bandwidth_mbps" in data
@@ -124,7 +124,7 @@ def test_saving_a_question_whose_title_is_taken_is_409_until_replace(served) -> 
     assert len(client.get("/api/questions").json()) == 1
 
 
-def test_settings_over_http_write_lakelet_toml(served) -> None:
+def test_settings_over_http_write_querysolo_toml(served) -> None:
     p, client, tmp_path = served
     got = client.get("/api/settings").json()
     assert got["settings"] == {
@@ -134,14 +134,14 @@ def test_settings_over_http_write_lakelet_toml(served) -> None:
         "catalog.keep_snapshots_days": 7,
         "git.auto_commit": True,  # versions brief G4
     }
-    assert got["path"].endswith("lakelet.toml")
+    assert got["path"].endswith("querysolo.toml")
     put = client.put("/api/settings", json={"key": "gauge.share_calibration", "value": "true"})
     assert put.status_code == 200 and put.json()["settings"]["gauge.share_calibration"] is True
     put = client.put("/api/settings", json={"key": "engine.memory_limit", "value": "2GB"})
     assert put.json()["settings"]["engine.memory_limit"] == "2GB"
     bad = client.put("/api/settings", json={"key": "project.name", "value": "x"})
     assert bad.status_code == 400 and bad.json()["error"] == "not_settable"
-    text = (p.root / "lakelet.toml").read_text()
+    text = (p.root / "querysolo.toml").read_text()
     assert 'memory_limit = "2GB"' in text and "share_calibration = true" in text
     assert "# DuckDB default, 80% of RAM" in text, "the file is edited, not regenerated"
     assert p.config.engine.memory_limit == "2GB", "the running project re-read its config"
@@ -174,7 +174,7 @@ def test_a_client_that_goes_away_stops_the_statement_and_history_shows_the_run(s
     slow = "select count(*) as n from range(100000) a, range(100000) b"  # 10^10 rows: minutes
     t0 = time.perf_counter()
     with client.stream("POST", "/api/query", json={"sql": slow}, timeout=30) as r:
-        assert r.status_code == 200 and r.headers["x-lakelet-verdict"]
+        assert r.status_code == 200 and r.headers["x-querysolo-verdict"]
         # go away before the first (and only) row exists
     health = client.get("/api/health", timeout=10)  # would wait for the lock otherwise
     assert health.status_code == 200 and time.perf_counter() - t0 < 10
@@ -239,8 +239,8 @@ def test_estimate_and_query_stream_arrow_with_the_verdict(served) -> None:
 
     response = client.post("/api/query", json={"sql": sql})
     assert response.status_code == 200
-    assert response.headers["x-lakelet-verdict"] == "green"
-    assert response.headers["x-lakelet-words"] == "Runs here"
+    assert response.headers["x-querysolo-verdict"] == "green"
+    assert response.headers["x-querysolo-words"] == "Runs here"
     table = _rows(response)
     assert table.num_rows == 10 and table.column("n")[0].as_py() == 100
 
@@ -276,7 +276,7 @@ def test_the_gauge_screen_routes(served) -> None:
 def test_red_is_409_with_the_estimate_unless_allowed(served) -> None:
     p, client, tmp_path = served
     client.post("/api/import", json={"path": str(tmp_path / "orders.csv")})
-    toml = p.root / "lakelet.toml"
+    toml = p.root / "querysolo.toml"
     toml.write_text(
         toml.read_text()
         .replace("green_max_seconds = 60", "green_max_seconds = 0.0000001")
@@ -339,7 +339,7 @@ def test_the_cli_serve_from_another_process(tmp_path) -> None:
     root = tmp_path / "proj"
     Project.init(root, probe_mb=8)
     proc = subprocess.Popen(
-        [sys.executable, "-m", "lakelet.cli", "-C", str(root), "serve"],
+        [sys.executable, "-m", "querysolo.cli", "-C", str(root), "serve"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -347,7 +347,7 @@ def test_the_cli_serve_from_another_process(tmp_path) -> None:
     try:
         line = proc.stdout.readline()
         assert line.startswith("serving http://127.0.0.1:"), line
-        info = json.loads((root / ".lakelet/serve.json").read_text())
+        info = json.loads((root / ".querysolo/serve.json").read_text())
         assert info["pid"] == proc.pid
         health = httpx.get(
             f"http://127.0.0.1:{info['port']}/api/health",
@@ -358,21 +358,21 @@ def test_the_cli_serve_from_another_process(tmp_path) -> None:
         proc.terminate()
         proc.wait(timeout=10)
     for _ in range(20):
-        if not (root / ".lakelet/serve.json").exists():
+        if not (root / ".querysolo/serve.json").exists():
             break
         time.sleep(0.1)
-    assert not (root / ".lakelet/serve.json").exists()
+    assert not (root / ".querysolo/serve.json").exists()
     refused = CliRunner().invoke(app, ["-C", str(root), "serve", "--host", "0.0.0.0"])
     assert refused.exit_code == 1 and "loopback" in refused.output
 
 
 def test_serve_memory_limit_and_the_dev_origin(tmp_path, monkeypatch) -> None:
     """App brief A8 and A12 (September 10): ``serve --memory-limit`` overrides ``[engine]``
-    for this process only, and ``LAKELET_DEV_ORIGIN`` joins the CORS list when set, so the
+    for this process only, and ``QUERYSOLO_DEV_ORIGIN`` joins the CORS list when set, so the
     frontend can be driven from a browser against a real sidecar; the shell never sets it."""
     root = tmp_path / "proj"
     Project.init(root, probe_mb=8)
-    monkeypatch.setenv("LAKELET_DEV_ORIGIN", "http://localhost:5173")
+    monkeypatch.setenv("QUERYSOLO_DEV_ORIGIN", "http://localhost:5173")
     with Project.open(root, serve=True, memory_limit="1GB") as p:
         token = json.loads(p.serve_json.read_text())["token"]
         health = httpx.get(
@@ -389,10 +389,10 @@ def test_serve_memory_limit_and_the_dev_origin(tmp_path, monkeypatch) -> None:
             json={"sql": "select 1 as one"},
             headers={"Authorization": f"Bearer {token}", "Origin": "http://localhost:5173"},
         )
-        assert run.status_code == 200 and run.headers["x-lakelet-verdict"] == "green"
+        assert run.status_code == 200 and run.headers["x-querysolo-verdict"] == "green"
         exposed = run.headers.get("access-control-expose-headers", "").lower()
-        assert "x-lakelet-verdict" in exposed and "x-lakelet-reason" in exposed
-    monkeypatch.delenv("LAKELET_DEV_ORIGIN")
+        assert "x-querysolo-verdict" in exposed and "x-querysolo-reason" in exposed
+    monkeypatch.delenv("QUERYSOLO_DEV_ORIGIN")
     with Project.open(root, serve=True) as p:
         refused = httpx.options(
             f"{p.catalog_url}/api/query",
@@ -400,5 +400,5 @@ def test_serve_memory_limit_and_the_dev_origin(tmp_path, monkeypatch) -> None:
         )
         assert "access-control-allow-origin" not in refused.headers
         assert (
-            tomllib.loads((root / "lakelet.toml").read_text())["engine"]["memory_limit"] == "auto"
+            tomllib.loads((root / "querysolo.toml").read_text())["engine"]["memory_limit"] == "auto"
         )

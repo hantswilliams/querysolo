@@ -1,6 +1,6 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Decisions L2: `lakelet changes` — an import, a run, a save and a restore appear in
+"""Decisions L2: `querysolo changes` — an import, a run, a save and a restore appear in
 order with the right shapes, merged from the catalog's snapshots, history's runs and git's
 commits; `--since` and a name filter; the route. Against a real dbt project."""
 
@@ -14,10 +14,10 @@ import httpx
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project
-from lakelet.changes import changes, parse_since
-from lakelet.cli import app
-from lakelet.dbt import runner
+from querysolo import Project
+from querysolo.changes import changes, parse_since
+from querysolo.cli import app
+from querysolo.dbt import runner
 
 pytest.importorskip("dbt.cli.main")
 
@@ -31,7 +31,7 @@ def project(tmp_path):
     )
     p = Project.open(root, serve=True)
     p.engine.execute(
-        "create table lakelet.main.src as "
+        "create table querysolo.main.src as "
         "select range as id, 'c' || (range % 3) as c, range * 1.5 as amt from range(300)"
     )
     yield p
@@ -48,8 +48,8 @@ def test_an_import_a_run_a_save_and_a_restore_in_order(project) -> None:
     # under models/), about the project rather than a model
     feed = changes(p)
     assert _kinds(feed) == [("snapshot", "src"), ("version", None)]
-    assert feed[1].target == "project" and feed[1].message == "lakelet init"
-    assert feed[1].names == [] and feed[1].sentence().startswith("lakelet init · by ")
+    assert feed[1].target == "project" and feed[1].message == "querysolo init"
+    assert feed[1].names == [] and feed[1].sentence().startswith("querysolo init · by ")
     src = feed[0]
     assert src.target == "table" and src.operation == "append" and src.added_rows == 300
     assert src.affects == [] and src.sentence() == "src: 300 rows added"
@@ -67,7 +67,7 @@ def test_an_import_a_run_a_save_and_a_restore_in_order(project) -> None:
     p.versions.restore("total", first.commit)
     time.sleep(1.1)
     # an append to src: the newest snapshot names the model it made out of date (L3)
-    p.engine.execute("insert into lakelet.main.src values (999, 'c9', 9.0)")
+    p.engine.execute("insert into querysolo.main.src values (999, 'c9', 9.0)")
 
     feed = changes(p)
     kinds = _kinds(feed)
@@ -122,6 +122,21 @@ def test_since_parsing() -> None:
         parse_since("yesterday")
 
 
+def test_json_survives_a_narrow_terminal(project) -> None:
+    """`--json` is for programs: a line longer than the terminal (CI's 80 columns and its long
+    temporary paths) must not be wrapped into the middle of a string."""
+    p = project
+    runner.run(p)
+    p.questions.save(
+        "A question with a long enough title to pass forty columns",
+        "select sum(amt) as total from src",
+    )
+    for argv in (["changes", "--json"], ["lineage", "--all", "--json"]):
+        r = CliRunner().invoke(app, ["-C", str(p.root), *argv], env={"COLUMNS": "40"})
+        assert r.exit_code == 0, r.output
+        json.loads(r.output)
+
+
 def test_the_cli_and_the_route(project) -> None:
     p = project
     runner.run(p)
@@ -164,7 +179,7 @@ def test_a_project_without_git_or_models_still_answers(tmp_path) -> None:
     shutil.rmtree(root / ".git", ignore_errors=True)
     p = Project.open(root, serve=False)
     try:
-        p.engine.execute("create table lakelet.main.t as select 1 as x")
+        p.engine.execute("create table querysolo.main.t as select 1 as x")
         feed = changes(p)
         assert _kinds(feed) == [("snapshot", "t")] and feed[0].affects == []
         assert Path(root / ".git").exists() is False
@@ -178,8 +193,8 @@ def test_a_schema_one_history_migrates_and_keeps_its_last_runs(tmp_path) -> None
     place on open, its rows kept, and runs accumulate from then on."""
     import sqlalchemy as sa
 
-    from lakelet import history as history_module
-    from lakelet.history import History
+    from querysolo import history as history_module
+    from querysolo.history import History
 
     path = tmp_path / "history.db"
     h = History(path)
@@ -211,7 +226,7 @@ def test_a_schema_one_history_migrates_and_keeps_its_last_runs(tmp_path) -> None
     h = History(path)
     with h.engine.connect() as c:
         version = c.execute(sa.text("SELECT value FROM meta WHERE key = 'schema_version'")).scalar()
-    assert version == str(history_module.SCHEMA_VERSION) == "2"
+    assert version == str(history_module.SCHEMA_VERSION) == "3"  # 3: the rename (plan R5)
     assert h.model_last_run("model.proj.by_c").id == run_a
     assert h.question_last_run("total") is not None
     assert sorted(k for _, k, _ in h.model_and_question_runs()) == ["model.proj.by_c", "total"]
@@ -224,13 +239,13 @@ def test_a_schema_one_history_migrates_and_keeps_its_last_runs(tmp_path) -> None
 
 
 def _run():
-    from lakelet.history import Run
+    from querysolo.history import Run
 
     return Run(
         fingerprint="f",
         sql_hash="h",
         sql_text="select 1",
-        lakelet_version="0",
+        querysolo_version="0",
         duckdb_version="0",
         machine_hash="m",
         machine={},

@@ -1,6 +1,6 @@
 # A warehouse for one
 
-*Concept and branding language · 2026-09-24 · Product name: Lakelet (working name; TBD\*) · The reasoning is in `build-sessions/lakelet-build-sessions_092426b.md` §2 and §7; the audit of what "warehouse" means against what is built is in that day's conversation and summarised in §1 below.*
+*Concept and branding language · 2026-09-24 · Product name: QuerySolo · The reasoning is in `build-sessions/lakelet-build-sessions_092426b.md` §2 and §7; the audit of what "warehouse" means against what is built is in that day's conversation and summarised in §1 below.*
 
 ## 1. What the phrase says
 
@@ -18,7 +18,7 @@ Why not the bare "open-source warehouse": that shelf is ClickHouse, Doris, StarR
 
 **The one-liner** (the README's first sentence, the hero's subtitle):
 
-> TBD\* is an open-source warehouse for one machine, for SQL and dbt: it says whether a query fits before it runs, records what every run actually did, and keeps every table in Iceberg so any engine can read it.
+> QuerySolo is an open-source warehouse for one machine, for SQL and dbt: it says whether a query fits before it runs, records what every run actually did, and keeps every table in Iceberg so any engine can read it.
 
 **The tagline** (the hero headline, the tab title, the first line of the deck):
 
@@ -47,7 +47,7 @@ The page, the deck and the README follow the same three beats in the same order.
 Secondary meanings, usable in body copy, never as the lead.
 
 - One folder is the project, the backup, and the thing you hand to someone else.
-- One command behind every button: the app shows the `lakelet` line it is, so the terminal can do everything the window can.
+- One command behind every button: the app shows the `querysolo` line it is, so the terminal can do everything the window can.
 - One download, at `init`, then nothing.
 - One binary, once the installer ships. Not before.
 - One writer. The honest one, and the one we say first.
@@ -97,7 +97,7 @@ Words that do not appear: lakehouse (as the category; it may name the format lin
 
 Each with where it is measured, so the page can link and the deck can footnote.
 
-- Zero outbound attempts on the whole quickstart, measured by `lakelet audit network`; what is stored where, in `PRIVACY.md`.
+- Zero outbound attempts on the whole quickstart, measured by `querysolo audit network`; what is stored where, in `PRIVACY.md`.
 - A public dataset of 21.9 GB in 32 files, attached from a laptop with no credentials and nothing copied; a bounding-box query answered from another process with pyiceberg (`/docs/remote`, 2026-09-11).
 - The verdict arrives before the first row. On the reference Mac the verdict line landed at 56 ms and the first rows at 62 ms over a 20-million-row table (app brief, 2026-09-10). The page says "before the first row"; the milliseconds stay in the docs.
 - A failed replace keeps the old table, a moved folder is relocated, a newer schema is refused: every sentence in `/docs/recovery` has a test.

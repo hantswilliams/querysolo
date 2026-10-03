@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // "Copy as command": the CLI line an action is, shown beside it, with a copy button. The
 // app never does anything the terminal cannot, and this is where it proves it.

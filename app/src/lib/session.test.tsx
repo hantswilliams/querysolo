@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // A window hears the shell's sidecar events for itself only (2026-09-21): the global
 // listener of `@tauri-apps/api/event` receives events sent to any window, so a second

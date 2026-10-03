@@ -38,10 +38,16 @@ jobs:
           enable-cache: true
           cache-dependency-glob: core/uv.lock
       # The sidecar the screens run against: the core from this checkout, with its extensions.
-      - run: uv sync --locked
+      # --compile-bytecode: Moto and botocore compile on first import otherwise, and a cold
+      # macOS runner took over 30 s to start the test bucket.
+      - run: uv sync --locked --compile-bytecode
         working-directory: core
       - run: uv run python -c "import duckdb; duckdb.connect().execute('INSTALL iceberg; INSTALL httpfs; INSTALL excel; INSTALL aws')"
         working-directory: core
+      # tauri.conf.json bundles the frozen core (ship S1) as a resource, and the build script
+      # refuses a missing resource path; the tests do not need the core in it, so an empty
+      # folder stands in for the one `freeze/build.py` makes for a release.
+      - run: mkdir -p core/dist/querysolo
       - run: cargo test
         working-directory: app/src-tauri
       - run: npm ci
@@ -55,4 +61,11 @@ jobs:
       - run: npx playwright test
         working-directory: app
         env:
-          LAKELET_SIDECAR: ${{ github.workspace }}/core/.venv/bin/lakelet
+          QUERYSOLO_SIDECAR: ${{ github.workspace }}/core/.venv/bin/querysolo
+      # On a failure, keep what Playwright saw (traces, page snapshots) to read afterwards.
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results-${{ matrix.os }}
+          path: app/test-results/
+          retention-days: 7

@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Decisions L2: each entry of the feed as one sentence, in both modes, and where it links.
 
@@ -50,8 +50,8 @@ describe('the changes feed', () => {
     expect(versionWhat(run, 'simple')).toBe('by_c, stg changed before a refresh');
     expect(versionWhat(run, 'technical')).toBe('run: by_c, stg changed');
     expect(changeLinks(run)).toEqual([{ name: 'by_c', where: 'model' }, { name: 'stg', where: 'model' }]);
-    const init: Change = { ...save, name: null, target: 'project', message: 'lakelet init', names: [], author: 'hants' };
-    expect(changeLine(init, 'simple')).toBe('lakelet init · hants');
+    const init: Change = { ...save, name: null, target: 'project', message: 'querysolo init', names: [], author: 'hants' };
+    expect(changeLine(init, 'simple')).toBe('querysolo init · hants');
     expect(changeLinks(init)).toEqual([]);
     expect(matchesName(run, 'stg')).toBe(true);
     expect(matchesName(save, 'total')).toBe(true);

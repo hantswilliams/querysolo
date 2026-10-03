@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The window before it has a project (app brief A10): a new project (decisions P1: a name,
 // where its tables go), open a folder, or one of the recent ten. A folder that is not a
@@ -15,7 +15,7 @@ export interface WelcomeProps {
   error?: string;
   /** The New project dialog (P1). */
   onNew: () => void;
-  /** The folder dialog, then `lakelet init` for a folder that is not a project yet. */
+  /** The folder dialog, then `querysolo init` for a folder that is not a project yet. */
   onPick: () => void;
   onOpen: (path: string) => void;
 }
@@ -28,8 +28,8 @@ export function Welcome({ recent, canPick, busy, error, onNew, onPick, onOpen }:
     <section className="welcome" data-testid="welcome">
       <h1>A lakehouse is a folder</h1>
       <p className="muted">
-        Lakelet keeps its catalog and tables inside it, next to your files. Make a new one, or open any folder: one that is
-        not a project yet is set up first, which is <code>lakelet init &lt;folder&gt;</code> in a terminal.
+        QuerySolo keeps its catalog and tables inside it, next to your files. Make a new one, or open any folder: one that is
+        not a project yet is set up first, which is <code>querysolo init &lt;folder&gt;</code> in a terminal.
       </p>
       <div className="actions">
         <button type="button" className="primary" onClick={onNew} disabled={!!busy} data-testid="new-project-button">
@@ -42,8 +42,8 @@ export function Welcome({ recent, canPick, busy, error, onNew, onPick, onOpen }:
       </div>
       {!canPick && (
         <p className="muted hint" data-testid="hint">
-          In a browser there is no folder dialog. In development, export <code>LAKELET_SIDECAR</code> (the <code>lakelet</code> executable,
-          for example <code>core/.venv/bin/lakelet</code>) and run <code>npm run tauri dev</code>; or start <code>lakelet serve</code> yourself
+          In a browser there is no folder dialog. In development, export <code>QUERYSOLO_SIDECAR</code> (the <code>querysolo</code> executable,
+          for example <code>core/.venv/bin/querysolo</code>) and run <code>npm run tauri dev</code>; or start <code>querysolo serve</code> yourself
           and open <code>/?port=&amp;token=</code> from its <code>serve.json</code>.
         </p>
       )}

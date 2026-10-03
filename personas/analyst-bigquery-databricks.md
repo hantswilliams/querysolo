@@ -1,6 +1,6 @@
 # The mid-tier analyst on BigQuery or Databricks
 
-*Persona · written 2026-09-24 from the positioning conversation of that day (the articles in `research/`; the conclusions in `build-sessions/lakelet-build-sessions_092426b.md`) · Status: **assumed, not observed** — no recorded session with this person has happened; the questions at the end are what one must answer · Product name: Lakelet (working name; TBD\*).*
+*Persona · written 2026-09-24 from the positioning conversation of that day (the articles in `research/`; the conclusions in `build-sessions/lakelet-build-sessions_092426b.md`) · Status: **assumed, not observed** — no recorded session with this person has happened; the questions at the end are what one must answer · Product name: QuerySolo.*
 
 ## Who
 
@@ -57,7 +57,7 @@ BigQuery deserves the fair comparison: it already shows the bytes. What it does 
 
 Every Monday a scheduled query rebuilds a summary table whether or not anything changed underneath, and when a number looks wrong the analyst cannot say which upstream load did it. With the product the report is a model in the project. Run only what is stale builds it when an upstream table has a new snapshot and skips it otherwise. The Changes feed shows the snapshot that made it stale, lineage shows what feeds it, and every run is a version with the SQL diff. A table rebuilt every week accumulates delete files, and the gauge will say needs maintenance once compaction lands.
 
-*Built today.* `lakelet run --stale`, the Changes feed, lineage, versions. *Planned:* the schedule itself (Team tier; cron or CI until then), compaction (V2) and the needs-maintenance verdict.
+*Built today.* `querysolo run --stale`, the Changes feed, lineage, versions. *Planned:* the schedule itself (Team tier; cron or CI until then), compaction (V2) and the needs-maintenance verdict.
 
 ### 5. The coding agent with their credentials
 

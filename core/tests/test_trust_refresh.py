@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Trust round T2: an attached file that changes under the same path is detected. Refresh
 compares every registered file's size with its manifest entry and its modification time
@@ -13,9 +13,9 @@ from types import SimpleNamespace
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project
-from lakelet.cli import app
-from lakelet.register import VERIFIED_PROPERTY, ChangedFiles
+from querysolo import Project
+from querysolo.cli import app
+from querysolo.register import VERIFIED_PROPERTY, ChangedFiles
 from tests.s3_helpers import open_store
 from tests.test_step8_remote import write_part
 

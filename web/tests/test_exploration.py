@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Website exploration gate. Run `npm run build`, then pytest this file.
 
@@ -14,7 +14,7 @@ from urllib.parse import unquote, urlsplit
 import pytest
 
 DIST = Path(__file__).resolve().parents[1] / "dist"
-BASE = os.environ.get("SITE_BASE", "/lakelet").rstrip("/")
+BASE = os.environ.get("SITE_BASE", "/querysolo").rstrip("/")
 ROUTES = ["explore", "explore/product", "explore/story", "explore/editorial", "explore/querysolo"]
 
 

@@ -1,4 +1,4 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Write src/content/docs/cli.md from the CLI's own --help text, so the reference cannot
 drift from the code. Run from web/:
@@ -13,8 +13,8 @@ from pathlib import Path
 
 import click
 import typer
-from lakelet import __version__
-from lakelet.cli import app
+from querysolo import __version__
+from querysolo.cli import app
 
 os.environ["TERM"] = "dumb"
 os.environ["NO_COLOR"] = "1"
@@ -24,18 +24,18 @@ OUT = Path(__file__).resolve().parent.parent / "src" / "content" / "docs" / "cli
 
 HEADER = f"""---
 title: CLI reference
-description: Every lakelet verb with its arguments and options, generated from the CLI's own help text.
+description: Every querysolo verb with its arguments and options, generated from the CLI's own help text.
 section: Reference
 order: 1
 ---
 
-Generated from `lakelet --help` and every subcommand's help at version `{__version__}`
+Generated from `querysolo --help` and every subcommand's help at version `{__version__}`
 by `web/scripts/gen-cli-reference.py`. Do not edit by hand; re-run the script after a
 CLI change.
 
 Every verb runs against the project in the current folder; `-C <path>` points at another
 one, and `--profile <name>` names the AWS profile for a private bucket, as `AWS_PROFILE`
-would ([credentials](/docs/remote#credentials)). The gauge line goes to stderr and rows to stdout, so `lakelet sql … > out.csv` keeps
+would ([credentials](/docs/remote#credentials)). The gauge line goes to stderr and rows to stdout, so `querysolo sql … > out.csv` keeps
 the two apart. Exit codes: `0` ran; `1` an error, named on stderr; `2` a Red verdict that
 was refused (add `--run-anyway`); `4` a catalog conflict after retries.
 
@@ -71,7 +71,7 @@ def walk(
 def main() -> None:
     root = typer.main.get_command(app)
     parts: list[str] = [HEADER]
-    walk(root, "lakelet", None, parts, 1)
+    walk(root, "querysolo", None, parts, 1)
     OUT.write_text("".join(parts), encoding="utf-8")
     print(f"wrote {OUT.relative_to(Path.cwd())}")
 

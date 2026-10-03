@@ -1,6 +1,6 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Trust round T5: a moved or copied project folder says so on open, and ``lakelet relocate``
+"""Trust round T5: a moved or copied project folder says so on open, and ``querysolo relocate``
 makes its tables resolve again with every snapshot kept — including a position-delete
 file, whose rows name the data file by absolute path and are written again."""
 
@@ -11,8 +11,8 @@ import shutil
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project, relocate
-from lakelet.cli import app
+from querysolo import Project, relocate
+from querysolo.cli import app
 
 
 @pytest.fixture
@@ -23,13 +23,13 @@ def moved(tmp_path):
     Project.init(root, probe_mb=8)
     p = Project.open(root)
     p.engine.execute(
-        "CREATE TABLE lakelet.main.orders AS SELECT range AS id, 'c' || (range % 5) AS c, "
+        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, 'c' || (range % 5) AS c, "
         "range * 1.5 AS amt FROM range(1000)"
     )
     p.engine.execute(
-        "INSERT INTO lakelet.main.orders SELECT range, 'x', 1.0 FROM range(1000, 1500)"
+        "INSERT INTO querysolo.main.orders SELECT range, 'x', 1.0 FROM range(1000, 1500)"
     )
-    p.engine.execute("DELETE FROM lakelet.main.orders WHERE id < 10")
+    p.engine.execute("DELETE FROM querysolo.main.orders WHERE id < 10")
     p.questions.save("Total", "select sum(amt) as total from orders")
     first_snapshot = p.tables.describe("orders").snapshot_list[-1]["id"]
     p.close()
@@ -49,7 +49,7 @@ def test_a_moved_project_opens_says_where_it_was_and_marks_its_tables(moved) -> 
         assert r.exit_code == 0, r.output
         # rich wraps at the terminal width, so compare with all whitespace removed
         text = "".join(r.output.split())
-        assert f"movedfrom{moved['old']}" in text and "lakeletrelocate" in text
+        assert f"movedfrom{moved['old']}" in text and "querysolorelocate" in text
     finally:
         p.close()
 
@@ -67,7 +67,7 @@ def test_relocate_makes_every_snapshot_resolve_for_duckdb_and_pyiceberg(moved) -
         desc = p.tables.describe("orders")
         assert desc.snapshots == 3 and desc.rows == 1490 and not desc.needs_relocate
         assert desc.location.startswith(f"file://{moved['new']}")
-        table = RestCatalog("lakelet", uri=p.catalog_url, **p.io_properties).load_table(
+        table = RestCatalog("querysolo", uri=p.catalog_url, **p.io_properties).load_table(
             "main.orders"
         )
         assert table.scan().to_arrow().num_rows == 1490

@@ -1,17 +1,17 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Step 2's half-day spike (brief M6): dbt-duckdb against the attached catalog, one
 incremental merge model, run twice. The answer goes into the brief's §7 either way."""
 
 import pytest
 
-from lakelet import Project
+from querysolo import Project
 
 dbt_main = pytest.importorskip("dbt.cli.main")
 
 MODEL = """{{ config(materialized='incremental', incremental_strategy='merge', unique_key='id',
-              database='lakelet') }}
-select id, amt, updated_at from lakelet.main.src_orders
+              database='querysolo') }}
+select id, amt, updated_at from querysolo.main.src_orders
 {% if is_incremental() %}
 where updated_at > (select coalesce(max(updated_at), timestamp '1970-01-01') from {{ this }})
 {% endif %}
@@ -19,7 +19,7 @@ where updated_at > (select coalesce(max(updated_at), timestamp '1970-01-01') fro
 
 
 def profiles_yml(catalog_url: str) -> str:
-    return f"""lakelet:
+    return f"""querysolo:
   target: dev
   outputs:
     dev:
@@ -48,7 +48,7 @@ def test_dbt_incremental_merge_through_the_catalog(tmp_path) -> None:
     with Project.open(root) as p:
         (root / "profiles.yml").write_text(profiles_yml(p.catalog_url))
         p.engine.execute(
-            "CREATE TABLE lakelet.main.src_orders (id BIGINT, amt DOUBLE, updated_at TIMESTAMP)"
+            "CREATE TABLE querysolo.main.src_orders (id BIGINT, amt DOUBLE, updated_at TIMESTAMP)"
         )
         p.engine.execute(
             "INSERT INTO src_orders VALUES (1, 1.0, '2026-01-01'), (2, 2.0, '2026-01-01')"

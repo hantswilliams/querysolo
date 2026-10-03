@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // The grid's columns are sized to what they hold (TASKS, 2026-09-16: an equal share of the
 // width put a two-column result's number far from its header).

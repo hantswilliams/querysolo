@@ -1,4 +1,4 @@
-// Copyright 2026 Lakelet contributors
+// Copyright 2026 QuerySolo contributors
 // SPDX-License-Identifier: Apache-2.0
 // Step 3 gate, the gauge line: the verdict's words and colour, the running count, the
 // done line with the cap's footer, Red as a refusal with the button.
@@ -48,7 +48,7 @@ describe('GaugeLine', () => {
     render(<GaugeLine state={{ kind: 'done', verdict: green, rows: 100_000, seconds: 3.21, complete: false, capped: true }} onRunAnyway={() => {}} />);
     const text = screen.getByTestId('gauge').textContent ?? '';
     expect(text).toContain('100,000 rows in 3.21 s');
-    expect(text).toContain('lakelet sql --format parquet');
+    expect(text).toContain('querysolo sql --format parquet');
   });
 
   it('Red is a refusal with the sentence and a button', () => {

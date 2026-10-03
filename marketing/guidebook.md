@@ -1,6 +1,6 @@
 # A warehouse for one.
-> TBD* is an open-source warehouse for one machine, for SQL and dbt: it says whether a query fits before it runs, records what every run actually did, and keeps every table in Iceberg so any engine can read it.
-Developer preview · Apache 2.0 · macOS and Linux · working name Lakelet · the guidebook to marketing/
+> QuerySolo is an open-source warehouse for one machine, for SQL and dbt: it says whether a query fits before it runs, records what every run actually did, and keeps every table in Iceberg so any engine can read it.
+Developer preview · Apache 2.0 · macOS and Linux · QuerySolo · the guidebook to marketing/
 ---
 # What "a warehouse for one" says
 - **It is a warehouse.** Tables in a catalog you can list and describe. SQL over them. Transformations as managed tables and views. Snapshots and history. Statistics, lineage, a record of every run. Backups that are a copy of a folder. Not a database, not a notebook, not an editor, not a lakehouse tutorial.
@@ -50,8 +50,8 @@ Saving is not the headline, because saving is not unique.
 ---
 # Nothing leaves. Any engine reads.
 > Your machine. Your bucket. Your tables.
-- Zero outbound attempts on the whole quickstart, measured by lakelet audit network. The scope, always in the same paragraph: one extension download at init, and the buckets and bursts you ask for.
-- The project is a folder: warehouse/ holds Parquet and Iceberg metadata, models/ the SQL, .lakelet/ the catalog and history, .git/ the versions, lakelet.toml the settings. A copy of the folder is the backup.
+- Zero outbound attempts on the whole quickstart, measured by querysolo audit network. The scope, always in the same paragraph: one extension download at init, and the buckets and bursts you ask for.
+- The project is a folder: warehouse/ holds Parquet and Iceberg metadata, models/ the SQL, .querysolo/ the catalog and history, .git/ the versions, querysolo.toml the settings. A copy of the folder is the backup.
 - Spark, Trino, pyiceberg, BigQuery and Databricks read the tables as they are. Leaving is pointing another engine at the folder.
 - A failed replace keeps the old table, a moved folder is relocated, a newer schema is refused: every sentence in /docs/recovery has a test.
 ---

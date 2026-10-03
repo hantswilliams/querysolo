@@ -1,8 +1,8 @@
-# Copyright 2026 Lakelet contributors
+# Copyright 2026 QuerySolo contributors
 # SPDX-License-Identifier: Apache-2.0
 """Versions step 1 gate (versions brief §4, G4, G5): a question's history is the commits that
 changed its SQL or its checks, each with the diff against the version before; restore writes
-an old version back and is itself a new version, never a rewrite; ``lakelet run`` records a
+an old version back and is itself a new version, never a rewrite; ``querysolo run`` records a
 version of what it is about to build, and ``git.auto_commit = false`` stops that while a save
 still commits. The CLI verbs and the three routes over the same functions."""
 
@@ -10,10 +10,10 @@ import httpx
 import pytest
 from typer.testing import CliRunner
 
-from lakelet import Project, versions
-from lakelet.cli import app
-from lakelet.dbt import runner
-from lakelet.versions import NoHistory, NoSuchModel
+from querysolo import Project, versions
+from querysolo.cli import app
+from querysolo.dbt import runner
+from querysolo.versions import NoHistory, NoSuchModel
 from tests.test_versions import log, use_gitconfig
 
 cli = CliRunner()
@@ -36,7 +36,7 @@ def project(tmp_path, gitconfig):
     Project.init(root, probe_mb=8)
     p = Project.open(root, serve=True)
     p.engine.execute(
-        "CREATE TABLE lakelet.main.orders AS SELECT range AS id, 'c' || (range % 5) AS customer, "
+        "CREATE TABLE querysolo.main.orders AS SELECT range AS id, 'c' || (range % 5) AS customer, "
         "(range * 1.5)::DOUBLE AS amt FROM range(1000)"
     )
     yield p
@@ -182,20 +182,20 @@ def test_show_returns_that_versions_sql(saved_twice) -> None:
     assert WIDER in saved_twice.versions.sql("revenue_by_customer", entries[0].id)
 
 
-# -- lakelet run records a version (G4) ----------------------------------------------------
+# -- querysolo run records a version (G4) ----------------------------------------------------
 
 
 def _model(project, sql: str) -> None:
     (project.root / "models" / "stg.sql").write_text(sql, encoding="utf-8")
     (project.root / "models" / "schema.yml").write_text(
-        "version: 2\nsources:\n  - name: lakelet\n    database: lakelet\n    schema: main\n"
+        "version: 2\nsources:\n  - name: querysolo\n    database: querysolo\n    schema: main\n"
         "    tables: [{ name: orders }]\n",
         encoding="utf-8",
     )
 
 
 def test_run_commits_the_models_it_is_about_to_build(project) -> None:
-    _model(project, "select id, customer, amt from {{ source('lakelet','orders') }}\n")
+    _model(project, "select id, customer, amt from {{ source('querysolo','orders') }}\n")
     report = runner.run(project)
 
     assert report.commit and report.git is None
@@ -204,7 +204,7 @@ def test_run_commits_the_models_it_is_about_to_build(project) -> None:
 
 
 def test_a_second_run_with_nothing_changed_records_no_version(project) -> None:
-    _model(project, "select id, customer, amt from {{ source('lakelet','orders') }}\n")
+    _model(project, "select id, customer, amt from {{ source('querysolo','orders') }}\n")
     runner.run(project)
     again = runner.run(project)
     assert again.commit is None and again.git is None
@@ -214,13 +214,13 @@ def test_a_second_run_with_nothing_changed_records_no_version(project) -> None:
 def test_a_run_refused_as_red_records_no_version(project) -> None:
     """G4's commit is of what dbt is about to build, so a run that dbt never gets to must
     leave no version behind: plan, then the refusal, then the commit."""
-    from lakelet.config import Config, set_value
+    from querysolo.config import Config, set_value
 
-    toml = project.root / "lakelet.toml"
+    toml = project.root / "querysolo.toml"
     for key, value in (("gauge.green_max_seconds", "0"), ("gauge.yellow_max_seconds", "0")):
         toml.write_text(set_value(toml.read_text(), key, value), encoding="utf-8")
     project.config = Config.load(toml)
-    _model(project, "select id, customer, amt from {{ source('lakelet','orders') }}\n")
+    _model(project, "select id, customer, amt from {{ source('querysolo','orders') }}\n")
 
     with pytest.raises(runner.RedRefusedRun):
         runner.run(project)
@@ -233,12 +233,12 @@ def test_a_run_refused_as_red_records_no_version(project) -> None:
 def test_auto_commit_false_stops_the_run_time_commit_and_a_save_still_commits(project) -> None:
     """G4: a developer who keeps their own git turns the run-time commit off; a save with no
     version is the one thing the product promises not to do, so saves are unaffected."""
-    from lakelet.config import Config, set_value
+    from querysolo.config import Config, set_value
 
-    toml = project.root / "lakelet.toml"
+    toml = project.root / "querysolo.toml"
     toml.write_text(set_value(toml.read_text(), "git.auto_commit", False), encoding="utf-8")
     project.config = Config.load(toml)
-    _model(project, "select id, customer, amt from {{ source('lakelet','orders') }}\n")
+    _model(project, "select id, customer, amt from {{ source('querysolo','orders') }}\n")
 
     report = runner.run(project)
     assert report.commit is None
@@ -249,7 +249,7 @@ def test_auto_commit_false_stops_the_run_time_commit_and_a_save_still_commits(pr
 
 
 def test_the_setting_is_settable_and_defaults_to_true(project) -> None:
-    from lakelet.config import current_settings, parse_setting
+    from querysolo.config import current_settings, parse_setting
 
     assert current_settings(project.config)["git.auto_commit"] is True
     assert parse_setting("git.auto_commit", "false") is False
