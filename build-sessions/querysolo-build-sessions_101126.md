@@ -53,6 +53,16 @@ The bundled extensions from the earlier freezes were moved out of `core/dist` to
   - `release.yml` (step 4) must do the same.
 - `QuerySolo_0.1.0_aarch64.dmg`: 88 MB. This build was made before X1's code, from a core with no extensions folder.
 
+## 3a. Rebuilt from this session's core
+
+- The app was notarised (`4715b9ff-…`) and stapled. The DMG was notarised by hand (`0a57d76f-…`) and stapled.
+- `spctl` accepts both as *Notarized Developer ID*, and `codesign --verify --deep --strict` passes on the app.
+- Sizes: the DMG is 88 MB, and the installed app 205 MB (was 292 MB for the core alone with the extensions).
+- The signed core inside the app, under the hardened runtime:
+  - `--version` answers.
+  - Offline, `init` prints X3's sentence and exits 0.
+  - From an empty HOME with the network, `init` downloads the five extensions and `sql "select 42"` answers. So the Apple-signed process loads DuckDB-signed extensions under `disable-library-validation`, as X1 assumed.
+
 ## 4. Tests
 
 | Gate | Result |
@@ -81,7 +91,6 @@ The bundled extensions from the earlier freezes were moved out of `core/dist` to
 ## 6. Open
 
 - The clean-Mac test: download the DMG on another Mac or user account, open it, launch, and time the first launch. Hants has no second Mac yet.
-- A DMG rebuilt from this session's core, which carries X3. The notarised one predates it.
 - Step 4, `release.yml`: the DMG's notarisation and staple as above; `APPLE_API_PRIVATE_KEY` to a temp file.
-- The open-time sentence starts "cannot open: the project is ready, but …". X3 asked for the same sentence and it is that, but it reads oddly after "cannot open". To review.
+- The open-time sentence starts "cannot open: the project is ready, but …". X3 asked for the same sentence and it is that, but it reads oddly after "cannot open". Also, any failure of the download gets "could not reach it", even one that is not the network's (seen: a HOME that does not exist, "Can't find the home directory"). To review.
 - Not committed: everything on `ship/signing`.
