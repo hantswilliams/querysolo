@@ -23,7 +23,7 @@ The query record keeps your SQL. It is the record the gauge learns from, it neve
 
 Nothing, except what you ask for:
 
-- `querysolo init` downloads DuckDB's Iceberg, httpfs, excel and aws extensions from `extensions.duckdb.org` once, and says so. Installers (session 10) bundle them, after which not even that.
+- `querysolo init` downloads DuckDB's Iceberg, httpfs, excel and aws extensions (and avro, which Iceberg needs; about 80 MB) from `extensions.duckdb.org` once, and says so. The desktop app does the same when it makes a project: Apple's notarisation cannot sign DuckDB's extension files in a form DuckDB will load, so they are not bundled. Without the network, the project is still made, and the download is tried again when it next opens.
 - `querysolo tables attach`, `discover` and `refresh` read the bucket you name, with the credentials in your environment or none for a public bucket. Nothing is written to a bucket unless you asked for `--metadata-in-bucket`.
 - QuerySolo holds no AWS key. A project names an AWS profile; the app reads the profile *names* from `~/.aws/config` and `~/.aws/credentials` to list them, never the keys, and never writes to those files. The name is kept on this machine (`projects.json` next to the app's recent list), not in the project.
 - `--burst` (not built yet) will send a job to a worker in **your** cloud account, under a cost cap you set, and will say so before it does.

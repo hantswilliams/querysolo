@@ -30,3 +30,6 @@ core/build/
 .env
 # The marketing guidebook deck is generated from marketing/guidebook.md by marketing/build_guidebook.py
 marketing/*.pptx
+
+## apple 
+AuthKey_2HM929S46R.p8

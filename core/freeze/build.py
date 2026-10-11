@@ -2,16 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 """Build the frozen core (ship brief S1–S3) in three steps, from `core/`:
 
-    uv run --group freeze python freeze/build.py            # freeze, extensions, trim, sizes
+    uv run --group freeze python freeze/build.py            # freeze, trim, sizes
     uv run --group freeze python freeze/build.py --check    # then run the quickstart from an
-                                                            # empty HOME with no network
+                                                            # empty HOME, offline after init
 
 1. PyInstaller on `freeze/querysolo.spec` → `dist/querysolo/` (the executable and `_internal/`).
-2. The DuckDB extensions the core needs, for the running DuckDB's exact version and this
-   platform, laid out as DuckDB expects under `dist/querysolo/extensions/` (S2): copied from
-   this machine's `~/.duckdb/extensions` (or `--extensions-from <dir>`) when they are
-   there, else downloaded by DuckDB itself. Five files: the four the engine loads and
-   `avro`, which `iceberg` pulls in.
+2. No DuckDB extensions: Apple cannot sign one in a form DuckDB will still load, so the
+   frozen core downloads them at `init` like the CLI (decisions X1, X2, 2026-10-11).
 3. The trim S3 fixes in advance: pyarrow's Flight, Substrait and Gandiva libraries, its
    tests and headers — nothing in the core imports them. `--no-trim` keeps them, to
    measure the difference.
@@ -52,20 +49,6 @@ TRIM_GLOBS = [
 BABEL_KEEP = {"root.dat", "en.dat", "en_US.dat", "en_001.dat", "en_150.dat"}
 
 
-def duckdb_target() -> tuple[str, str, list[str]]:
-    """The DuckDB version and platform string the running interpreter's DuckDB reports,
-    and the extensions to bundle — from the same package the freeze carries."""
-    import duckdb
-
-    from querysolo.engine import INSTALLED_EXTENSIONS
-
-    con = duckdb.connect()
-    version = con.execute("select version()").fetchone()[0]
-    target = con.execute("pragma platform").fetchone()[0]
-    con.close()
-    return version, target, list(INSTALLED_EXTENSIONS)
-
-
 def freeze() -> None:
     print("1. PyInstaller", flush=True)
     subprocess.run(
@@ -73,51 +56,6 @@ def freeze() -> None:
         cwd=CORE,
         check=True,
     )
-
-
-def lay_out_extensions(source: Path | None) -> Path:
-    """The five extensions under ``dist/querysolo/extensions/``, laid out by DuckDB itself:
-    ``SET extension_directory`` to the bundle folder and ``INSTALL`` each, so the download,
-    the checksum and the layout are DuckDB's own (its extension CDN refuses a plain
-    ``urllib`` client, and the layout has changed between versions). With
-    ``--extensions-from``, copied from a folder already laid out that way instead."""
-    import duckdb
-
-    version, target, names = duckdb_target()
-    root = DIST / "extensions"
-    folder = root / version / target
-    folder.mkdir(parents=True, exist_ok=True)
-    print(f"2. DuckDB extensions {version} {target}: {', '.join(names)}", flush=True)
-    missing = [name for name in names if not (folder / f"{name}.duckdb_extension").exists()]
-    if not missing:
-        return folder
-    # first, the machine's own cache (`~/.duckdb/extensions`, where `querysolo init` and the
-    # app put them, or `--extensions-from`): same files, no download
-    cache = source or Path.home() / ".duckdb" / "extensions"
-    for name in list(missing):
-        cached = cache / version / target / f"{name}.duckdb_extension"
-        if cached.exists():
-            shutil.copy(cached, folder)
-            missing.remove(name)
-    if not missing:
-        return folder
-    con = duckdb.connect()
-    con.execute("SET extension_directory = ?", [str(root)])
-    try:
-        con.execute("; ".join(f"INSTALL {name}" for name in missing))
-    except duckdb.HTTPException as e:
-        # DuckDB's own downloader speaks plain http and follows no redirect; a network that
-        # answers 302 (http→https) needs httpfs loaded, then the https repository
-        print(f"   plain http failed ({str(e).splitlines()[0]}); trying https", flush=True)
-        con.execute("LOAD httpfs")
-        con.execute(
-            "; ".join(f"INSTALL {name} FROM 'https://extensions.duckdb.org'" for name in missing)
-        )
-    con.close()
-    for name in names:
-        if not (folder / f"{name}.duckdb_extension").exists():
-            raise SystemExit(f"DuckDB did not install {name} into {folder}")
-    return folder
 
 
 def folder_size(path: Path) -> int:
@@ -162,8 +100,11 @@ def trim() -> None:
 
 
 def check() -> int:
-    """The gate: the quickstart's commands from an empty HOME with the network unreachable,
-    against the frozen binary. Any fetch, any missing module, any wrong path fails here."""
+    """The gate (decisions X4): the quickstart's commands from an empty HOME against the
+    frozen binary. ``init`` has the network, and must report the one download, the
+    extensions into the empty HOME; every step after it has the network unreachable, and
+    ``audit network`` must read zero. Any other fetch, any missing module, any wrong path
+    fails here."""
     default = DIST / ("querysolo.exe" if platform_module.system() == "Windows" else "querysolo")
     exe = Path(os.environ.get("QUERYSOLO_BIN") or default)
     if not exe.exists():
@@ -175,10 +116,18 @@ def check() -> int:
         home.mkdir()
         data = Path(tmp) / "sample"
         subprocess.run([sys.executable, str(sample), str(data)], check=True, capture_output=True)
-        env = {
+        online = {
             "PATH": os.environ.get("PATH", ""),
             "HOME": str(home),
             "USERPROFILE": str(home),
+            "LANG": "C.UTF-8",
+            "LC_ALL": "C.UTF-8",
+        }
+        for key in ("TMPDIR", "TEMP", "TMP", "SYSTEMROOT"):
+            if key in os.environ:
+                online[key] = os.environ[key]
+        env = {
+            **online,
             # the network, unreachable: every HTTP client honours these, and the proxy
             # address answers nothing
             "HTTP_PROXY": "http://127.0.0.1:9",
@@ -187,12 +136,7 @@ def check() -> int:
             "https_proxy": "http://127.0.0.1:9",
             "NO_PROXY": "127.0.0.1,localhost",
             "no_proxy": "127.0.0.1,localhost",
-            "LANG": "C.UTF-8",
-            "LC_ALL": "C.UTF-8",
         }
-        for key in ("QUERYSOLO_EXTENSION_DIR", "TMPDIR", "TEMP", "TMP", "SYSTEMROOT"):
-            if key in os.environ:
-                env[key] = os.environ[key]
         project = Path(tmp) / "acme"
         steps = [
             ["init", str(project), "--probe-mb", "0"],
@@ -214,19 +158,22 @@ def check() -> int:
         ]
         for args in steps:
             print(f"   querysolo {' '.join(args)}", flush=True)
-            r = subprocess.run([str(exe), *args], env=env, capture_output=True, text=True, cwd=tmp)
+            step_env = online if args[0] == "init" else env
+            r = subprocess.run(
+                [str(exe), *args], env=step_env, capture_output=True, text=True, cwd=tmp
+            )
             if r.returncode != 0:
                 print(r.stdout[-3000:])
                 print(r.stderr[-3000:])
                 print(f"FAILED: querysolo {' '.join(args)} exited {r.returncode}")
                 return 1
-            if args[0] == "init" and "bundled DuckDB extensions" not in r.stdout:
+            if args[0] == "init" and "installed DuckDB extensions" not in r.stdout:
                 print(r.stdout)
-                print("FAILED: init did not use the bundled extensions")
+                print("FAILED: init did not download the extensions into the empty HOME")
                 return 1
             if args[-1] == "network" and "0 " not in r.stdout and "no " not in r.stdout.lower():
                 print(r.stdout)
-        print("check: the quickstart ran from an empty HOME with no network")
+        print("check: the quickstart ran from an empty HOME, offline after init's download")
     return 0
 
 
@@ -238,17 +185,10 @@ def main() -> int:
         "--check", action="store_true", help="run the gate against an existing dist/querysolo"
     )
     parser.add_argument("--no-trim", action="store_true", help="keep pyarrow's optional libraries")
-    parser.add_argument(
-        "--extensions-from",
-        type=Path,
-        help="copy the extensions from a folder laid out like ~/.duckdb/extensions "
-        "instead of downloading",
-    )
     args = parser.parse_args()
     if args.check:
         return check()
     freeze()
-    lay_out_extensions(args.extensions_from)
     before = folder_size(DIST)
     if not args.no_trim:
         trim()

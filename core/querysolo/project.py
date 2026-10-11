@@ -20,7 +20,7 @@ from querysolo.catalog import EmbeddedCatalog, Store, create_app
 from querysolo.catalog.commit import MetadataIO
 from querysolo.catalog.store import NotFound
 from querysolo.config import Config, render_default
-from querysolo.engine import Engine, install_extensions
+from querysolo.engine import Engine, ExtensionsMissing, install_extensions
 from querysolo.remote import S3Settings, load_public_buckets, save_public_bucket
 
 if TYPE_CHECKING:
@@ -200,6 +200,8 @@ class InitReport:
     created: list[str] = field(default_factory=list)
     extensions_installed: list[str] = field(default_factory=list)
     extension_directory: str = ""
+    #: Decisions X3's sentence when the download failed; the project is made regardless.
+    extensions_error: str | None = None
     throughput_local_mbps: float | None = None
     throughput_probe: str | None = None
     #: ``created`` when ``init`` made the folder a git repository, ``existing`` when the
@@ -298,7 +300,10 @@ class Project:
         cls._ensure_namespace(Store(f"sqlite:///{root / '.querysolo' / 'catalog.db'}"))
         report.created.append(".querysolo/catalog.db")
         cls._init_repository(root, report)
-        report.extensions_installed, report.extension_directory = install_extensions()
+        try:
+            report.extensions_installed, report.extension_directory = install_extensions()
+        except ExtensionsMissing as e:
+            report.extensions_error = str(e)
         if probe_mb:
             probe = run_probe(root, probe_mb)
             report.throughput_local_mbps = probe.mbps
