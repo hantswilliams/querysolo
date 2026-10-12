@@ -99,12 +99,16 @@ def _root() -> Path:
 
 def _open():
     from querysolo import Project
+    from querysolo.engine import ExtensionsMissing
     from querysolo.layout import LayoutConflict
     from querysolo.project import NotAProject
     from querysolo.schema import SchemaTooNew
 
     try:
         return Project.open(_root())
+    except ExtensionsMissing as e:
+        err.print(f"[red]cannot open:[/red] {e}", highlight=False, soft_wrap=True)
+        raise typer.Exit(1) from None
     except LayoutConflict as e:
         err.print(f"[red]cannot open:[/red] {e}")
         raise typer.Exit(1) from None
@@ -191,7 +195,9 @@ def init(
         )
     if report.git:
         out.print(f"  git: {report.git}", highlight=False)
-    if report.extensions_installed:
+    if report.extensions_error:
+        out.print(f"  {report.extensions_error}", highlight=False, soft_wrap=True)
+    elif report.extensions_installed:
         out.print(
             f"  installed DuckDB extensions {', '.join(report.extensions_installed)} into "
             f"{report.extension_directory} (the one download; nothing else fetches at query time)",
@@ -199,7 +205,7 @@ def init(
         )
     elif os.environ.get("QUERYSOLO_EXTENSION_DIR"):
         out.print(
-            f"  using the bundled DuckDB extensions in {report.extension_directory} (no download)",
+            f"  using the DuckDB extensions in {report.extension_directory} (no download)",
             highlight=False,
         )
     else:
@@ -1380,10 +1386,14 @@ def serve(
     if host not in ("127.0.0.1", "localhost", "::1"):
         _fail(f"v0 binds loopback only; {host} refused (brief D22)")
     from querysolo import Project
+    from querysolo.engine import ExtensionsMissing
     from querysolo.project import NotAProject
 
     try:
         p = Project.open(_root(), serve=True, port=port, memory_limit=memory_limit)
+    except ExtensionsMissing as e:
+        err.print(str(e), highlight=False, soft_wrap=True)
+        raise typer.Exit(1) from None
     except NotAProject:
         _fail(f"not a QuerySolo project: no querysolo.toml in {_root()}; run `querysolo init`")
     _write_dbt_profile(p, p.catalog_url)

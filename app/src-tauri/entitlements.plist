@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Copyright 2026 QuerySolo contributors. SPDX-License-Identifier: Apache-2.0 -->
+<!-- The hardened runtime's exceptions the bundled core needs (ship-dmg-steps.md step 3):
+     a frozen CPython with C extensions maps executable memory, loads libraries that are not
+     signed by the same team (DuckDB's extensions, downloaded once by `querysolo init`;
+     decisions-for-review_101126.md X1), and PyInstaller's bootloader sets DYLD variables. -->
+<plist version="1.0">
+<dict>
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+  <true/>
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+  <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+  <true/>
+</dict>
+</plist>

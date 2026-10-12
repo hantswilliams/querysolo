@@ -48,7 +48,7 @@ QuerySolo is not an editor and not a cloud warehouse; it is the part in between,
 - **Burst to a worker**: the control plane, the job token, the cap, results back. Every burst number on this site is arithmetic from the plan, not a measurement *(session 8)*
 - **querysolo mcp (the agent tools)**: the MCP server, per-tool permissions, the per-agent daily cap and the audit log *(session 5, after session 8)*
 - **The Team catalog**: hosted Postgres, vended credentials, scheduled runs, compaction and alerts *(session 8 onward)*
-- **Installers and a brew tap**: signed DMG, the extensions bundled, a PyPI release. Until then: clone and uv sync *(session 10)*
+- **Installers and a brew tap**: signed and notarised DMG, a PyPI release. Until then: clone and uv sync *(session 10)*
 - **Per-machine correction**: the gauge's constants were tuned on one machine; the record is kept, the correction is not applied yet *(session 10)*
 - **Self-hosted**: the catalog and control plane in your own VPC, SSO, audit to your SIEM *(after the Team tier)*
 <!-- status:end -->

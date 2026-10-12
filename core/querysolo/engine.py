@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 import time
 from pathlib import Path
 
@@ -17,23 +18,22 @@ import duckdb
 EXTENSIONS = ("iceberg", "httpfs", "excel", "aws")
 #: What an install must carry: the four the engine loads plus ``avro``, which ``iceberg``
 #: pulls in on first LOAD (manifests are Avro) and would otherwise fetch on its own — the
-#: one download D33 allows at ``init`` covers it, and the bundle (S2) ships it.
+#: one download D33 allows at ``init`` covers it.
 INSTALLED_EXTENSIONS = EXTENSIONS + ("avro",)
-#: Ship brief S2: an installer bundles the four extensions beside the frozen core and names
-#: the folder here; every connection then reads them from there and nothing is fetched.
-#: Unset (the CLI from PyPI, development), DuckDB's own ``~/.duckdb/extensions`` applies.
+#: A folder laid out as DuckDB expects, read instead of ``~/.duckdb/extensions``. No
+#: installer sets it (decisions X1, 2026-10-11: Apple cannot sign a DuckDB extension, so
+#: the app downloads them at ``init`` like the CLI); tests and a future offline build do.
 EXTENSION_DIR_ENV = "QUERYSOLO_EXTENSION_DIR"
 
 
 def extension_directory() -> str | None:
-    """The bundled extension folder, when the installer set it (S2), else None."""
+    """The extension folder ``QUERYSOLO_EXTENSION_DIR`` names, else None."""
     return os.environ.get(EXTENSION_DIR_ENV) or None
 
 
 def connect() -> duckdb.DuckDBPyConnection:
-    """A DuckDB connection that reads extensions from the bundled folder when there is one.
-    Every connection the core opens comes through here, so the frozen app never looks at
-    ``~/.duckdb`` and never downloads."""
+    """A DuckDB connection that reads extensions from ``QUERYSOLO_EXTENSION_DIR`` when it
+    is set. Every connection the core opens comes through here."""
     con = duckdb.connect()
     directory = extension_directory()
     if directory:
@@ -66,7 +66,21 @@ PROFILE_METRICS = (
 
 
 class ExtensionsMissing(RuntimeError):
-    pass
+    """The extensions are not on this machine and could not be downloaded (decisions X3);
+    the message is the sentence the CLI and the app show as it is."""
+
+
+def download_failed(error: Exception) -> str:
+    """Decisions X3's sentence, with DuckDB's reason: the ``(ERROR …)`` it ends a failed
+    download with ("Could not establish connection"), else its first line."""
+    text = str(error)
+    reason = re.search(r"\(ERROR ([^)]*)\)\s*$", text)
+    why = reason.group(1) if reason else text.splitlines()[0]
+    return (
+        "the project is ready, but QuerySolo needs a one-time download of DuckDB's extensions "
+        f"(about 80 MB) from extensions.duckdb.org and could not reach it ({why}); "
+        "it will try again the next time the project opens"
+    )
 
 
 class CatalogConflict(RuntimeError):
@@ -119,8 +133,8 @@ def run_with_retry(engine: Engine, sql: str, attempts: int = 3) -> None:
 
 def install_extensions() -> tuple[list[str], str]:
     """``querysolo init``'s one network fetch (brief D33). Returns the extensions that were
-    downloaded now and the directory they live in. With the bundled folder set (S2) the
-    four are already installed there, so nothing is fetched."""
+    downloaded now and the directory they live in; those already there are not fetched
+    again. Raises ExtensionsMissing with X3's sentence when the download fails."""
     con = connect()
 
     def installed() -> set[str]:
@@ -130,7 +144,11 @@ def install_extensions() -> tuple[list[str], str]:
         return {name for (name,) in rows}
 
     before = installed()
-    con.execute("; ".join(f"INSTALL {name}" for name in INSTALLED_EXTENSIONS))
+    try:
+        con.execute("; ".join(f"INSTALL {name}" for name in INSTALLED_EXTENSIONS))
+    except duckdb.Error as e:
+        con.close()
+        raise ExtensionsMissing(download_failed(e)) from e
     downloaded = sorted(installed() - before)
     directory = con.execute("select current_setting('extension_directory')").fetchone()[0]
     con.close()
@@ -148,13 +166,15 @@ class Engine:
     ) -> None:
         self.con = connect()
         self.profile_path = profile_path
+        load = "; ".join(f"LOAD {name}" for name in EXTENSIONS)
         try:
-            self.con.execute("; ".join(f"LOAD {name}" for name in EXTENSIONS))
-        except duckdb.IOException as e:
-            raise ExtensionsMissing(
-                "DuckDB's iceberg, httpfs, excel and aws extensions are not installed on this "
-                "machine; `querysolo init` installs them once"
-            ) from e
+            self.con.execute(load)
+        except duckdb.IOException:
+            # not on this machine: an `init` that could not download them, or a project
+            # copied from another machine. One try at the download (decisions X3); a
+            # failure raises ExtensionsMissing with the sentence.
+            install_extensions()
+            self.con.execute(load)
         # A GeoParquet column (a `geo` footer entry; Overture's files) is registered in the
         # catalog as `binary`, its WKB bytes. With this on, and DuckDB's spatial extension
         # on the machine, the Parquet reader turns the column into GEOMETRY on its own and

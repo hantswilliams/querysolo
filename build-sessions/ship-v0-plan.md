@@ -24,6 +24,8 @@ The docs already decided: a Tauri shell with the Python core as a sidecar (build
 - [x] Agree
 - [ ] Change:
 
+*Amended 2026-10-11 (`decisions-for-review_101126.md` X1–X4, agreed by Hants):* the extensions are not bundled, on any platform. Notarisation needs every Mach-O file signed by Apple, and no `.duckdb_extension` can be both Apple-signed and loadable by DuckDB (the 534 bytes of DuckDB's signature after the library are what `codesign` refuses). The frozen core does what the CLI does: `init` downloads them once from `extensions.duckdb.org`; without the network it still makes the project and says so in a sentence, and opening the project tries again. `QUERYSOLO_EXTENSION_DIR` stays, for tests and a future offline build (DuckDB built with the extensions compiled in). The freeze gate runs `init` online and every later step offline.
+
 **S3. The installer's size is measured and the number is what the docs say; the trimming order is fixed in advance.**
 *Recommend:* measure the DMG and the `.deb` as downloaded and the app as installed, and write those numbers into the build spec's row and `/docs/install`. The expectation, from the venv's weights (pyarrow 152 MB, the DuckDB library 58 MB, the four extensions 112 MB uncompressed, the rest under 40 MB, and dulwich about 1.3 MB since the versions round; its modules go into the freeze's hidden imports beside pyiceberg's and pyarrow's): 250 to 300 MB installed, 120 to 170 MB as a compressed disk image. If the download is over 200 MB, trim in this order and stop when under: pyarrow's unneeded pieces (its Flight and Substrait libraries are 35 MB of it and nothing here imports them; `dataset` stays, pyiceberg reads through it), pyarrow's tests and headers (8 MB), the test folders PyInstaller drags along, then nothing else; the extensions and the interpreter stay. If it cannot get under, the claim changes to the measured number, not the other way round. *Not chosen:* dropping pyiceberg's pyarrow path (it is how attached tables and the catalog's reads work).
 - [x] Agree
@@ -105,9 +107,10 @@ Lakelet.app/Contents/                         (the .deb: /usr/lib/lakelet/, /usr
 ├─ MacOS/lakelet-app                          Tauri shell (Rust)
 └─ Resources/lakelet/                         the frozen core, one directory (S1)
      ├─ lakelet                               the CLI and the sidecar, same program
-     ├─ _internal/                            the interpreter, pyarrow, duckdb, pyiceberg, …
-     └─ extensions/v1.5.5/<platform>/         iceberg, httpfs, excel, aws (S2)
+     └─ _internal/                            the interpreter, pyarrow, duckdb, pyiceberg, …
 ```
+
+*Amended 2026-10-11 (X1):* no `extensions/` folder; `init` downloads them into `~/.duckdb/extensions`, and the next paragraph's "installs nothing" no longer holds.
 
 The shell finds the sidecar as S1 says and runs `lakelet serve --port 0 -C <project> --memory-limit <n>`, unchanged from session 6. The frozen entry point sets `LAKELET_EXTENSION_DIR` to `<its own dir>/extensions` when unset, so `init` from the bundle installs nothing and `Engine` loads from there. `serve.json`, the token, the CORS list and the CSP are session 6's. A release build passes no dev origin (the `cargo test --release` gate of step 5).
 
@@ -117,7 +120,7 @@ The shell finds the sidecar as S1 says and runs `lakelet serve --port 0 -C <proj
 tag v0.1.0 ──► release.yml
    ├─ check: tag == lakelet.__version__ == tauri.conf.json version
    ├─ macos (Apple silicon; Intel if a runner is offered)
-   │     uv sync → pyinstaller lakelet.spec → download the 4 extensions → npm run tauri build
+   │     uv sync → pyinstaller lakelet.spec → npm run tauri build
    │     → sign (Developer ID) → notarise (API key) → Lakelet_0.1.0_aarch64.dmg + sha256
    ├─ ubuntu-22.04
    │     same freeze → tauri build → lakelet_0.1.0_amd64.deb, Lakelet_0.1.0_amd64.AppImage + sha256
@@ -169,7 +172,7 @@ Each step ends with a test that stays in the suite, or a measurement recorded in
 |---|---|
 | PyInstaller | 6.x current, with `pyinstaller-hooks-contrib` (the pyarrow hook) |
 | Python for the freeze | 3.13 via uv, the same the suite runs |
-| DuckDB extensions | the four, for `v1.5.5` and the target platform, from DuckDB's extension repository at build time |
+| DuckDB extensions | not bundled (X1, 2026-10-11); `init` downloads them |
 | Tauri CLI, bundler | 2.x current; `bundle.macOS.minimumSystemVersion` 13.0; `bundle.resources` |
 | GitHub runners | Apple-silicon macOS (`macos-15`), `ubuntu-22.04`, `windows-latest` (allowed to fail); an Intel label if offered |
 | Apple secrets | `APPLE_CERTIFICATE` (the Developer ID Application `.p12`, base64), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_API_ISSUER`, `APPLE_API_KEY`, `APPLE_API_KEY_PATH` (the `.p8`), which Tauri's bundler reads for signing and notarisation |

@@ -94,7 +94,7 @@ export const surfaces: Surface[] = [
     detail: 'hosted Postgres, vended credentials, scheduled runs, compaction and alerts',
     session: 'session 8 onward' },
   { id: 'installers', label: 'Installers and a brew tap', state: 'planned',
-    detail: 'signed DMG, the extensions bundled, a PyPI release. Until then: clone and uv sync',
+    detail: 'signed and notarised DMG, a PyPI release. Until then: clone and uv sync',
     session: 'session 10' },
   { id: 'correction', label: 'Per-machine correction', state: 'planned',
     detail: "the gauge's constants were tuned on one machine; the record is kept, the correction is not applied yet",

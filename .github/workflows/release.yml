@@ -1,0 +1,310 @@
+# The release (ship brief §3.2; S4–S7, S14; decisions-for-review_101126-release.md R1–R4).
+# A tag `v*` builds the signed and notarised DMG, the .deb and the AppImage, drafts a GitHub
+# Release with them and their checksums, and publishes the core to PyPI once Hants approves
+# the `pypi` environment. A pull request that changes this file, or a run by hand, is a
+# rehearsal: everything is built, signed, notarised and checked; nothing is published.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+    paths: ['.github/workflows/release.yml', 'app/scripts/sign-core.sh', 'core/freeze/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    # The tag, the core's __version__ and the app's version are one release (S7, R2):
+    # compared as PEP 440 versions, so v0.1.0-rc1, 0.1.0rc1 and 0.1.0-rc.1 agree.
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      prerelease: ${{ steps.check.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: check
+        env:
+          TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, re, tomllib
+          from pathlib import Path
+          def pep440(v):
+              v = v.removeprefix("v")
+              m = re.fullmatch(r"(\d+\.\d+\.\d+)(?:[-.]?(a|b|rc|dev)\.?(\d+))?", v)
+              if not m:
+                  raise SystemExit(f"not a release version: {v}")
+              base, kind, n = m.groups()
+              return base + (("." if kind == "dev" else "") + kind + n if kind else "")
+          core = re.search(r'__version__ = "([^"]+)"', Path("core/querysolo/__init__.py").read_text()).group(1)
+          tauri = json.loads(Path("app/src-tauri/tauri.conf.json").read_text())["version"]
+          cargo = tomllib.loads(Path("app/src-tauri/Cargo.toml").read_text())["package"]["version"]
+          versions = {"core": pep440(core), "tauri.conf.json": pep440(tauri), "Cargo.toml": pep440(cargo)}
+          tag = os.environ["TAG"]
+          if tag:
+              versions["tag"] = pep440(tag)
+              if len(set(versions.values())) != 1:
+                  raise SystemExit(f"the tag and the versions disagree: {versions}")
+          print(versions)
+          version = versions["core"]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"version={version}\n")
+              f.write(f"prerelease={'true' if re.search('[a-z]', version) else 'false'}\n")
+          EOF
+
+  macos:
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            target: aarch64-apple-darwin
+            arch: aarch64
+            optional: false
+          # R4: Intel when the label exists; allowed to fail, released only if it passed
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            arch: x64
+            optional: true
+    runs-on: ${{ matrix.runner }}
+    continue-on-error: ${{ matrix.optional }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: core/uv.lock
+      - run: uv sync --locked --group freeze
+        working-directory: core
+      # the frozen core (S1) and its gate: init downloads the extensions, every later step
+      # offline, audit network zero (decisions X4)
+      - run: uv run --group freeze python freeze/build.py
+        working-directory: core
+      - run: uv run --group freeze python freeze/build.py --check
+        working-directory: core
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app
+      # sign-core.sh signs the frozen core before Tauri imports a certificate of its own, so
+      # the identity goes into a temporary keychain first and Tauri finds it there
+      - name: The Developer ID into a temporary keychain
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          password="$(openssl rand -hex 16)"
+          echo "$APPLE_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          security import "$RUNNER_TEMP/certificate.p12" -k "$keychain" \
+            -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$password" "$keychain"
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/certificate.p12"
+          security find-identity -v -p codesigning "$keychain"
+      - name: The App Store Connect key to a file
+        env:
+          APPLE_API_PRIVATE_KEY: ${{ secrets.APPLE_API_PRIVATE_KEY }}
+        run: |
+          printf '%s\n' "$APPLE_API_PRIVATE_KEY" > "$RUNNER_TEMP/AuthKey.p8"
+          echo "APPLE_API_KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
+      # signs the core and the app, notarises the app and staples it (Tauri)
+      - run: npm run tauri build -- --target ${{ matrix.target }} --bundles app,dmg
+        working-directory: app
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+      # Tauri signs the DMG but does not notarise it, and Gatekeeper rejects a downloaded DMG
+      # that is not (step 3, 2026-10-11)
+      - name: Notarise and staple the DMG
+        env:
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          dmg=$(ls app/src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg)
+          xcrun notarytool submit "$dmg" --key "$APPLE_API_KEY_PATH" --key-id "$APPLE_API_KEY" \
+            --issuer "$APPLE_API_ISSUER" --wait
+          xcrun stapler staple "$dmg"
+      - name: Gatekeeper accepts the app and the DMG
+        run: |
+          bundle=app/src-tauri/target/${{ matrix.target }}/release/bundle
+          spctl --assess --type execute -vv "$bundle/macos/QuerySolo.app"
+          codesign --verify --deep --strict "$bundle/macos/QuerySolo.app"
+          dmg=$(ls "$bundle"/dmg/*.dmg)
+          spctl --assess --type open --context context:primary-signature -vv "$dmg"
+          xcrun stapler validate "$dmg"
+          mkdir -p out && cp "$dmg" out/
+          du -sh "$bundle/macos/QuerySolo.app" | tee out/installed-size-macos-${{ matrix.arch }}.txt
+      - name: Remove the key and the keychain
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/AuthKey.p8"
+          security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: out/
+          retention-days: 7
+
+  linux:
+    # S5: the .deb and the AppImage from 22.04, so the glibc floor is the PRD's; unsigned
+    needs: version
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev libayatana-appindicator3-dev patchelf libfuse2
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: core/uv.lock
+      - run: uv sync --locked --group freeze
+        working-directory: core
+      - run: uv run --group freeze python freeze/build.py
+        working-directory: core
+      - run: uv run --group freeze python freeze/build.py --check
+        working-directory: core
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app
+      - run: npm run tauri build -- --bundles deb,appimage
+        working-directory: app
+      - run: |
+          mkdir -p out
+          cp app/src-tauri/target/release/bundle/deb/*.deb app/src-tauri/target/release/bundle/appimage/*.AppImage out/
+          dpkg-deb -f out/*.deb Installed-Size | awk '{printf "%.0fM installed (.deb)\n", $1/1024}' | tee out/installed-size-linux.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64
+          path: out/
+          retention-days: 7
+
+  windows:
+    # S14: how far Windows is, every release; allowed to fail, never uploaded
+    needs: version
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v9.0.0
+      - run: uv sync --locked --group freeze
+        working-directory: core
+      - run: uv run --group freeze python freeze/build.py
+        working-directory: core
+      - run: uv run --group freeze python freeze/build.py --check
+        working-directory: core
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: app
+      - run: npm run tauri build -- --bundles msi
+        working-directory: app
+
+  pypi-build:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v9.0.0
+      - run: uv build --out-dir ../pypi-dist
+        working-directory: core
+      # the wheel installs into a clean environment and answers with the release's version
+      - run: |
+          uv venv /tmp/try
+          uv pip install --python /tmp/try pypi-dist/*.whl
+          /tmp/try/bin/querysolo --version | tee /dev/stderr | grep -qx "querysolo ${{ needs.version.outputs.version }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pypi-dist
+          path: pypi-dist/
+          retention-days: 7
+
+  release:
+    # S6: a draft; Hants publishes it after trying the DMG. Tags only (R1).
+    if: github.ref_type == 'tag'
+    needs: [version, macos, linux, pypi-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '{macos-*,linux-*}'
+          path: files
+          merge-multiple: true
+      - name: Checksums and the draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          PRERELEASE: ${{ needs.version.outputs.prerelease }}
+        run: |
+          cd files
+          sha256sum *.dmg *.deb *.AppImage > SHA256SUMS
+          {
+            echo "QuerySolo ${{ needs.version.outputs.version }}"
+            echo
+            echo "| File | Download size |"
+            echo "|---|---|"
+            for f in *.dmg *.deb *.AppImage; do
+              echo "| \`$f\` | $(du -h "$f" | cut -f1) |"
+            done
+            echo
+            echo "Installed sizes:"
+            cat installed-size-*.txt
+            echo
+            echo "SHA-256:"
+            echo '```'
+            cat SHA256SUMS
+            echo '```'
+          } > notes.md
+          flags=(--draft --title "QuerySolo $TAG" --notes-file notes.md --repo "$GITHUB_REPOSITORY")
+          [[ "$PRERELEASE" == "true" ]] && flags+=(--prerelease)
+          gh release create "$TAG" "${flags[@]}" *.dmg *.deb *.AppImage SHA256SUMS
+
+  pypi:
+    # S7: trusted publishing, no token in secrets; waits on the `pypi` environment's
+    # reviewer (R3). Tags only (R1).
+    if: github.ref_type == 'tag'
+    needs: [version, macos, linux, pypi-build]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/querysolo/${{ needs.version.outputs.version }}/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pypi-dist
+          path: pypi-dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: pypi-dist/

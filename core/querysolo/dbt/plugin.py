@@ -46,8 +46,8 @@ class Plugin(BasePlugin):
         self.catalog_url = config["catalog_url"]
 
     def configure_connection(self, conn: DuckDBPyConnection) -> None:
-        # dbt-duckdb opens this connection itself; the bundled extension folder (S2), when
-        # the installer set it, applies here too so a model build never fetches.
+        # dbt-duckdb opens this connection itself; QUERYSOLO_EXTENSION_DIR, when a test or
+        # an offline build sets it, applies here too so a model build reads the same folder.
         directory = os.environ.get("QUERYSOLO_EXTENSION_DIR")
         if directory:
             conn.execute("SET extension_directory = ?", [directory])

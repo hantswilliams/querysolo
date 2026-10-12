@@ -43,7 +43,7 @@ uv run --project ~/querysolo/core querysolo init
 lakehouse ready in /Users/you/acme
 ```
 
-`init` writes the [project layout](/docs/config), creates the `main` namespace in a SQLite catalog, downloads the four DuckDB extensions if they are not already in `~/.duckdb`, and times a 512 MB read of local disk for the gauge (`--probe-mb 0` skips it). It refuses to run twice in the same folder and never overwrites a `dbt_project.yml`, `macros/querysolo.sql`, `.gitignore` or `AGENTS.md` that is already there.
+`init` writes the [project layout](/docs/config), creates the `main` namespace in a SQLite catalog, downloads the DuckDB extensions (about 80 MB, once) if they are not already in `~/.duckdb`, and times a 512 MB read of local disk for the gauge (`--probe-mb 0` skips it). Without the network it still makes the project, says that the download could not be done, and tries it again the next time the project opens. It refuses to run twice in the same folder and never overwrites a `dbt_project.yml`, `macros/querysolo.sql`, `.gitignore` or `AGENTS.md` that is already there.
 
 ### 2. Import a file
 
