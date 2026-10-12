@@ -15,7 +15,7 @@
 
 **R1. The workflow can run without a tag, as a rehearsal: on a pull request that changes it, and by hand. A rehearsal builds, signs, notarises and checks everything, and publishes nothing.**
 Why: a tag publishes to PyPI, and a PyPI version can never be uploaded twice. The first tag should be the first time the publish steps run, not the first time anything runs. A rehearsal's files are kept as the run's artifacts for 7 days, so the DMG can be downloaded and tried.
-- [ ] Agree
+- [x] Agree
 - [ ] Change:
 
 **R2. The first tag is `v0.1.0-rc1`.**
@@ -25,17 +25,17 @@ Before tagging, the versions move from `0.1.0.dev0` / `0.1.0` to:
 
 The workflow compares the tag with the core and the app as PEP 440 versions, so `v0.1.0-rc1`, `0.1.0rc1` and `0.1.0-rc.1` are one version, and any other tag stops the run.
 Why: the brief's gate names `v0.1.0-rc1`, and the version test (S7, amended in step 1) already spells the pre-release per ecosystem. Windows' MSI refuses a non-numeric pre-release; the Windows job is allowed to fail (S14), and it will, on the rc.
-- [ ] Agree
+- [x] Agree
 - [ ] Change:
 
 **R3. PyPI publishing waits for a click: the publish job runs in a GitHub environment named `pypi` with Hants as its required reviewer.**
 Why: trusted publishing (S7) already needs an environment name on PyPI's side. Adding a reviewer means a tag builds everything and drafts the release, and the irreversible step waits until the DMG has been tried. The GitHub Release is a draft for the same reason (S6).
-- [ ] Agree
+- [x] Agree
 - [ ] Change: publish on the tag with no review
 
 **R4. The Intel DMG is built on `macos-15-intel` when the label exists, is allowed to fail, and goes into the release only if it passed.**
 Why: S4 says Intel "if a runner offers it", not that it blocks a release. The Apple-silicon DMG, the `.deb` and the AppImage are what must pass.
-- [ ] Agree
+- [x] Agree
 - [ ] Change: no Intel build in Day 0
 
 ## What Hants does, once (before the first tag, not before a rehearsal)

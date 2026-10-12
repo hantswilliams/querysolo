@@ -68,8 +68,9 @@ Results: `build-sessions/lakelet-build-sessions_091626.md` (from repository root
 - [x] The app notarised and stapled; the DMG notarised and stapled by hand (Tauri does not notarise the DMG). `spctl` accepts both.
 - [x] Committed (`259d75d`); the DMG rebuilt from this core, notarised and stapled, 88 MB (the app 205 MB installed). The signed core downloads and loads the extensions.
 - [ ] Hants: the clean-Mac test (no second Mac yet).
-- [x] Step 4, `release.yml` written 2026-10-11 (`decisions-for-review_101126-release.md` R1–R4, recommendations applied pending ticks): version check, macOS arm64 + Intel (optional) signed and notarised with the DMG stapled and `spctl` as the gate, Linux `.deb` + AppImage, Windows (allowed to fail), the wheel tried in a clean venv, a draft release with `SHA256SUMS`, PyPI through the `pypi` environment. `actionlint` clean.
-- [ ] Hants: tick R1–R4; PyPI trusted publisher + the `pypi` environment.
+- [x] Step 4, `release.yml` written 2026-10-11 (`decisions-for-review_101126-release.md` R1–R4, agreed by Hants): version check, macOS arm64 + Intel (optional) signed and notarised with the DMG stapled and `spctl` as the gate, Linux `.deb` + AppImage, Windows (allowed to fail), the wheel tried in a clean venv, a draft release with `SHA256SUMS`, PyPI through the `pypi` environment. `actionlint` clean.
+- [x] Hants ticked R1–R4 (2026-10-11).
+- [ ] Hants: PyPI trusted publisher + the `pypi` environment (before the tag).
 - [ ] The rehearsal: push `ship/signing`, open the PR, and the workflow runs without publishing (R1).
 - [ ] The versions to `0.1.0rc1` / `0.1.0-rc.1` (R2), then the tag `v0.1.0-rc1`.
 - [ ] Review: the open-time message reads "cannot open: the project is ready, but …", and a failure that is not the network's still says "could not reach it".

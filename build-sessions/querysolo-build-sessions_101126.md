@@ -78,7 +78,7 @@ The bundled extensions from the earlier freezes were moved out of `core/dist` to
 
 ## 4a. Step 4: the release workflow
 
-- `.github/workflows/release.yml`, to the recommendations in `decisions-for-review_101126-release.md` (R1–R4, awaiting Hants' ticks).
+- `.github/workflows/release.yml`, to the recommendations in `decisions-for-review_101126-release.md` (R1–R4, all agreed by Hants).
 - The jobs:
   - **version:** the tag, the core and the app compared as PEP 440 versions.
   - **macos:** arm64 on `macos-15`; Intel on `macos-15-intel`, allowed to fail. Each freezes and runs the freeze gate, imports the Developer ID into a temporary keychain (`sign-core.sh` runs before Tauri's own keychain import), builds, notarises and staples the DMG, and has `spctl` accept both the app and the DMG.
