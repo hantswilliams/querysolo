@@ -8,5 +8,5 @@ the brief adds a module here and a test under tests/.
 
 from querysolo.project import Project
 
-__version__ = "0.1.0.dev0"
+__version__ = "0.1.0rc1"
 __all__ = ["Project", "__version__"]
