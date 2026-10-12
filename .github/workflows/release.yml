@@ -267,15 +267,28 @@ jobs:
           PRERELEASE: ${{ needs.version.outputs.prerelease }}
         run: |
           cd files
+          # the same files under names without the version, so a link to
+          # releases/latest/download/<name> (the site's download buttons) holds across releases
+          for f in *.dmg *.deb *.AppImage; do
+            case "$f" in
+              *_aarch64.dmg) cp "$f" QuerySolo-mac-apple-silicon.dmg ;;
+              *_x64.dmg) cp "$f" QuerySolo-mac-intel.dmg ;;
+              *.deb) cp "$f" QuerySolo-linux-amd64.deb ;;
+              *.AppImage) cp "$f" QuerySolo-linux-amd64.AppImage ;;
+            esac
+          done
           sha256sum *.dmg *.deb *.AppImage > SHA256SUMS
           {
             echo "QuerySolo ${{ needs.version.outputs.version }}"
             echo
             echo "| File | Download size |"
             echo "|---|---|"
-            for f in *.dmg *.deb *.AppImage; do
+            for f in QuerySolo_*.dmg QuerySolo_*.deb QuerySolo_*.AppImage; do
               echo "| \`$f\` | $(du -h "$f" | cut -f1) |"
             done
+            echo
+            echo "The same files without the version in the name (for links that hold across releases):"
+            echo "\`QuerySolo-mac-apple-silicon.dmg\`, \`QuerySolo-mac-intel.dmg\`, \`QuerySolo-linux-amd64.deb\`, \`QuerySolo-linux-amd64.AppImage\`."
             echo
             echo "Installed sizes:"
             cat installed-size-*.txt
