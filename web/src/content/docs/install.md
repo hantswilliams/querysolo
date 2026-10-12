@@ -1,19 +1,50 @@
 ---
-title: Install from source and the quickstart
-description: A lakehouse in a folder in under ten minutes, from a clone of the repo.
+title: Download, install and the quickstart
+description: The desktop app for macOS and Linux, the command from PyPI, or a clone of the repo; then a lakehouse in a folder in under ten minutes.
 section: Start
 order: 1
 ---
 
-There are no installers yet. The package runs from a clone with [uv](https://docs.astral.sh/uv/). You need uv 0.11 or newer and Python 3.12 or newer; uv will fetch 3.13 if the machine has nothing suitable. macOS and Linux are what the suite runs on.
+## Download
 
-## Install
+The first release candidate, `0.1.0rc1`. It is a test release: try it, and [tell us what breaks](https://github.com/hantswilliams/querysolo/issues).
+
+| | |
+|---|---|
+| **macOS**, Apple silicon (M1 and later) | [QuerySolo-mac-apple-silicon.dmg](https://github.com/hantswilliams/querysolo/releases/download/v0.1.0-rc1/QuerySolo-mac-apple-silicon.dmg) · 84 MB |
+| **macOS**, Intel | [QuerySolo-mac-intel.dmg](https://github.com/hantswilliams/querysolo/releases/download/v0.1.0-rc1/QuerySolo-mac-intel.dmg) · 90 MB |
+| **Ubuntu 22.04** and later, Debian | [QuerySolo-linux-amd64.deb](https://github.com/hantswilliams/querysolo/releases/download/v0.1.0-rc1/QuerySolo-linux-amd64.deb) · 113 MB |
+| **Other Linux** (x86-64) | [QuerySolo-linux-amd64.AppImage](https://github.com/hantswilliams/querysolo/releases/download/v0.1.0-rc1/QuerySolo-linux-amd64.AppImage) · 177 MB |
+
+Every file and its SHA-256 is on the [release page](https://github.com/hantswilliams/querysolo/releases/tag/v0.1.0-rc1). Windows is not built yet.
+
+- **macOS 13 or later:** open the DMG and drag QuerySolo to Applications. The app is signed and notarised by Apple, so it opens with no warning.
+- **Ubuntu:** double-click the `.deb`, or `sudo apt install ./QuerySolo-linux-amd64.deb`.
+- **Other Linux:** `chmod +x QuerySolo-linux-amd64.AppImage`, then run it.
+
+The first project you make downloads DuckDB's extensions once (about 80 MB, from `extensions.duckdb.org`); after that nothing leaves the machine. Without a network the project is still made, and the download is tried again the next time it opens.
+
+### The command only
+
+`querysolo` is on PyPI. For a release candidate, pre-releases have to be allowed:
+
+```bash
+uv tool install --prerelease allow 'querysolo[dbt]'
+# or: pipx install --pip-args=--pre 'querysolo[dbt]'
+querysolo --version               # querysolo 0.1.0rc1
+```
+
+The `dbt` extra is what `querysolo run` needs. Python 3.12 or newer.
+
+## Install from source
+
+The package also runs from a clone with [uv](https://docs.astral.sh/uv/). You need uv 0.11 or newer and Python 3.12 or newer; uv will fetch 3.13 if the machine has nothing suitable. macOS and Linux are what the suite runs on.
 
 ```bash
 git clone https://github.com/hantswilliams/querysolo.git
 cd querysolo/core
 uv sync
-uv run querysolo --version        # querysolo 0.1.0.dev0
+uv run querysolo --version        # querysolo 0.1.0rc1
 ```
 
 `uv sync` creates `core/.venv` with the runtime and the development dependencies (pytest, dbt, the S3 mock); an install from the package needs the `dbt` extra (`querysolo[dbt]`) for `querysolo run`. To use `querysolo` from any folder, `uv tool install --editable .` in `core/` puts it on your path; the examples below use `uv run` from `core/` and point at a project folder with `-C`.

@@ -34,7 +34,7 @@ QuerySolo is an open-source warehouse for one machine: Apache Iceberg tables on 
 
 ## Versions
 
-The package is `0.1.0.dev0` and is not on PyPI. It needs Python 3.12 or newer (3.13 is what the repo pins), DuckDB 1.5.x, pyiceberg 0.12, and the four DuckDB extensions `iceberg`, `httpfs`, `excel` and `aws`, which `querysolo init` downloads once. Every version ceiling is in `core/pyproject.toml`.
+The package is `0.1.0rc1`, the first release candidate, on PyPI and as installers for macOS and Linux ([download](/docs/install)). It needs Python 3.12 or newer (3.13 is what the repo pins), DuckDB 1.5.x, pyiceberg 0.12, and the four DuckDB extensions `iceberg`, `httpfs`, `excel` and `aws`, which `querysolo init` downloads once. Every version ceiling is in `core/pyproject.toml`.
 
 ## How to read these pages
 

@@ -106,6 +106,27 @@ The bundled extensions from the earlier freezes were moved out of `core/dist` to
   - The app installed: 209 MB on arm64.
 - **The arm64 DMG on Hants' Mac:** downloaded from the run, marked as downloaded (`com.apple.quarantine`), it gets *accepted, Notarized Developer ID* with its ticket stapled. The mounted app is accepted too, and its core answers `--version`.
 
+## 4b. The first release candidate, `v0.1.0-rc1`
+
+- PR #5 bumped the versions (R2): the core `0.1.0rc1`; the app `0.1.0-rc.1`.
+- Its first macOS app CI run failed two `versions.spec.ts` tests on timing ("just now" against "1 min ago", and 1 version where 2 were due inside 30 s). The rerun passed. These tests are timing-sensitive on macOS runners.
+- The tag `v0.1.0-rc1` went on `d50cc79`; release run `38190604843`.
+  - Every job passed except windows (allowed to fail).
+  - **The draft pre-release:**
+    - `QuerySolo_0.1.0-rc.1_aarch64.dmg` 84 MB
+    - `QuerySolo_0.1.0-rc.1_x64.dmg` 90 MB
+    - `QuerySolo_0.1.0-rc.1_amd64.deb` 113 MB
+    - `QuerySolo_0.1.0-rc.1_amd64.AppImage` 177 MB
+    - `SHA256SUMS`
+  - **The arm64 DMG from the draft,** on Hants' Mac and marked as downloaded:
+    - its checksum matches `SHA256SUMS`;
+    - `spctl` accepts the DMG and the app inside as *Notarized Developer ID*;
+    - the core inside answers `querysolo 0.1.0rc1`.
+- **The first `pypi` attempt was refused by GitHub before it ran;** nothing was uploaded. The environment's `v*` rule had been saved as a branch rule, not a tag rule, and it had no reviewer. Hants fixed both, so it now has a tag rule `v*` and Hants as required reviewer.
+- **The rerun of the `pypi` job** waited for review. Hants approved it.
+  - `querysolo 0.1.0rc1` is on PyPI: a wheel and an sdist, by trusted publishing.
+  - Installed from PyPI into a clean Python 3.13 venv: `--version` answers, and `init` downloads the extensions and makes a project.
+
 ## 5. Docs
 
 - `ship-v0-plan.md`: amendment notes on S2 and §3.1; the pipeline drawing and the versions table lose the extensions.
