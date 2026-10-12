@@ -71,7 +71,8 @@ Results: `build-sessions/lakelet-build-sessions_091626.md` (from repository root
 - [x] Step 4, `release.yml` written 2026-10-11 (`decisions-for-review_101126-release.md` R1–R4, agreed by Hants): version check, macOS arm64 + Intel (optional) signed and notarised with the DMG stapled and `spctl` as the gate, Linux `.deb` + AppImage, Windows (allowed to fail), the wheel tried in a clean venv, a draft release with `SHA256SUMS`, PyPI through the `pypi` environment. `actionlint` clean.
 - [x] Hants ticked R1–R4 (2026-10-11).
 - [ ] Hants: PyPI trusted publisher + the `pypi` environment (before the tag).
-- [ ] The rehearsal: push `ship/signing`, open the PR, and the workflow runs without publishing (R1).
+- [x] The rehearsal on PR #4: macOS arm64 and Intel signed, notarised and accepted; Linux `.deb` and AppImage; the wheel; Windows failed as allowed (`--check` at `import`: "Cannot open file"). The CI DMG accepted on Hants' Mac as a download.
+- [ ] Windows: the `import` failure in the frozen core (S14; not blocking).
 - [ ] The versions to `0.1.0rc1` / `0.1.0-rc.1` (R2), then the tag `v0.1.0-rc1`.
 - [ ] Review: the open-time message reads "cannot open: the project is ready, but …", and a failure that is not the network's still says "could not reach it".
 

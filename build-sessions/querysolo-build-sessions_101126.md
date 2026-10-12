@@ -88,7 +88,23 @@ The bundled extensions from the earlier freezes were moved out of `core/dist` to
   - **release:** on tags only, a draft with `SHA256SUMS` and the sizes.
   - **pypi:** on tags only, trusted publishing behind the `pypi` environment.
 - `actionlint` is clean. The version check, run locally: with no tag it passes; `v0.1.0-rc1` and `v0.1.0` are refused against today's `0.1.0.dev0` / `0.1.0`.
-- Not run yet: the first run is the rehearsal on the pull request.
+- **The rehearsal on PR #4** (run `38187677814`): every required job green.
+
+| Job | Result |
+|---|---|
+| version | pass |
+| macos arm64 (`macos-15`) | pass, 10 min. 117 libraries signed; app and DMG notarised (`32019c78-…`) and accepted by `spctl` |
+| macos Intel (`macos-15-intel`) | pass, 21 min. 113 libraries; app and DMG notarised (`4886f71a-…`) and accepted |
+| linux (22.04) | pass, 7 min. `.deb` 284 MB installed; the artifact (`.deb` and AppImage) 290 MB |
+| pypi-build | pass. The wheel installs in a clean venv and answers with the version |
+| windows | fail, allowed (S14). The freeze built; `--check` stopped at `import` with DuckDB's "IO Error: Cannot open file" |
+| release, pypi | skipped (not a tag) |
+| core CI, app CI | pass |
+
+- **Sizes:**
+  - DMG: 85 MB on arm64, 89 MB on Intel.
+  - The app installed: 209 MB on arm64.
+- **The arm64 DMG on Hants' Mac:** downloaded from the run, marked as downloaded (`com.apple.quarantine`), it gets *accepted, Notarized Developer ID* with its ticket stapled. The mounted app is accepted too, and its core answers `--version`.
 
 ## 5. Docs
 
