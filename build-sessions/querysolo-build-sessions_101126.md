@@ -76,6 +76,20 @@ The bundled extensions from the earlier freezes were moved out of `core/dist` to
 | `ruff check`, `ruff format --check` | clean |
 | README status check | current |
 
+## 4a. Step 4: the release workflow
+
+- `.github/workflows/release.yml`, to the recommendations in `decisions-for-review_101126-release.md` (R1–R4, awaiting Hants' ticks).
+- The jobs:
+  - **version:** the tag, the core and the app compared as PEP 440 versions.
+  - **macos:** arm64 on `macos-15`; Intel on `macos-15-intel`, allowed to fail. Each freezes and runs the freeze gate, imports the Developer ID into a temporary keychain (`sign-core.sh` runs before Tauri's own keychain import), builds, notarises and staples the DMG, and has `spctl` accept both the app and the DMG.
+  - **linux:** `.deb` and AppImage on 22.04, after the same freeze and gate.
+  - **windows:** allowed to fail, never uploaded.
+  - **pypi-build:** the wheel installed into a clean venv must answer with the version.
+  - **release:** on tags only, a draft with `SHA256SUMS` and the sizes.
+  - **pypi:** on tags only, trusted publishing behind the `pypi` environment.
+- `actionlint` is clean. The version check, run locally: with no tag it passes; `v0.1.0-rc1` and `v0.1.0` are refused against today's `0.1.0.dev0` / `0.1.0`.
+- Not run yet: the first run is the rehearsal on the pull request.
+
 ## 5. Docs
 
 - `ship-v0-plan.md`: amendment notes on S2 and §3.1; the pipeline drawing and the versions table lose the extensions.
